@@ -9,8 +9,13 @@
 #import development source
 #from nmtf_base import *
 
-#import from package
-from nmtf.modules.nmtf_base import *
+import settings
+
+if settings.isDev is False:
+    #import from package
+    from nmtf.modules.nmtf_base import *
+else:
+    from nmtf_base import *
 
 # from ..base import BaseEstimator, TransformerMixin
 
