@@ -7,10 +7,10 @@
 # License: MIT
 # Dec 28, '19
 #import development source
-from irmfpro import *
+from nmtf_base import *
 
 #import from package
-#from irmfpro.irmfpro import *
+#from nmtf.nmtf_base import *
 
 # from ..base import BaseEstimator, TransformerMixin
 
