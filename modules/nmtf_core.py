@@ -5,12 +5,7 @@ from tqdm import tqdm
 from scipy.stats import hypergeom
 from scipy.optimize import nnls
 
-import settings
-if settings.isDev is False:
-    #import from package
-    from nmtf.modules.nmtf_utils import *
-else:
-    from nmtf_utils import *
+from nmtf_utils import *
 
 def ProjGrad(V, Vmis, W, Hinit, NMFAlgo, lambdax, tol, MaxIterations, NMFPriors):
     """

@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+from tqdm import tqdm
 import math
 from scipy.stats import hypergeom
 import numpy as np

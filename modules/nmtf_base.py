@@ -1,4 +1,5 @@
-""" Non-negative matrix and tensor factorization
+"""
+Non-negative matrix and tensor factorization
 
 """
 
@@ -15,14 +16,8 @@ from tqdm import tqdm
 from scipy.stats import hypergeom
 from scipy.optimize import nnls
 
-import settings
-if settings.isDev is False:
-    #import from package
-    from nmtf.modules.nmtf_core import *
-    from nmtf.modules.nmtf_utils import *
-else:
-    from nmtf_core import *
-    from nmtf_utils import *
+from nmtf_core import *
+from nmtf_utils import *
 
 import sys
 if not hasattr(sys, 'argv'):
@@ -1439,10 +1434,10 @@ def nmf_permutation_test_score(estimator, y, n_permutations=100, verbose=0):
          ('CN', ClusterNgroup)])
     return estimator
 
-def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, F=None, n_components=None,
+def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_components=None,
                                       update_W=True,
                                       update_H=True,
-                                      update_F=True,
+                                      update_Q=True,
                                       fast_hals=True, n_iter_hals=2, n_shift=0,
                                       unimodal=False, smooth=False,
                                       apply_left=False, apply_right=False, apply_block=False,
@@ -1476,8 +1471,8 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, F=None, n_com
     H : array-like, shape (n_features, n_components)
         prior H
 
-    F : array-like, shape (n_blocks, n_components)
-        prior H
+    Q : array-like, shape (n_blocks, n_components)
+        prior Q
 
     n_components : integer
         Number of components, if n_components is not set : n_components = min(n_samples, n_features)
@@ -1488,8 +1483,8 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, F=None, n_com
     update_H : boolean, default: True
         Update or keep H fixed
 
-    update_F : boolean, default: True
-        Update or keep F fixed
+    update_Q : boolean, default: True
+        Update or keep Q fixed
 
     fast_hals : boolean, default: True
         Use fast implementation of HALS
@@ -1543,7 +1538,7 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, F=None, n_com
         H : array-like, shape (n_features, n_components)
             Solution to the non-negative least squares problem.
 
-        F : array-like, shape (n_blocks, n_components)
+        Q : array-like, shape (n_blocks, n_components)
             Solution to the non-negative least squares problem.
         
         E : array-like, shape (n_samples, n_features x n_blocks)
@@ -1604,7 +1599,7 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, F=None, n_com
 
     myStatusBox = StatusBoxTqdm(verbose=LogIter)
 
-    if (W is None) & (H is None) & (F is None):
+    if (W is None) & (H is None) & (Q is None):
         Mt0, Mw0, Mb0, AddMessage, ErrMessage, cancel_pressed = NTFInit(M, np.array([]), np.array([]), np.array([]), nc,
                                                                         tolerance, precision, LogIter, NTFUnimodal,
                                                                         NTFLeftComponents, NTFRightComponents,
@@ -1620,10 +1615,10 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, F=None, n_com
         else:
             Mw0 = np.copy(H)
         
-        if F is None:
+        if Q is None:
             Mb0 = np.ones((NBlocks, nc))
         else:
-            Mb0 = np.copy(F)
+            Mb0 = np.copy(Q)
 
         Mfit = np.zeros((n, p))
         for k in range(0, nc):
@@ -1681,7 +1676,7 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, F=None, n_com
     else:
         NMFFixUserRHE = 1
 
-    if update_F:
+    if update_Q:
         NMFFixUserBHE = 0
     else:
         NMFFixUserBHE = 1
@@ -1701,8 +1696,8 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, F=None, n_com
 
     estimator = {}
     if NMFRobustNRuns <= 1:
-        estimator.update([('W', Mt), ('H', Mw), ('F', Mb), ('E', Mres), ('V', volume)])
+        estimator.update([('W', Mt), ('H', Mw), ('Q', Mb), ('E', Mres), ('V', volume)])
     else:
-        estimator.update([('W', Mt), ('H', Mw), ('F', Mb), ('E', Mres), ('V', volume), ('WB', MtPct), ('HB', MwPct)])
+        estimator.update([('W', Mt), ('H', Mw), ('Q', Mb), ('E', Mres), ('V', volume), ('WB', MtPct), ('HB', MwPct)])
 
     return estimator

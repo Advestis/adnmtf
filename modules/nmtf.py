@@ -6,18 +6,8 @@
 
 # License: MIT
 # Dec 28, '19
-#import development source
-#from nmtf_base import *
 
-import settings
-
-if settings.isDev is False:
-    #import from package
-    from nmtf.modules.nmtf_base import *
-else:
-    from nmtf_base import *
-
-# from ..base import BaseEstimator, TransformerMixin
+from nmtf_base import *
 
 class NMF:
     def __init__(self, n_components=None,
@@ -436,17 +426,16 @@ class NTF:
 
     References
     ----------
+    TODO
+    
 
-    Fogel
-
-    Lin
     """
 
-    def fit_transform(self, X, n_blocks, n_bootstrap=None, W=None, H=None, F=None, update_W=True, update_H=True, update_F=True):
+    def fit_transform(self, X, n_blocks, n_bootstrap=None, W=None, H=None, Q=None, update_W=True, update_H=True, update_Q=True):
 
         """Compute Non-negative Matrix Factorization (NMF)
 
-        Find three non-negative matrices (W, H, F) such as x = W @@ H @@ F + Error (@@ = tensor product).
+        Find three non-negative matrices (W, H, Q) such as x = W @@ H @@ Q + Error (@@ = tensor product).
         This factorization can be used for example for
         dimensionality reduction, source separation or topic extraction.
 
@@ -468,8 +457,8 @@ class NTF:
         H : array-like, shape (n_features, n_components)
             prior H
 
-        F : array-like, shape (n_blocks, n_components)
-            prior H
+        Q : array-like, shape (n_blocks, n_components)
+            prior Q
 
         update_W : boolean, default: True
             Update or keep W fixed
@@ -477,8 +466,8 @@ class NTF:
         update_H : boolean, default: True
             Update or keep H fixed
 
-        update_F : boolean, default: True
-            Update or keep F fixed
+        update_Q : boolean, default: True
+            Update or keep Q fixed
         
         n_bootstrap : Number of bootstrap runs
 
@@ -493,7 +482,7 @@ class NTF:
         H : array-like, shape (n_features, n_components)
             Solution to the non-negative least squares problem.
 
-        F : array-like, shape (n_blocks, n_components)
+        Q : array-like, shape (n_blocks, n_components)
             Solution to the non-negative least squares problem.
         
         E : array-like, shape (n_samples, n_features x n_blocks)
@@ -526,15 +515,14 @@ class NTF:
         References
         ----------
 
-        Fogel
+        TODO
 
-        Lin
         """
 
-        return non_negative_tensor_factorization(X, n_blocks, W=W, H=H, F=F, n_components=self.n_components,
+        return non_negative_tensor_factorization(X, n_blocks, W=W, H=H, Q=Q, n_components=self.n_components,
                                                 update_W=update_W,
                                                 update_H=update_H,
-                                                update_F=update_F,
+                                                update_Q=update_Q,
                                                 fast_hals=self.fast_hals, n_iter_hals=self.n_iter_hals, n_shift=self.n_shift, 
                                                 unimodal=self.unimodal, smooth=self.smooth,
                                                 apply_left=self.apply_left,
