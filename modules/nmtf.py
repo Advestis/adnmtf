@@ -203,12 +203,11 @@ class NMF:
             random_state=0)
 
 
-        References
-        ----------
+        Reference
+        ---------
+        P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
+        The American Statistician, Vol. 67, Issue 4.
 
-        Fogel
-
-        Lin
         """
         return non_negative_factorization(X, W=W, H=H, n_components=self.n_components,
                                             update_W=update_W,
@@ -280,10 +279,6 @@ class NMF:
         FC : vector-like, shape (size(blocks))
              Block assigned cluster (NTF only)
 
-        Examples
-        --------
-
-        >>> import numpy as np
 
         """
 
@@ -327,11 +322,7 @@ class NMF:
         CN : array-like, shape(n_components, n_groups)
              The size of each group within each cluster
 
-        Examples
-        --------
-
-        >>> import numpy as np
-
+    
         """
 
         return nmf_permutation_test_score(estimator, y, n_permutations=n_permutations, verbose=self.verbose)
@@ -500,24 +491,12 @@ class NTF:
             Percent consistently clustered columns for each component.
             only if n_bootstrap > 0.
 
-        Examples
-        --------
 
-        >>> import numpy as np
+        Reference
+        ---------
 
-        >>> X = np.array([[1,1], [2, 1], [3, 1.2], [4, 1], [5, 0.8], [6, 1]])
-
-        >>> from sklearn.decomposition import non_negative_factorization
-
-        >>> W, H, n_iter = non_negative_factorization(X, n_components=2, \
-
-            random_state=0)
-
-
-        References
-        ----------
-
-        TODO
+        A. Cichocki, P.H.A.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor factorizations,
+        IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
 
         """
 
