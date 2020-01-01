@@ -338,7 +338,7 @@ class NMF:
 
 class NTF:
     def __init__(self, n_components=None,
-                       fast_hals=True, n_iter_hals=2, n_shift=0,
+                       fast_hals=False, n_iter_hals=2, n_shift=0,
                        unimodal=False, smooth=False,
                        apply_left=False, apply_right=False, apply_block=False,
                        tol=1e-6,
@@ -368,7 +368,7 @@ class NTF:
     n_components : integer
         Number of components, if n_components is not set : n_components = min(n_samples, n_features)
 
-    fast_hals : boolean, default: True
+    fast_hals : boolean, default: False
         Use fast implementation of HALS
 
     n_iter_hals : integer, default: 2
@@ -431,7 +431,7 @@ class NTF:
 
     """
 
-    def fit_transform(self, X, n_blocks, n_bootstrap=None, W=None, H=None, Q=None, update_W=True, update_H=True, update_Q=True):
+    def fit_transform(self, X, n_blocks, n_bootstrap=None, alpha=0, W=None, H=None, Q=None, update_W=True, update_H=True, update_Q=True):
 
         """Compute Non-negative Matrix Factorization (NMF)
 
@@ -449,7 +449,11 @@ class NTF:
             Constant matrix.
             X is a tensor with shape (n_samples, n_features, n_blocks), however unfolded along 2nd and 3rd dimensions.
 
-        n_blocks : integer
+        n_blocks : integer, number of blocks defining the 3rd dimension of the tensor
+
+        n_bootstrap : Number of bootstrap runs
+
+        alpha : integer, sparsity level (as defined by Hoyer); +/- = make RHE/LHe sparse
 
         W : array-like, shape (n_samples, n_components)
             prior W
@@ -469,8 +473,6 @@ class NTF:
         update_Q : boolean, default: True
             Update or keep Q fixed
         
-        n_bootstrap : Number of bootstrap runs
-
         Returns
         -------
 
@@ -524,7 +526,7 @@ class NTF:
                                                 update_H=update_H,
                                                 update_Q=update_Q,
                                                 fast_hals=self.fast_hals, n_iter_hals=self.n_iter_hals, n_shift=self.n_shift, 
-                                                unimodal=self.unimodal, smooth=self.smooth,
+                                                alpha=alpha, unimodal=self.unimodal, smooth=self.smooth,
                                                 apply_left=self.apply_left,
                                                 apply_right=self.apply_right,
                                                 apply_block=self.apply_block,

@@ -529,3 +529,41 @@ def shift(arr, num, fill_value=EPSILON):
     else:
         result[:] = arr
     return result
+
+def sparse_opt(b, alpha):
+    """
+    Return the L2-closest vector with sparsity alpha 
+    Input:
+        b: original vector
+    Output:
+        x: sparse vector
+    """
+    m = b.size
+    m_alpha = (np.sqrt(m) - np.linalg.norm(b, ord=1)/np.linalg.norm(b, ord=2))/(np.sqrt(m)-1)
+    if (alpha == 0) or (alpha <= m_alpha):
+        return b
+    
+    b_rank = np.argsort(-b)
+    b_norm= np.linalg.norm(b)
+    a = b[b_rank] / b_norm
+    k = math.sqrt(m) - alpha * (math.sqrt(m)-1)
+    p0 = m
+    mylambda0 = np.nan
+    mu0 = np.nan
+    mylambda = mylambda0
+    mu = mu0
+    
+    for p in range(int(np.ceil(k**2)), m+1):
+        mylambda0 = mylambda
+        mu0 = mu
+        mylambda = -np.sqrt((p * np.linalg.norm(a[0:p])**2 - np.linalg.norm(a[0:p], ord=1)**2)/(p-k**2))
+        mu = -(np.linalg.norm(a[0:p], ord=1) + k*mylambda) / p
+        if a[p-1] < -mu:
+            p0 = p-1
+            mylambda = mylambda0
+            mu = mu0
+            break
+    
+    x = np.zeros(m)
+    x[0:p0] = -b_norm * (a[0:p0] + mu) / mylambda
+    return x[b_rank]

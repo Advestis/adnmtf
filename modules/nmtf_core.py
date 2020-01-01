@@ -945,20 +945,20 @@ def NTFStack(M, Mmis, NBlocks):
     return [Mstacked, Mmis_stacked]
 
 def NTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
+             alpha, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
     """
     Interface to NTFSolve_simple & NTFSolve_conv
     """
 
     if NTFNConv > 0:
         return NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
+             alpha, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
     else:
         return NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox)
+             alpha, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox)
 
 def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox):
+             alpha, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox):
     """
     Estimate NTF matrices (HALS)
     Input:
@@ -1048,7 +1048,7 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
                 denomw, Mt2, NTFRightComponents, B, NMFFixUserBHE, MtMw, nxp, \
                 denomBlock, NTFBlockComponents, C, Mfit = \
             NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres, \
-                NMFFixUserLHE, denomt, Mw2, denomCutoff, \
+                NMFFixUserLHE, denomt, Mw2, denomCutoff, alpha ,\
                 NTFUnimodal, NTFLeftComponents, NTFSmooth, A, NMFFixUserRHE, \
                 denomw, Mt2, NTFRightComponents, B, NMFFixUserBHE, MtMw, nxp, \
                 denomBlock, NTFBlockComponents, C, Mfit)
@@ -1079,7 +1079,7 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
     return [np.array([]), Mt, Mw, Mb, Mres, cancel_pressed]
 
 def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
+             alpha, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
     """
      Estimate NTF matrices (HALS)
      Input:
@@ -1185,7 +1185,7 @@ def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIt
                     denomw, Mt2, NTFRightComponents, B, NMFFixUserBHE, MtMw, nxp, \
                     denomBlock, NTFBlockComponents, C, Mfit = \
                 NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres, \
-                    NMFFixUserLHE, denomt, Mw2, denomCutoff, \
+                    NMFFixUserLHE, denomt, Mw2, denomCutoff, alpha, \
                     NTFUnimodal, NTFLeftComponents, NTFSmooth, A, NMFFixUserRHE, \
                     denomw, Mt2, NTFRightComponents, B, NMFFixUserBHE, MtMw, nxp, \
                     denomBlock, NTFBlockComponents, C, Mfit)
@@ -1570,7 +1570,7 @@ def NTFSolveFast(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, Stat
     return [Mt, Mw, Mb, Mres, cancel_pressed]
 
 def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres, \
-        NMFFixUserLHE, denomt, Mw2, denomCutoff, \
+        NMFFixUserLHE, denomt, Mw2, denomCutoff, alpha, \
         NTFUnimodal, NTFLeftComponents, NTFSmooth, A, NMFFixUserRHE, \
         denomw, Mt2, NTFRightComponents, B, NMFFixUserBHE, MtMw, nxp, \
         denomBlock, NTFBlockComponents, C, Mfit):
@@ -1638,6 +1638,8 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
             Mt[:, k] /= denomt               
 
         Mt[Mt[:, k] < 0, k] = 0
+        if alpha < 0:
+            Mw[:, k] = sparse_opt(Mw[:, k], -alpha)
 
         if (NTFUnimodal > 0) & (NTFLeftComponents > 0):
             #                 Enforce unimodal distribution
@@ -1680,6 +1682,8 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
             Mw[:, k] /= denomw
 
         Mw[Mw[:, k] < 0, k] = 0
+        if alpha > 0:
+            Mw[:, k] = sparse_opt(Mw[:, k], alpha)
 
         if (NTFUnimodal > 0) & (NTFRightComponents > 0):
             #Enforce unimodal distribution

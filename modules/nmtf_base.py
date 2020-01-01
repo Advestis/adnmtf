@@ -432,7 +432,7 @@ def NTFInit(M, Mmis, MtxMw, Mb2, nc, tolerance, precision, LogIter, NTFUnimodal,
   
 def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
               NMFFixUserBHE, NMFAlgo, NMFRobustNRuns, NMFCalculateLeverage, NMFUseRobustLeverage, NTFFastHALS, NTFNIterations,
-              NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
+              alpha, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
     """
      Estimate NTF matrices (robust version)
      Input:
@@ -453,8 +453,9 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
          NMFRobustNRuns: Number of bootstrap runs
          NMFCalculateLeverage: Calculate leverages
          NMFUseRobustLeverage: Calculate leverages based on robust max across factoring columns
-         NTFFastHALS: Use Fast HALS
+         NTFFastHALS: Use Fast HALS (does not accept handle missing values and convolution)
          NTFNIterations: Warmup iterations for fast HALS
+         alpha : sparsity level (as defined by Hoyer); +/- = make RHE/LHe sparse
          NTFUnimodal: Apply Unimodal constraint on factoring vectors
          NTFSmooth: Apply Smooth constraint on factoring vectors
          NTFLeftComponents: Apply Unimodal/Smooth constraint on left hand matrix
@@ -510,7 +511,7 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
         MtPct = np.nan
         MwPct = np.nan
 
-    if (n_Mmis > 0 or NTFNConv > 0) and NTFFastHALS > 0:
+    if (n_Mmis > 0 or NTFNConv > 0 or alpha != 0) and NTFFastHALS > 0:
         NTFFastHALS = 0
         reverse2HALS = 1
     else:
@@ -522,7 +523,7 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
         if NTFNIterations > 0:
             Mt_conv, Mt, Mw, Mb, Mres, cancel_pressed = NTFSolve(
                 M, Mmis, Mt, Mw, Mb, nc, tolerance, LogIter, Status0,
-                NTFNIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE, NTFUnimodal, NTFSmooth,
+                NTFNIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE, 0, NTFUnimodal, NTFSmooth,
                 NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
 
         Mt, Mw, Mb, Mres, cancel_pressed = NTFSolveFast(
@@ -532,7 +533,7 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
     else:
         Mt_conv, Mt, Mw, Mb, Mres, cancel_pressed = NTFSolve(
             M, Mmis, Mt, Mw, Mb, nc, tolerance, LogIter, Status0,
-            MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE, NTFUnimodal, NTFSmooth,
+            MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE, alpha, NTFUnimodal, NTFSmooth,
             NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
 
     Mtsup = np.copy(Mt)
@@ -561,12 +562,12 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
                 if n_Mmis > 0:
                     Mt_conv, Mt, Mw, Mb, Mres, cancel_pressed = NTFSolve(
                         M[Boot, :], Mmis[Boot, :], Mtsup[Boot, :], Mwsup, Mb, nc, 1.e-3, LogIter, Status0,
-                        MaxIterations, 1, 0, NMFFixUserBHE, NTFUnimodal, NTFSmooth,
+                        MaxIterations, 1, 0, NMFFixUserBHE, alpha, NTFUnimodal, NTFSmooth,
                         NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
                 else:
                     Mt_conv, Mt, Mw, Mb, Mres, cancel_pressed = NTFSolve(
                         M[Boot, :], np.array([]), Mtsup[Boot, :], Mwsup, Mb, nc, 1.e-3, LogIter, Status0,
-                        MaxIterations, 1, 0, NMFFixUserBHE, NTFUnimodal, NTFSmooth,
+                        MaxIterations, 1, 0, NMFFixUserBHE, alpha, NTFUnimodal, NTFSmooth,
                         NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
 
             for k in range(0, nc):
@@ -609,7 +610,7 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
             else:
                 Mt_conv, Mt, Mw, Mb, Mres, cancel_pressed = NTFSolve(
                     M, Mmis, Mtsup, Mw, Mb, nc, 1.e-3, LogIter, Status0, MaxIterations, 0, 1, NMFFixUserBHE,
-                    NTFUnimodal, NTFSmooth,
+                    alpha, NTFUnimodal, NTFSmooth,
                     NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
 
             RowClust = np.zeros(n, dtype=int)
@@ -1439,6 +1440,7 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
                                       update_H=True,
                                       update_Q=True,
                                       fast_hals=True, n_iter_hals=2, n_shift=0,
+                                      alpha=0,
                                       unimodal=False, smooth=False,
                                       apply_left=False, apply_right=False, apply_block=False,
                                       n_bootstrap=None,
@@ -1495,6 +1497,9 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
     n_shift : integer, default: 0
         max shifting in convolutional NTF
 
+    alpha : integer, default: 0
+        sparsity level (as defined by Hoyer); +/- = make W/H sparse
+    
     unimodal : Boolean, default: False
 
     smooth : Boolean, default: False
@@ -1684,7 +1689,7 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
     Mt_conv, Mt, Mw, Mb, Mres, MtPct, MwPct, AddMessage, ErrMessage, cancel_pressed = rNTFSolve(
         M, np.array([]), Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
         NMFFixUserBHE, NMFAlgo, NMFRobustNRuns,
-        NMFCalculateLeverage, NMFUseRobustLeverage, NTFFastHALS, NTFNIterations, NTFUnimodal, NTFSmooth,
+        NMFCalculateLeverage, NMFUseRobustLeverage, NTFFastHALS, NTFNIterations, alpha, NTFUnimodal, NTFSmooth,
         NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
 
     volume = NMFDet(Mt, Mw, 1)
