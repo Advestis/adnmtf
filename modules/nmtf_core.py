@@ -702,7 +702,7 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
                 Status = Status + '; Achieved sparsity: ' + str(round(PercentZeros, 2)) + '; Penalty: ' + str(
                     round(lambdax, 2))
                 if LogIter == 1:
-                    myStatusBox.myPrint(Status)
+                    myStatusBox.myPrint(Status) 
             elif (NMFConvex > 0) & (NMFFindParts > 0):
                 Status = Status + ' - Find parts'
             elif (NMFConvex > 0) & (NMFFindCentroids > 0) & (NLKernelApplied == 0):
@@ -870,8 +870,8 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
                 else:
                     iterSparse = 0
 
-                if (PercentZeros < 0.99 * NMFSparseLevel) & (iterSparse < 50):
-                    lambdat *= min(1.01 * NMFSparseLevel / PercentZeros, 1.10)
+                if (PercentZeros < 0.99 * abs(NMFSparseLevel)) & (iterSparse < 50):
+                    lambdat *= min(1.01 * abs(NMFSparseLevel) / PercentZeros, 1.10)
                     iIter = NMFMaxInterm + 1
                     cont = 1
 
@@ -945,20 +945,20 @@ def NTFStack(M, Mmis, NBlocks):
     return [Mstacked, Mmis_stacked]
 
 def NTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             alpha, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
+             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
     """
     Interface to NTFSolve_simple & NTFSolve_conv
     """
 
     if NTFNConv > 0:
         return NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             alpha, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
+             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
     else:
         return NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             alpha, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox)
+             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox)
 
 def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             alpha, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox):
+             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox):
     """
     Estimate NTF matrices (HALS)
     Input:
@@ -975,6 +975,7 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
          NMFFixUserLHE: = 1 => fixed left hand matrix columns
          NMFFixUserRHE: = 1 => fixed  right hand matrix columns
          NMFFixUserBHE: = 1 => fixed  block hand matrix columns
+         NMFSparseLevel : sparsity level (as defined by Hoyer); +/- = make RHE/LHe sparse
          NTFUnimodal: Apply Unimodal constraint on factoring vectors
          NTFSmooth: Apply Smooth constraint on factoring vectors
          NTFLeftComponents: Apply Unimodal/Smooth constraint on left hand matrix
@@ -1035,15 +1036,14 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
     iIter = 0
     diff0 = 1.e+99
     Mpart = np.zeros((n, p0))
+    alpha = NMFSparseLevel
+    PercentZeros = 0
+    iterSparse = 0
     
-    #for k in range (0, nc):
-    #    print(k, Mb[:, k])
-
-
     while (cont > 0) & (iIter < MaxIterations):
         for k in range(0, nc):
             NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres, \
-                NMFFixUserLHE, denomt, Mw2, denomCutoff, \
+                NMFFixUserLHE, denomt, Mw2, denomCutoff, alpha ,\
                 NTFUnimodal, NTFLeftComponents, NTFSmooth, A, NMFFixUserRHE, \
                 denomw, Mt2, NTFRightComponents, B, NMFFixUserBHE, MtMw, nxp, \
                 denomBlock, NTFBlockComponents, C, Mfit = \
@@ -1062,6 +1062,13 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
                 diff0 = diff
 
             Status = Status0 + 'Iteration: %s' % int(iIter)
+
+            if NMFSparseLevel != 0:
+                Status = Status + '; Achieved sparsity: ' + str(round(PercentZeros, 2)) + '; alpha: ' + str(
+                    round(alpha, 2))
+                if LogIter == 1:
+                    myStatusBox.myPrint(Status)
+
             myStatusBox.update_status(delay=1, status=Status)
             myStatusBox.update_bar(delay=1, step=pbar_step)
             if myStatusBox.cancel_pressed:
@@ -1073,13 +1080,53 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
 
         iIter += 1
 
+        if (cont == 0) | (iIter == MaxIterations):
+            if NMFSparseLevel > 0:
+                SparseTest = np.zeros((p, 1))
+                for k in range(0, nc):
+                    SparseTest[np.where(Mw[:, k] > 0)] = 1
+
+                PercentZeros0 = PercentZeros
+                n_SparseTest = np.where(SparseTest == 0)[0].size
+                PercentZeros = max(n_SparseTest / p, .01)
+                if PercentZeros == PercentZeros0:
+                    iterSparse += 1
+                else:
+                    iterSparse = 0
+
+                if (PercentZeros < 0.99 * NMFSparseLevel) & (iterSparse < 50):
+                    alpha *= min(1.01 * NMFSparseLevel / PercentZeros, 1.01)
+                    if alpha < .99:
+                        iIter = 1
+                        cont = 1
+
+            elif NMFSparseLevel < 0:
+                SparseTest = np.zeros((n, 1))
+                for k in range(0, nc):
+                    SparseTest[np.where(Mt[:, k] > 0)] = 1
+
+                PercentZeros0 = PercentZeros
+                n_SparseTest = np.where(SparseTest == 0)[0].size
+                PercentZeros = max(n_SparseTest / n, .01)
+                if PercentZeros == PercentZeros0:
+                    iterSparse += 1
+                else:
+                    iterSparse = 0
+
+                print(iterSparse)
+                if (PercentZeros < 0.99 * abs(NMFSparseLevel)) & (iterSparse < 50):
+                    alpha *= min(1.01 * abs(NMFSparseLevel) / PercentZeros, 1.01)
+                    if abs(alpha) < .99:
+                        iIter = 1
+                        cont = 1
+
     if (n_Mmis > 0) & (NMFFixUserBHE == 0):
         Mb *= denomBlock
 
     return [np.array([]), Mt, Mw, Mb, Mres, cancel_pressed]
 
 def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             alpha, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
+             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
     """
      Estimate NTF matrices (HALS)
      Input:
@@ -1096,6 +1143,7 @@ def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIt
          NMFFixUserLHE: = 1 => fixed left hand matrix columns
          NMFFixUserRHE: = 1 => fixed  right hand matrix columns
          NMFFixUserBHE: = 1 => fixed  block hand matrix columns
+         NMFSparseLevel : sparsity level (as defined by Hoyer); +/- = make RHE/LHe sparse
          NTFUnimodal: Apply Unimodal constraint on factoring vectors
          NTFSmooth: Apply Smooth constraint on factoring vectors
          NTFLeftComponents: Apply Unimodal/Smooth constraint on left hand matrix
@@ -1174,13 +1222,16 @@ def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIt
     iIter = 0
     diff0 = 1.e+99
     Mpart = np.zeros((n, p0))
+    alpha = NMFSparseLevel
+    PercentZeros = 0
+    iterSparse = 0
 
     while (cont > 0) & (iIter < MaxIterations):
         for k3 in range(0, nc):
             for k2 in range(0, NTFNConv2):
                 k = k3*NTFNConv2+k2
                 NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres, \
-                    NMFFixUserLHE, denomt, Mw2, denomCutoff, \
+                    NMFFixUserLHE, denomt, Mw2, denomCutoff, alpha ,\
                     NTFUnimodal, NTFLeftComponents, NTFSmooth, A, NMFFixUserRHE, \
                     denomw, Mt2, NTFRightComponents, B, NMFFixUserBHE, MtMw, nxp, \
                     denomBlock, NTFBlockComponents, C, Mfit = \
@@ -1213,6 +1264,13 @@ def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIt
                 diff0 = diff
 
             Status = Status0 + 'Iteration: %s' % int(iIter)
+
+            if NMFSparseLevel != 0:
+                Status = Status + '; Achieved sparsity: ' + str(round(PercentZeros, 2)) + '; alpha: ' + str(
+                    round(alpha, 2))
+                if LogIter == 1:
+                    myStatusBox.myPrint(Status)
+
             myStatusBox.update_status(delay=1, status=Status)
             myStatusBox.update_bar(delay=1, step=pbar_step)
             if myStatusBox.cancel_pressed:
@@ -1223,7 +1281,47 @@ def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIt
                 myStatusBox.myPrint(Status0 + " Iter: " + str(iIter) + " MSR: " + str(diff))
 
         iIter += 1
-    
+
+        if (cont == 0) | (iIter == MaxIterations):
+            if NMFSparseLevel > 0:
+                SparseTest = np.zeros((p, 1))
+                for k in range(0, nc):
+                    SparseTest[np.where(Mw[:, k] > 0)] = 1
+
+                PercentZeros0 = PercentZeros
+                n_SparseTest = np.where(SparseTest == 0)[0].size
+                PercentZeros = max(n_SparseTest / p, .01)
+                if PercentZeros == PercentZeros0:
+                    iterSparse += 1
+                else:
+                    iterSparse = 0
+
+                if (PercentZeros < 0.99 * NMFSparseLevel) & (iterSparse < 50):
+                    alpha *= min(1.01 * NMFSparseLevel / PercentZeros, 1.01)
+                    alpha = min(alpha, .99)
+                    if alpha < .99:
+                        iIter = 1
+                        cont = 1
+
+            elif NMFSparseLevel < 0:
+                SparseTest = np.zeros((n, 1))
+                for k in range(0, nc):
+                    SparseTest[np.where(Mt[:, k] > 0)] = 1
+
+                PercentZeros0 = PercentZeros
+                n_SparseTest = np.where(SparseTest == 0)[0].size
+                PercentZeros = max(n_SparseTest / n, .01)
+                if PercentZeros == PercentZeros0:
+                    iterSparse += 1
+                else:
+                    iterSparse = 0
+
+                if (PercentZeros < 0.99 * abs(NMFSparseLevel)) & (iterSparse < 50):
+                    alpha *= min(1.01 * abs(NMFSparseLevel) / PercentZeros, 1.01)
+                    if abs(alpha) < .99:
+                        iIter = 1
+                        cont = 1
+
     if (n_Mmis > 0) & (NMFFixUserBHE == 0):
         Mb *= denomBlock
 
@@ -1639,7 +1737,7 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
 
         Mt[Mt[:, k] < 0, k] = 0
         if alpha < 0:
-            Mw[:, k] = sparse_opt(Mw[:, k], -alpha)
+            Mt[:, k] = sparse_opt(Mt[:, k], -alpha)
 
         if (NTFUnimodal > 0) & (NTFLeftComponents > 0):
             #                 Enforce unimodal distribution
@@ -1763,7 +1861,7 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
         Mres[:,:] = Mpart - Mfit
 
     return NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres, \
-            NMFFixUserLHE, denomt, Mw2, denomCutoff, \
+            NMFFixUserLHE, denomt, Mw2, denomCutoff, alpha ,\
             NTFUnimodal, NTFLeftComponents, NTFSmooth, A, NMFFixUserRHE, \
             denomw, Mt2, NTFRightComponents, B, NMFFixUserBHE, MtMw, nxp, \
             denomBlock, NTFBlockComponents, C, Mfit

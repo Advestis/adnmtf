@@ -150,7 +150,7 @@ class NMF:
             Select whether the regularization affects the components (H), the
             transformation (W) or none of them.
 
-        sparsity : double, default: 0.
+        sparsity : integer, default: 0
             Sparsity target with 0 <= sparsity <= 1 representing the % rows in W or H set to 0.
 
         skewness : boolean, default False
@@ -422,7 +422,7 @@ class NTF:
 
     """
 
-    def fit_transform(self, X, n_blocks, n_bootstrap=None, alpha=0, W=None, H=None, Q=None, update_W=True, update_H=True, update_Q=True):
+    def fit_transform(self, X, n_blocks, n_bootstrap=None, sparsity=0, W=None, H=None, Q=None, update_W=True, update_H=True, update_Q=True):
 
         """Compute Non-negative Matrix Factorization (NMF)
 
@@ -444,7 +444,8 @@ class NTF:
 
         n_bootstrap : Number of bootstrap runs
 
-        alpha : integer, sparsity level (as defined by Hoyer); +/- = make RHE/LHe sparse
+        sparsity : integer, default: 0
+            Sparsity target with 0 <= sparsity <= 1 representing the % rows in W or H set to 0.
 
         W : array-like, shape (n_samples, n_components)
             prior W
@@ -505,7 +506,7 @@ class NTF:
                                                 update_H=update_H,
                                                 update_Q=update_Q,
                                                 fast_hals=self.fast_hals, n_iter_hals=self.n_iter_hals, n_shift=self.n_shift, 
-                                                alpha=alpha, unimodal=self.unimodal, smooth=self.smooth,
+                                                sparsity=sparsity, unimodal=self.unimodal, smooth=self.smooth,
                                                 apply_left=self.apply_left,
                                                 apply_right=self.apply_right,
                                                 apply_block=self.apply_block,
