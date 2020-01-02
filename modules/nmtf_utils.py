@@ -293,6 +293,7 @@ def BuildClusters(Mt, Mw, Mb, MtPct, MwPct, NBlocks, BlkSize, NMFCalculateLevera
     ColClust = np.zeros(p)
     ilast = 0
     jlast = 0
+
     if NMFCalculateLeverage == 1:
         myStatusBox.update_status(delay=1, status="Leverages - Left components...")
         Mtn, AddMessage, ErrMessage, cancel_pressed = Leverage(Mt, NMFUseRobustLeverage, AddMessage, myStatusBox)

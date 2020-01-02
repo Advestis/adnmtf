@@ -178,35 +178,29 @@ class NMF:
         V : scalar, volume occupied by W and H
 
         WB : array-like, shape (n_samples, n_components)
-            Percent consistently clustered rows for each component.
-            only if n_bootstrap > 0.
+            A sample is clustered in cluster k if its leverage on component k is higher than on any other components.
+            During each run of the bootstrap, samples are re-clustered.
+            Each row of WB contains the frequencies of the n_components clusters following the bootstrap.
+                Only if n_bootstrap > 0.
 
         HB : array-like, shape (n_components, n_features)
-            Percent consistently clustered columns for each component.
-            only if n_bootstrap > 0.
+            A feature is clustered in cluster k if its leverage on component k is higher than on any other components.
+            During each run of the bootstrap, features are re-clustered.
+            Each row of HB contains the frequencies of the n_components clusters following the bootstrap.
+                Only if n_bootstrap > 0.
 
         B : array-like, shape (n_observations, n_components) or (n_features, n_components)
-            only if active convex variant, H = B.T @ X or W = X @ B
+            Only if active convex variant, H = B.T @ X or W = X @ B
 
 
-        Examples
-        --------
-
-        >>> import numpy as np
-
-        >>> X = np.array([[1,1], [2, 1], [3, 1.2], [4, 1], [5, 0.8], [6, 1]])
-
-        >>> from sklearn.decomposition import non_negative_factorization
-
-        >>> W, H, n_iter = non_negative_factorization(X, n_components=2, \
-
-            random_state=0)
-
-
-        Reference
-        ---------
+        References
+        ----------
+        
         P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
         The American Statistician, Vol. 67, Issue 4.
+
+        C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
+        IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1
 
         """
         return non_negative_factorization(X, W=W, H=H, n_components=self.n_components,
@@ -253,7 +247,7 @@ class NMF:
         HL : array-like, shape (n_features, n_components)
              Feature leverage on each component
 
-        FL : array-like, shape (n_blocks, n_components)
+        QL : array-like, shape (n_blocks, n_components)
              Block leverage on each component (NTF only)
 
         WR : vector-like, shape (n_samples)
@@ -276,7 +270,7 @@ class NMF:
         HC : vector-like, shape (n_features)
              Feature assigned cluster
 
-        FC : vector-like, shape (size(blocks))
+        QC : vector-like, shape (size(blocks))
              Block assigned cluster (NTF only)
 
 

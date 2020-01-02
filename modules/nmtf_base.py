@@ -1265,7 +1265,7 @@ def nmf_predict(estimator, leverage='robust', blocks=None, cluster_by_stability=
     HL : array-like, shape (n_features, n_components)
          Feature leverage on each component
 
-    FL : array-like, shape (n_blocks, n_components)
+    QL : array-like, shape (n_blocks, n_components)
          Block leverage on each component (NTF only)
 
     WR : vector-like, shape (n_samples)
@@ -1288,17 +1288,17 @@ def nmf_predict(estimator, leverage='robust', blocks=None, cluster_by_stability=
     HC : vector-like, shape (n_features)
          Feature assigned cluster
 
-    FC : vector-like, shape (size(blocks))
+    QC : vector-like, shape (size(blocks))
          Block assigned cluster (NTF only)
 
     """
 
     Mt = estimator['W']
     Mw = estimator['H']
-    if 'F' in estimator:
+    if 'Q' in estimator:
         # X is a 3D tensor, in unfolded form of a 2D array
         # horizontal concatenation of blocks of equal size.
-        Mb = estimator['F']
+        Mb = estimator['Q']
         NMFAlgo = 5
         NBlocks = Mb.shape[0]
         BlkSize = Mw.shape[0] * np.ones(NBlocks)
@@ -1344,6 +1344,7 @@ def nmf_predict(estimator, leverage='robust', blocks=None, cluster_by_stability=
 
     AddMessage = []
     myStatusBox = StatusBoxTqdm(verbose=verbose)
+    
     Mtn, Mwn, Mbn, RCt, RCw, NCt, NCw, RowClust, ColClust, BlockClust, AddMessage, ErrMessage, cancel_pressed = \
         BuildClusters(Mt, Mw, Mb, MtPct, MwPct, NBlocks, BlkSize, NMFCalculateLeverage, NMFUseRobustLeverage, NMFAlgo,
                       NMFRobustClusterByStability, CellPlotOrderedClusters, AddMessage, myStatusBox)
@@ -1351,12 +1352,12 @@ def nmf_predict(estimator, leverage='robust', blocks=None, cluster_by_stability=
         print(message)
 
     myStatusBox.close()
-    if 'F' in estimator:
+    if 'Q' in estimator:
         estimator.update([('WL', Mtn), ('HL', Mwn), ('WR', RCt), ('HR', RCw), ('WN', NCt), ('HN', NCw),
-                          ('WC', RowClust), ('HC', ColClust), ('FL', Mbn), ('FC', BlockClust)])
+                          ('WC', RowClust), ('HC', ColClust), ('QL', Mbn), ('QC', BlockClust)])
     else:
         estimator.update([('WL', Mtn), ('HL', Mwn), ('WR', RCt), ('HR', RCw), ('WN', NCt), ('HN', NCw),
-                          ('WC', RowClust), ('HC', ColClust), ('FL', None), ('FC', None)])
+                          ('WC', RowClust), ('HC', ColClust), ('QL', None), ('QC', None)])
     return estimator
 
 def nmf_permutation_test_score(estimator, y, n_permutations=100, verbose=0):
