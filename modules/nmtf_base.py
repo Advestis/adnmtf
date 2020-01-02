@@ -27,8 +27,8 @@ EPSILON = np.finfo(np.float32).eps
 GALDERMA_FLAG = False
 
 def NMFInit(M, Mmis, Mt0, Mw0, nc, tolerance, LogIter, myStatusBox):
-    """
-    NMF initialization using NNSVD (Boutsisdis)
+    """Initialize NMF components using NNSVD
+
     Input:
         M: Input matrix
         Mmis: Define missing values (0 = missing cell, 1 = real cell)
@@ -38,6 +38,13 @@ def NMFInit(M, Mmis, Mt0, Mw0, nc, tolerance, LogIter, myStatusBox):
     Output:
         Mt: Left hand matrix
         Mw: Right hand matrix
+    
+    Reference
+    ---------
+
+    C. Boutsidis, E. Gallopoulos (2008) SVD based initialization: A head start for nonnegative matrix factorization
+    Pattern Recognition Pattern Recognition Volume 41, Issue 4, April 2008, Pages 1350-1362
+
     """
 
     n, p = M.shape
@@ -112,8 +119,8 @@ def rNMFSolve(
         NMFSparseLevel, NMFRobustResampleColumns, NMFRobustNRuns, NMFCalculateLeverage, NMFUseRobustLeverage,
         NMFFindParts, NMFFindCentroids, NMFKernel, NMFReweighColumns, NMFPriors, myStatusBox):
 
-    """
-    Estimate left and right hand matrices (robust version)
+    """Estimate left and right hand matrices (robust version)
+
     Input:
          M: Input matrix
          Mmis: Define missing values (0 = missing cell, 1 = real cell)
@@ -147,6 +154,7 @@ def rNMFSolve(
          diff: Objective cost
          Mh: Convexity matrix
          flagNonconvex: Updated non-convexity flag on left hand matrix
+
     """
 
     # Check parameter consistency (and correct if needed)
@@ -312,8 +320,8 @@ def rNMFSolve(
 
 def NTFInit(M, Mmis, MtxMw, Mb2, nc, tolerance, precision, LogIter, NTFUnimodal,
             NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox):
-    """
-     Estimate NTF matrices (HALS)
+    """Initialize NTF components for HALS
+
      Input:
          M: Input tensor
          Mmis: Define missing values (0 = missing cell, 1 = real cell)
@@ -433,8 +441,8 @@ def NTFInit(M, Mmis, MtxMw, Mb2, nc, tolerance, precision, LogIter, NTFUnimodal,
 def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
               NMFFixUserBHE, NMFAlgo, NMFRobustNRuns, NMFCalculateLeverage, NMFUseRobustLeverage, NTFFastHALS, NTFNIterations,
               NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
-    """
-     Estimate NTF matrices (robust version)
+    """Estimate NTF matrices (robust version)
+
      Input:
          M: Input matrix
          Mmis: Define missing values (0 = missing cell, 1 = real cell)
@@ -635,8 +643,8 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
 
 def rSVDSolve(M, Mmis, nc, tolerance, LogIter, LogTrials, Status0, MaxIterations,
               SVDAlgo, SVDCoverage, SVDNTrials, myStatusBox):
-    """
-     Estimate SVD matrices (robust version)
+    """Estimate SVD matrices (robust version)
+
      Input:
          M: Input matrix
          Mmis: Define missing values (0 = missing cell, 1 = real cell)
@@ -649,13 +657,21 @@ def rSVDSolve(M, Mmis, nc, tolerance, LogIter, LogTrials, Status0, MaxIterations
          SVDAlgo: =1: Non-robust version, =2: Robust version
          SVDCoverage: Coverage non-outliers (robust version)
          SVDNTrials: Number of trials (robust version)
+     
      Output:
          Mt: Left hand matrix
-         Mev:
+         Mev: Scaling factors
          Mw: Right hand matrix
          Mmis: Matrix of missing/flagged outliers
          Mmsr: Vector of Residual SSQ
          Mmsr2: Vector of Reidual variance
+
+     Reference
+     ---------
+
+     L. Liu et al (2003) Robust singular value decomposition analysis of microarray data
+     PNAS November 11, 2003 vol. 100 no. 23 13167–13172
+
     """
 
     AddMessage = []
@@ -1215,7 +1231,7 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
     return estimator
 
 def nmf_predict(estimator, leverage='robust', blocks=None, cluster_by_stability=False, custom_order=False, verbose=0):
-    """Derives from factorization result ordered sample and feature indexes for future use in ordered heatmaps
+    """Derives ordered sample and feature indexes for future use in ordered heatmaps
 
     Parameters
     ----------
@@ -1274,11 +1290,6 @@ def nmf_predict(estimator, leverage='robust', blocks=None, cluster_by_stability=
 
     FC : vector-like, shape (size(blocks))
          Block assigned cluster (NTF only)
-
-    Examples
-    --------
-
-    >>> import numpy as np
 
     """
 
@@ -1349,7 +1360,7 @@ def nmf_predict(estimator, leverage='robust', blocks=None, cluster_by_stability=
     return estimator
 
 def nmf_permutation_test_score(estimator, y, n_permutations=100, verbose=0):
-    """Derives from factorization result ordered sample and feature indexes for future use in ordered heatmaps
+    """Do a permutation test to assess association between ordered samples and some covariate
 
     Parameters
     ----------
@@ -1387,10 +1398,6 @@ def nmf_permutation_test_score(estimator, y, n_permutations=100, verbose=0):
     CN : array-like, shape(n_components, n_groups)
          The size of each group within each cluster
 
-    Examples
-    --------
-
-    >>> import numpy as np
 
     """
     Mt = estimator['W']
@@ -1538,7 +1545,12 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
             Percent consistently clustered columns for each component.
             only if n_bootstrap > 0.
 
-    
+    Reference
+    ---------
+
+    A. Cichocki, P.H.A.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor factorizations,
+        IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
+
     """
 
     M = X

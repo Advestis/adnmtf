@@ -401,30 +401,19 @@ class NTF:
     -------
     NTF model
 
-    Examples
-    --------
 
-    >>> import numpy as np
+    Reference
+    ---------
+    A. Cichocki, P.H.A.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor factorizations,
+        IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
 
-    >>> X = np.array([[1,1], [2, 1], [3, 1.2], [4, 1], [5, 0.8], [6, 1]])
-
-    >>> from sklearn.decomposition import non_negative_factorization
-
-    >>> W, H, n_iter = non_negative_factorization(X, n_components=2, \
-
-        random_state=0)
-
-
-    References
-    ----------
-    TODO
     
 
     """
 
     def fit_transform(self, X, n_blocks, n_bootstrap=None, sparsity=0, W=None, H=None, Q=None, update_W=True, update_H=True, update_Q=True):
 
-        """Compute Non-negative Matrix Factorization (NMF)
+        """Compute Non-negative Tensor Factorization (NTF)
 
         Find three non-negative matrices (W, H, Q) such as x = W @@ H @@ Q + Error (@@ = tensor product).
         This factorization can be used for example for

@@ -8,8 +8,7 @@ from scipy.optimize import nnls
 from nmtf_utils import *
 
 def ProjGrad(V, Vmis, W, Hinit, NMFAlgo, lambdax, tol, MaxIterations, NMFPriors):
-    """
-    Projected gradient
+    """Projected gradient
     Code and notations adapted from Matlab code, Chih-Jen Lin
     Input:
         V: Input matrix
@@ -28,6 +27,13 @@ def ProjGrad(V, Vmis, W, Hinit, NMFAlgo, lambdax, tol, MaxIterations, NMFPriors)
         H: Estimated right factoring vectors
         tol: Current level of the tolerance
         lambdax: Current level of the penalty
+    
+    Reference
+    ---------
+
+    C.J. Lin (2007) Projected Gradient Methods for Non-negative Matrix Factorization
+    Neural Comput. 2007 Oct;19(10):2756-79.
+
     """
     H = Hinit
     try:
@@ -145,8 +151,7 @@ def ProjGrad(V, Vmis, W, Hinit, NMFAlgo, lambdax, tol, MaxIterations, NMFPriors)
     return [H, tol, lambdax]
 
 def ProjGradKernel(Kernel, V, Vmis, W, Hinit, NMFAlgo, tol, MaxIterations, NMFPriors):
-    """
-    Projected gradient, kernel version
+    """Projected gradient, kernel version
     Code and notations adapted from Matlab code, Chih-Jen Lin
     Input:
         Kernel: Kernel used
@@ -161,6 +166,13 @@ def ProjGradKernel(Kernel, V, Vmis, W, Hinit, NMFAlgo, tol, MaxIterations, NMFPr
     Output:
         H: Estimated right factoring vectors
         tol: Current level of the tolerance
+    
+    Reference
+    ---------
+
+    C.J. Lin (2007) Projected Gradient Methods for Non-negative Matrix Factorization
+        Neural Comput. 2007 Oct;19(10):2756-79.
+
     """
     H = Hinit.T
     try:
@@ -262,8 +274,7 @@ def ProjGradKernel(Kernel, V, Vmis, W, Hinit, NMFAlgo, tol, MaxIterations, NMFPr
     return [H, tol]
 
 def ApplyKernel(M, NMFKernel, Mt, Mw):
-    """
-    Calculate kernel
+    """Calculate kernel (used with convex NMF)
     Input:
         M: Input matrix
         NMFKernel: Type of kernel
@@ -304,8 +315,7 @@ def ApplyKernel(M, NMFKernel, Mt, Mw):
     return Kernel
 
 def GetConvexScores(Mt, Mw, Mh, flag, AddMessage):
-    """
-    Reweigh scores to sum up to 1
+    """Rescale scores to sum up to 1 (used with deconvolution)
     Input:
         Mt: Left factoring matrix
         Mw: Right factoring matrix
@@ -353,14 +363,16 @@ def GetConvexScores(Mt, Mw, Mh, flag, AddMessage):
     return [Mt, Mw, Mh, flag, AddMessage, ErrMessage, cancel_pressed]
 
 def NMFReweigh(M, Mt, NMFPriors, AddMessage):
-    """
-    Cancel variables that load on more than one component
+    """Overload skewed variables (used with deconvolution only)
     Input:
          M: Input matrix
          Mt: Left hand matrix
          NMFPriors: priors on right hand matrix
     Output:
          NMFPriors: updated priors
+
+    Note: This code is still experimental
+
     """
     ErrMessage = ""
     n, p = M.shape
@@ -503,6 +515,13 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
          Mh: Convexity matrix
          NMFPriors: Updated priors on right hand matrix
          flagNonconvex: Updated non-convexity flag on left hand matrix
+    
+    Reference
+    ---------
+
+    C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
+    IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1
+
     """
     ErrMessage = ''
     cancel_pressed = 0
@@ -922,7 +941,9 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
     return [Mt, Mev, Mw, diff, Mh, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed]
 
 def NTFStack(M, Mmis, NBlocks):
-    # Unfold M
+    """Unfold tensor M
+        for future use with NMF
+    """
     n, p = M.shape
     Mmis = Mmis.astype(np.int)
     n_Mmis = Mmis.shape[0]
@@ -946,8 +967,9 @@ def NTFStack(M, Mmis, NBlocks):
 
 def NTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
              NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
-    """
-    Interface to NTFSolve_simple & NTFSolve_conv
+    """Interface to:
+            - NTFSolve_simple
+            - NTFSolve_conv
     """
 
     if NTFNConv > 0:
@@ -987,6 +1009,13 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
          Mw: Right hand matrix
          Mb: Block hand matrix
          Mres: Residual tensor
+    
+    Reference
+    ---------
+
+    A. Cichocki, P.H.A.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor factorizations,
+        IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
+
     """
     cancel_pressed = 0
 
@@ -1127,8 +1156,7 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
 
 def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
              NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
-    """
-     Estimate NTF matrices (HALS)
+    """Estimate NTF matrices (HALS)
      Input:
          M: Input matrix
          Mmis: Define missing values (0 = missing cell, 1 = real cell)
@@ -1157,6 +1185,9 @@ def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIt
          Mw: Right hand matrix
          Mb: Block hand matrix
          Mres: Residual tensor
+     
+     Note: This code extends HALS to allow for shifting on the 3rd dimension of the tensor
+
      """
     cancel_pressed = 0
 
@@ -1330,12 +1361,10 @@ def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIt
 def NTFSolveFast(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, Status0, MaxIterations, NMFFixUserLHE,
                  NMFFixUserRHE, NMFFixUserBHE, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents,
                  NBlocks, myStatusBox):
-    """
-     Estimate NTF matrices (fast HALS)
+    """Estimate NTF matrices (fast HALS)
      Input:
          M: Input matrix
          Mmis: Define missing values (0 = missing cell, 1 = real cell)
-            NOTE: Still not workable version
          Mt0: Initial left hand matrix
          Mw0: Initial right hand matrix
          Mb0: Initial block hand matrix
@@ -1359,6 +1388,9 @@ def NTFSolveFast(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, Stat
          Mw: Right hand matrix
          Mb: Block hand matrix
          Mres: Residual tensor
+
+     Note: This code does not support missing values, nor sparsity constraint
+
      """
     Mres = np.array([])
     cancel_pressed = 0
@@ -1672,8 +1704,7 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
         NTFUnimodal, NTFLeftComponents, NTFSmooth, A, NMFFixUserRHE, \
         denomw, Mt2, NTFRightComponents, B, NMFFixUserBHE, MtMw, nxp, \
         denomBlock, NTFBlockComponents, C, Mfit):
-    """
-    Core updating code called by NTFSolve_simple & NTF Solve_conv
+    """Core updating code called by NTFSolve_simple & NTF Solve_conv
     Input:
         All variables in the calling function used in the function 
     Output:

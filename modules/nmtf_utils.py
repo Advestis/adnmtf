@@ -78,8 +78,8 @@ class StatusBoxTqdm:
             print(status, end='\n')
 
 def NMFDet(Mt, Mw, NMFExactDet):
-    """
-    Volume occupied by Left and Right factoring vectors
+    """Volume occupied by Left and Right factoring vectors
+
     Input:
         Mt: Left hand matrix
         Mw: Right hand matrix
@@ -87,6 +87,13 @@ def NMFDet(Mt, Mw, NMFExactDet):
         through random sampling in the largest dimension
     Output:
         detXcells: determinant
+
+    Reference
+    ---------
+    
+    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to Environmental
+        Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509; doi:10.3390/ijerph13050509
+
     """
      
     n, nc = Mt.shape
@@ -131,8 +138,8 @@ def NMFDet(Mt, Mw, NMFExactDet):
     return detXcells
 
 def percentile_exc(a, q):
-    """
-    Percentile, exclusive
+    """Percentile, exclusive
+
     Input:
         a: Matrix
         q: Percentile
@@ -142,14 +149,21 @@ def percentile_exc(a, q):
     return np.percentile(np.concatenate((np.array([np.min(a)]), a.flatten(), np.array([np.max(a)]))), q)
 
 def RobustMax(V0, AddMessage, myStatusBox):
-    """
-    Robust max of column vectors
+    """Robust max of column vectors
+
     For each column:
          = weighted mean of column elements larger than 95% percentile
         for each row, weight = specificity of the column value wrt other columns
     Input:
         V0: column vectors
     Output: Robust max by column
+
+    Reference
+    ---------
+
+    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to Environmental
+        Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509; doi:10.3390/ijerph13050509
+
     """
     ErrMessage = ''
     cancel_pressed = 0
@@ -204,13 +218,20 @@ def RobustMax(V0, AddMessage, myStatusBox):
     return [RobMax * Scale, AddMessage, ErrMessage, cancel_pressed]
 
 def Leverage(V, NMFUseRobustLeverage, AddMessage, myStatusBox):
-    """
-    Calculate leverages
+    """Calculate leverages
+
     Input:
         V: Input column vectors
         NMFUseRobustLeverage: Estimate robust through columns of V
     Output:
         Vn: Leveraged column vectors
+    
+    Reference
+    ---------
+    
+    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to Environmental
+        Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509; doi:10.3390/ijerph13050509
+
     """
 
     ErrMessage = ''
@@ -249,6 +270,9 @@ def Leverage(V, NMFUseRobustLeverage, AddMessage, myStatusBox):
 
 def BuildClusters(Mt, Mw, Mb, MtPct, MwPct, NBlocks, BlkSize, NMFCalculateLeverage, NMFUseRobustLeverage, NMFAlgo,
                   NMFRobustClusterByStability, CellPlotOrderedClusters, AddMessage, myStatusBox):
+    """Builder clusters from leverages
+
+    """
     NBlocks = int(NBlocks)
     myStatusBox.update_status(delay=1, status='Build clusters...')
     ErrMessage = ''
@@ -379,6 +403,9 @@ def BuildClusters(Mt, Mw, Mb, MtPct, MwPct, NBlocks, BlkSize, NMFCalculateLevera
     return [Mtn, Mwn, Mbn, RCt, RCw, NCt, NCw, RowClust, ColClust, BlockClust, AddMessage, ErrMessage, cancel_pressed]
 
 def ClusterPvalues(ClusterSize, nbGroups, Mt, RCt, NCt,RowGroups, ListGroups, Ngroup):
+    """Calculate Pvalue of each group versus cluster
+
+    """
     n, nc = Mt.shape
     ClusterSize = ClusterSize.astype(np.int)
     nbGroups = int(nbGroups)
@@ -446,6 +473,10 @@ def ClusterPvalues(ClusterSize, nbGroups, Mt, RCt, NCt,RowGroups, ListGroups, Ng
     return [prun, ClusterGroup, ClusterProb, ClusterNgroup, ClusterNWgroup]
 
 def GlobalSign(Nrun, nbGroups, Mt, RCt, NCt, RowGroups, ListGroups, Ngroup, myStatusBox):
+    """Calculate global significance of association with a covariate
+        following multiple factorization trials
+    """
+
     n, nc = Mt.shape
     Nrun = int(Nrun)
     nbGroups = int(nbGroups)
@@ -510,8 +541,8 @@ def GlobalSign(Nrun, nbGroups, Mt, RCt, NCt, RowGroups, ListGroups, Ngroup, mySt
     return [ClusterSize, Pglob, prun, ClusterProb, ClusterGroup, ClusterNgroup, cancel_pressed]
 
 def shift(arr, num, fill_value=EPSILON):
-    """
-    Shift a vector
+    """Shift a vector
+
     Input:
         arr: Input column vector
         num: number of indexs to shift ( < 0: To the left )
@@ -531,12 +562,18 @@ def shift(arr, num, fill_value=EPSILON):
     return result
 
 def sparse_opt(b, alpha):
-    """
-    Return the L2-closest vector with sparsity alpha 
+    """Return the L2-closest vector with sparsity alpha 
+    
     Input:
         b: original vector
     Output:
         x: sparse vector
+    
+    Reference
+    ---------
+
+    V. K. Potluru & all (2013) Block Coordinate Descent for Sparse NMF arXiv:1301.3527v2 [cs.LG]
+    
     """
     m = b.size
     m_alpha = (np.sqrt(m) - np.linalg.norm(b, ord=1)/np.linalg.norm(b, ord=2))/(np.sqrt(m)-1)
