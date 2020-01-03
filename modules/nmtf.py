@@ -12,6 +12,7 @@ from nmtf_base import *
 class NMF:
     def __init__(self, n_components=None,
                        beta_loss='frobenius',
+                       use_hals = False,
                        tol=1e-6,
                        max_iter=150, max_iter_mult=20,
                        leverage='standard',
@@ -20,6 +21,7 @@ class NMF:
                        verbose=0):
         self.n_components = n_components
         self.beta_loss = beta_loss
+        self.use_hals = use_hals
         self.tol = tol
         self.max_iter = max_iter
         self.max_iter_mult = max_iter_mult
@@ -51,6 +53,10 @@ class NMF:
         (or 2) and 'kullback-leibler' (or 1) lead to significantly slower
         fits. Note that for beta_loss == 'kullback-leibler', the input
         matrix X cannot contain zeros.
+    
+    use_hals : boolean
+        True -> HALS algorithm (note that convex & kullback-leibler loss options are not supported)
+        False-> Projected gradiant
 
     tol : float, default: 1e-6
         Tolerance of the stopping condition.
@@ -82,35 +88,24 @@ class NMF:
 
     Returns
     -------
-    NMF model model
-
-    Examples
-    --------
-
-    >>> import numpy as np
-
-    >>> X = np.array([[1,1], [2, 1], [3, 1.2], [4, 1], [5, 0.8], [6, 1]])
-
-    >>> from sklearn.decomposition import non_negative_factorization
-
-    >>> W, H, n_iter = non_negative_factorization(X, n_components=2, \
-
-        random_state=0)
-
+    NMF model
 
     References
     ----------
+        
+        P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
+        The American Statistician, Vol. 67, Issue 4.
 
-    Fogel
+        C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
+        IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1
 
-    Lin
     """
 
     def fit_transform(self, X, W=None, H=None,
                                update_W=True,
                                update_H=True,
                                n_bootstrap=None,
-                               regularization=None, sparsity=None,
+                               regularization=None, sparsity=0,
                                skewness=False,
                                null_priors=False):
 
@@ -207,6 +202,7 @@ class NMF:
                                             update_W=update_W,
                                             update_H=update_H,
                                             beta_loss=self.beta_loss,
+                                            use_hals=self.use_hals,
                                             n_bootstrap=n_bootstrap,
                                             tol=self.tol,
                                             max_iter=self.max_iter, max_iter_mult=self.max_iter_mult,
@@ -400,8 +396,6 @@ class NTF:
     ---------
     A. Cichocki, P.H.A.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor factorizations,
         IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
-
-    
 
     """
 

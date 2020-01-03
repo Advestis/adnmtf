@@ -937,10 +937,11 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
                                update_W=True,
                                update_H=True,
                                beta_loss='frobenius',
+                               use_hals=False,
                                n_bootstrap=None,
                                tol=1e-6,
                                max_iter=150, max_iter_mult=20,
-                               regularization=None, sparsity=None,
+                               regularization=None, sparsity=0,
                                leverage='standard',
                                convex=None, kernel='linear',
                                skewness=False,
@@ -987,6 +988,10 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
         fits. Note that for beta_loss == 'kullback-leibler', the input
         matrix X cannot contain zeros.
 
+    use_hals : boolean
+        True -> HALS algorithm (note that convex and kullback-leibler loss opions are not supported)
+        False-> Projected gradiant
+    
     n_bootstrap : integer, default: 0
         Number of bootstrap runs.
 
@@ -1062,6 +1067,11 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
 
         """
 
+    if use_hals:
+        #convex and kullback-leibler loss opions are not supported
+        beta_loss='frobenius'
+        convex=None
+    
     M = X
     n, p = M.shape
     if n_components is None:
@@ -1182,11 +1192,35 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
         RandomSeed = random_state
         np.random.seed(RandomSeed)
 
-    Mt, Mev, Mw, MtPct, MwPct, diff0, Mh, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = rNMFSolve(
-        M, np.array([]), Mt, Mw, nc, tolerance, precision, LogIter, MaxIterations, NMFAlgo, NMFFixUserLHE,
-        NMFFixUserRHE, NMFMaxInterm,
-        NMFSparseLevel, NMFRobustResampleColumns, NMFRobustNRuns, NMFCalculateLeverage, NMFUseRobustLeverage,
-        NMFFindParts, NMFFindCentroids, NMFKernel, NMFReweighColumns, NMFPriors, myStatusBox)
+    if use_hals:
+        if NMFAlgo <=2:
+            NTFAlgo = 5
+        else:
+            NTFAlgo = 6
+        
+        Mt_conv, Mt, Mw, Mb, Mres, MtPct, MwPct, AddMessage, ErrMessage, cancel_pressed = rNTFSolve(
+            M, np.array([]), Mt, Mw, np.array([]), nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
+            1, NTFAlgo, NMFRobustNRuns, NMFCalculateLeverage, NMFUseRobustLeverage,
+            0, 0, NMFSparseLevel, 0, 0, 0, 0, 0, 1, 0, myStatusBox)
+        Mev = np.ones(nc)
+        if (NMFFixUserLHE == 0) & (NMFFixUserRHE == 0):
+            # Scale
+            for k in range(0, nc):
+                ScaleMt = np.linalg.norm(Mt[:, k])
+                ScaleMw = np.linalg.norm(Mw[:, k])
+                if ScaleMt > 0:
+                    Mt[:, k] = Mt[:, k] / ScaleMt
+
+                if ScaleMw > 0:
+                    Mw[:, k] = Mw[:, k] / ScaleMw
+
+                Mev[k] = ScaleMt * ScaleMw
+    else:
+        Mt, Mev, Mw, MtPct, MwPct, diff0, Mh, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = rNMFSolve(
+            M, np.array([]), Mt, Mw, nc, tolerance, precision, LogIter, MaxIterations, NMFAlgo, NMFFixUserLHE,
+            NMFFixUserRHE, NMFMaxInterm,
+            NMFSparseLevel, NMFRobustResampleColumns, NMFRobustNRuns, NMFCalculateLeverage, NMFUseRobustLeverage,
+            NMFFindParts, NMFFindCentroids, NMFKernel, NMFReweighColumns, NMFPriors, myStatusBox)
     
     volume = NMFDet(Mt, Mw, 1)
 

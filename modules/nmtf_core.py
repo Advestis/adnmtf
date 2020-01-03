@@ -971,7 +971,6 @@ def NTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterati
             - NTFSolve_simple
             - NTFSolve_conv
     """
-
     if NTFNConv > 0:
         return NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
              NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
@@ -1041,9 +1040,12 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
     # Compute Residual tensor
     Mfit = np.zeros((n, p0))
     for k in range(0, nc):
-        for iBlock in range(0, NBlocks):
-            Mfit[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] += Mb[iBlock, k] * np.reshape(Mt[:, k], (n, 1)) @ np.reshape(
-                Mw[:, k], (1, p))
+        if NBlocks > 1:
+            for iBlock in range(0, NBlocks):
+                Mfit[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] += Mb[iBlock, k] * np.reshape(Mt[:, k], (n, 1)) @ np.reshape(
+                    Mw[:, k], (1, p))
+        else:
+            Mfit[:, IDBlockp[0]:IDBlockp[0] + p] += np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
 
     denomt = np.zeros(n)
     denomw = np.zeros(p)
@@ -1712,9 +1714,12 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
     """
     
     # Compute kth-part
-    for iBlock in range(0, NBlocks):
-        Mpart[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] = Mb[iBlock, k] * \
-            np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
+    if NBlocks > 1:
+        for iBlock in range(0, NBlocks):
+            Mpart[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] = Mb[iBlock, k] * \
+                np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
+    else:
+        Mpart[:, IDBlockp[0]:IDBlockp[0] + p] = np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
 
     if n_Mmis > 0:
         Mpart *= Mmis
@@ -1744,7 +1749,7 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
         if norm > 0:
             Mw[:, k] /= norm
         
-    if (NMFFixUserBHE > 0) & NormBHE:
+    if (NMFFixUserBHE > 0) & NormBHE & (NBlocks > 1):
         norm = np.linalg.norm(Mb[:, k])
         if norm > 0:
             Mb[:, k] /= norm
@@ -1752,8 +1757,11 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
     if NMFFixUserLHE == 0:
         # Update Mt
         Mt[:, k] = 0
-        for iBlock in range(0, NBlocks):
-            Mt[:, k] += Mb[iBlock, k] * Mpart[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] @ Mw[:, k]
+        if NBlocks > 1:
+            for iBlock in range(0, NBlocks):
+                Mt[:, k] += Mb[iBlock, k] * Mpart[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] @ Mw[:, k]
+        else:
+            Mt[:, k] += Mpart[:, IDBlockp[0]:IDBlockp[0] + p] @ Mw[:, k]
 
         if n_Mmis > 0:
             denomt[:] = 0
@@ -1796,8 +1804,11 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
     if NMFFixUserRHE == 0:
         # Update Mw
         Mw[:, k] = 0
-        for iBlock in range(0, NBlocks):
-            Mw[:, k] += Mpart[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p].T @ Mt[:, k] * Mb[iBlock, k]
+        if NBlocks > 1:
+            for iBlock in range(0, NBlocks):
+                Mw[:, k] += Mpart[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p].T @ Mt[:, k] * Mb[iBlock, k]
+        else:
+            Mw[:, k] += Mpart[:, IDBlockp[0]:IDBlockp[0] + p].T @ Mt[:, k]
 
         if n_Mmis > 0:
             denomw[:] = 0
@@ -1882,9 +1893,13 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
 
     # Update residual tensor
     Mfit[:,:] = 0
-    for iBlock in range(0, NBlocks):
-        Mfit[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] += Mb[iBlock, k] * \
-            np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
+    if NBlocks > 1:
+        for iBlock in range(0, NBlocks):
+            Mfit[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] += Mb[iBlock, k] * \
+                np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
+    else:
+        Mfit[:, IDBlockp[0]:IDBlockp[0] + p] += np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
+
 
     if n_Mmis > 0:
         Mres[:,:] = (Mpart - Mfit) * Mmis
