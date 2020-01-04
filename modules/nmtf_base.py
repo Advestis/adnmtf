@@ -1,12 +1,11 @@
-"""
-Non-negative matrix and tensor factorization
+"""Non-negative matrix and tensor factorization basic functions
 
 """
 
 # Author: Paul Fogel
 
 # License: MIT
-# # Dec 28, '19
+# Jan 4, '20
 # Initialize progressbar
 import pandas as pd
 import math

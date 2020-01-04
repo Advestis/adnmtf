@@ -1,14 +1,15 @@
 """
-Non-negative matrix and tensor factorization init file
+Non-negative Matrix and Tensor Factorization
 
-Imports subfolder modules
+Author: Paul Fogel
+
+License: MIT
+
+Release date: Jan 4 '20
+
+https://github.com/paulfogel/NMTF
 
 """
-
-# Author: Paul Fogel
-
-# License: MIT
-# Jan 3 '20
 
 import os, sys, inspect
 cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],'modules')))

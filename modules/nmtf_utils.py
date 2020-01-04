@@ -1,3 +1,13 @@
+"""Non-negative matrix and tensor factorization utility functions
+
+"""
+
+# Author: Paul Fogel
+
+# License: MIT
+# Jan 4, '20
+
+# Initialize progressbar
 from tkinter import *
 from tkinter import ttk
 from tqdm import tqdm

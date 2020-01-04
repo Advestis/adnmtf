@@ -1,3 +1,13 @@
+"""Non-negative matrix and tensor factorization core functions
+
+"""
+
+# Author: Paul Fogel
+
+# License: MIT
+# Jan 4, '20
+# Initialize progressbar
+
 import math
 import numpy as np
 from sklearn.utils.extmath import randomized_svd

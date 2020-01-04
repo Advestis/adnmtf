@@ -1,4 +1,4 @@
-""" Interface to Non-negative matrix and tensor factorization core module
+""" Classes accessing Non-negative matrix and tensor factorization functions
 
 """
 
@@ -89,6 +89,11 @@ class NMF:
     Returns
     -------
     NMF model
+
+    Example
+    -------
+    >>> from nmtf import *
+    >>> myNMFmodel = NMF(n_components=4)
 
     References
     ----------
@@ -187,6 +192,13 @@ class NMF:
         B : array-like, shape (n_observations, n_components) or (n_features, n_components)
             Only if active convex variant, H = B.T @ X or W = X @ B
 
+        Example
+        -------
+        >>> from nmtf import *
+        >>> myMMFmodel = NMF(n_components=4)
+
+        >>> # M: matrix to be factorized
+        >>> estimator = myNMFmodel.fit_transform(M)
 
         References
         ----------
@@ -269,6 +281,13 @@ class NMF:
         QC : vector-like, shape (size(blocks))
              Block assigned cluster (NTF only)
 
+        Example
+        -------
+        >>> from nmtf import *
+        >>> myMMFmodel = NMF(n_components=4)
+        >>> # M: matrix to be factorized
+        >>> estimator = myNMFmodel.fit_transform(M)
+        >>> estimator = myNTFmodel.predict(estimator)
 
         """
 
@@ -312,7 +331,15 @@ class NMF:
         CN : array-like, shape(n_components, n_groups)
              The size of each group within each cluster
 
-    
+        Example
+        -------
+        >>> from nmtf import *
+        >>> myMMFmodel = NMF(n_components=4)
+        >>> # M: matrix to be factorized
+        >>> estimator = myNMFmodel.fit_transform(M)
+        >>> # sampleGroup: the group each sample is associated with
+        >>> estimator = myNMFmodel.permutation_test_score(estimator, RowGroups, n_permutations=100)
+
         """
 
         return nmf_permutation_test_score(estimator, y, n_permutations=n_permutations, verbose=self.verbose)
@@ -391,6 +418,10 @@ class NTF:
     -------
     NTF model
 
+    Example
+    -------
+    >>> from nmtf import *
+    >>> myNTFmodel = NTF(n_components=4)
 
     Reference
     ---------
@@ -469,7 +500,13 @@ class NTF:
             Percent consistently clustered columns for each component.
             only if n_bootstrap > 0.
 
-
+        Example
+        -------
+        >>> from nmtf import *
+        >>> myNTFmodel = NTF(n_components=4)
+        >>> # M: tensor with 5 blocks to be factorized
+        >>> estimator = myNTFmodel.fit_transform(M, 5)
+        
         Reference
         ---------
 
