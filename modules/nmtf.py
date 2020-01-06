@@ -10,27 +10,6 @@
 from nmtf_base import *
 
 class NMF:
-    def __init__(self, n_components=None,
-                       beta_loss='frobenius',
-                       use_hals = False,
-                       tol=1e-6,
-                       max_iter=150, max_iter_mult=20,
-                       leverage='standard',
-                       convex=None, kernel='linear',
-                       random_state=None,
-                       verbose=0):
-        self.n_components = n_components
-        self.beta_loss = beta_loss
-        self.use_hals = use_hals
-        self.tol = tol
-        self.max_iter = max_iter
-        self.max_iter_mult = max_iter_mult
-        self.leverage = leverage
-        self.convex = convex
-        self.kernel = kernel
-        self.random_state = random_state
-        self.verbose = verbose
-
     """Initialize NMF model
 
     Parameters
@@ -106,6 +85,27 @@ class NMF:
 
     """
 
+    def __init__(self, n_components=None,
+                       beta_loss='frobenius',
+                       use_hals = False,
+                       tol=1e-6,
+                       max_iter=150, max_iter_mult=20,
+                       leverage='standard',
+                       convex=None, kernel='linear',
+                       random_state=None,
+                       verbose=0):
+        self.n_components = n_components
+        self.beta_loss = beta_loss
+        self.use_hals = use_hals
+        self.tol = tol
+        self.max_iter = max_iter
+        self.max_iter_mult = max_iter_mult
+        self.leverage = leverage
+        self.convex = convex
+        self.kernel = kernel
+        self.random_state = random_state
+        self.verbose = verbose
+
     def fit_transform(self, X, W=None, H=None,
                                update_W=True,
                                update_H=True,
@@ -175,7 +175,7 @@ class NMF:
         H : array-like, shape (n_components, n_features)
             Solution to the non-negative least squares problem.
 
-        V : scalar, volume occupied by W and H
+        volume : scalar, volume occupied by W and H
 
         WB : array-like, shape (n_samples, n_components)
             A sample is clustered in cluster k if its leverage on component k is higher than on any other components.
@@ -191,6 +191,8 @@ class NMF:
 
         B : array-like, shape (n_observations, n_components) or (n_features, n_components)
             Only if active convex variant, H = B.T @ X or W = X @ B
+
+        diff : scalar, objective minimum achieved
 
         Example
         -------
@@ -345,30 +347,6 @@ class NMF:
         return nmf_permutation_test_score(estimator, y, n_permutations=n_permutations, verbose=self.verbose)
 
 class NTF:
-    def __init__(self, n_components=None,
-                       fast_hals=False, n_iter_hals=2, n_shift=0,
-                       unimodal=False, smooth=False,
-                       apply_left=False, apply_right=False, apply_block=False,
-                       tol=1e-6,
-                       max_iter=150,
-                       leverage='standard',
-                       random_state=None,
-                       verbose=0):
-        self.n_components = n_components
-        self.fast_hals = fast_hals
-        self.n_iter_hals = n_iter_hals
-        self.n_shift = n_shift
-        self.unimodal = unimodal
-        self.smooth = smooth
-        self.apply_left = apply_left
-        self.apply_right = apply_right
-        self.apply_block = apply_block
-        self.tol = tol
-        self.max_iter = max_iter
-        self.leverage = leverage
-        self.random_state = random_state
-        self.verbose = verbose
-
     """Initialize NTF model
 
     Parameters
@@ -430,6 +408,30 @@ class NTF:
 
     """
 
+    def __init__(self, n_components=None,
+                       fast_hals=False, n_iter_hals=2, n_shift=0,
+                       unimodal=False, smooth=False,
+                       apply_left=False, apply_right=False, apply_block=False,
+                       tol=1e-6,
+                       max_iter=150,
+                       leverage='standard',
+                       random_state=None,
+                       verbose=0):
+        self.n_components = n_components
+        self.fast_hals = fast_hals
+        self.n_iter_hals = n_iter_hals
+        self.n_shift = n_shift
+        self.unimodal = unimodal
+        self.smooth = smooth
+        self.apply_left = apply_left
+        self.apply_right = apply_right
+        self.apply_block = apply_block
+        self.tol = tol
+        self.max_iter = max_iter
+        self.leverage = leverage
+        self.random_state = random_state
+        self.verbose = verbose
+
     def fit_transform(self, X, n_blocks, n_bootstrap=None, sparsity=0, W=None, H=None, Q=None, update_W=True, update_H=True, update_Q=True):
 
         """Compute Non-negative Tensor Factorization (NTF)
@@ -487,10 +489,7 @@ class NTF:
         Q : array-like, shape (n_blocks, n_components)
             Solution to the non-negative least squares problem.
         
-        E : array-like, shape (n_samples, n_features x n_blocks)
-            E is the residual tensor with shape (n_samples, n_features, n_blocks), however unfolded along 2nd and 3rd dimensions.
-
-        V : scalar, volume occupied by W and H
+        volume : scalar, volume occupied by W and H
 
         WB : array-like, shape (n_samples, n_components)
             Percent consistently clustered rows for each component.
@@ -499,6 +498,8 @@ class NTF:
         HB : array-like, shape (n_features, n_components)
             Percent consistently clustered columns for each component.
             only if n_bootstrap > 0.
+        
+        diff : scalar, objective minimum achieved
 
         Example
         -------

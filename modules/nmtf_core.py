@@ -6,7 +6,6 @@
 
 # License: MIT
 # Jan 4, '20
-# Initialize progressbar
 
 import math
 import numpy as np
@@ -17,7 +16,7 @@ from scipy.optimize import nnls
 
 from nmtf_utils import *
 
-def ProjGrad(V, Vmis, W, Hinit, NMFAlgo, lambdax, tol, MaxIterations, NMFPriors):
+def NMFProjGrad(V, Vmis, W, Hinit, NMFAlgo, lambdax, tol, MaxIterations, NMFPriors):
     """Projected gradient
     Code and notations adapted from Matlab code, Chih-Jen Lin
     Input:
@@ -160,7 +159,7 @@ def ProjGrad(V, Vmis, W, Hinit, NMFAlgo, lambdax, tol, MaxIterations, NMFPriors)
     H = H.T
     return [H, tol, lambdax]
 
-def ProjGradKernel(Kernel, V, Vmis, W, Hinit, NMFAlgo, tol, MaxIterations, NMFPriors):
+def NMFProjGradKernel(Kernel, V, Vmis, W, Hinit, NMFAlgo, tol, MaxIterations, NMFPriors):
     """Projected gradient, kernel version
     Code and notations adapted from Matlab code, Chih-Jen Lin
     Input:
@@ -283,7 +282,7 @@ def ProjGradKernel(Kernel, V, Vmis, W, Hinit, NMFAlgo, tol, MaxIterations, NMFPr
     H = H.T
     return [H, tol]
 
-def ApplyKernel(M, NMFKernel, Mt, Mw):
+def NMFApplyKernel(M, NMFKernel, Mt, Mw):
     """Calculate kernel (used with convex NMF)
     Input:
         M: Input matrix
@@ -323,54 +322,6 @@ def ApplyKernel(M, NMFKernel, Mt, Mw):
                 Kernel[j2, j1] = Kernel[j1, j2]
 
     return Kernel
-
-def GetConvexScores(Mt, Mw, Mh, flag, AddMessage):
-    """Rescale scores to sum up to 1 (used with deconvolution)
-    Input:
-        Mt: Left factoring matrix
-        Mw: Right factoring matrix
-        flag:  Current value
-    Output:
-
-       Mt: Left factoring matrix
-        Mw: Right factoring matrix
-        flag: += 1: Negative weights found
-    """
-    ErrMessage = ''
-    cancel_pressed = 0
-
-    n, nc = Mt.shape
-    n_Mh = Mh.shape[0]
-    try:
-        Malpha = np.linalg.inv(Mt.T @ Mt) @ (Mt.T @ np.ones(n))
-    except:
-        Malpha = np.linalg.pinv(Mt.T @ Mt) @ (Mt.T @ np.ones(n))
-
-    if np.where(Malpha < 0)[0].size > 0:
-        flag += 1
-        Malpha = nnls(Mt, np.ones(n))[0]
-
-    n_zeroed = 0
-    for k in range(0, nc):
-        Mt[:, k] *= Malpha[k]
-        if n_Mh > 0:
-            Mh[:, k] *= Malpha[k]
-        if Malpha[k] > 0:
-            Mw[:, k] /= Malpha[k]
-        else:
-            n_zeroed += 1
-        
-    if n_zeroed > 0:
-        AddMessage.insert(len(AddMessage), 'Ncomp=' + str(nc) + ': ' + str(n_zeroed) + ' components were zeroed')
-
-    # Goodness of fit
-    R2 = 1 - np.linalg.norm(np.sum(Mt.T, axis=0).T - np.ones(n)) ** 2 / n
-    AddMessage.insert(len(AddMessage), 'Ncomp=' + str(nc) + ': Goodness of mixture fit before adjustement = ' + str(round(R2, 2)))
-
-    for i in range(0, n):
-        Mt[i, :] /= np.sum(Mt[i, :])
-
-    return [Mt, Mw, Mh, flag, AddMessage, ErrMessage, cancel_pressed]
 
 def NMFReweigh(M, Mt, NMFPriors, AddMessage):
     """Overload skewed variables (used with deconvolution only)
@@ -519,7 +470,6 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
          flagNonconvex: Non-convexity flag on left hand matrix
     Output:
          Mt: Left hand matrix
-         Mev: Scaling matrix
          Mw: Right hand matrix
          diff: objective cost
          Mh: Convexity matrix
@@ -545,7 +495,6 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
 
     nc = int(nc)
     nxp = int(n * p)
-    Mev = np.ones(nc)
     Mh = np.array([])
     Mt = np.copy(Mt0)
     Mw = np.copy(Mw0)
@@ -558,7 +507,7 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
             M = np.copy(M)
             NMFPriors, AddMessage, ErrMessage = NMFReweigh(M, Mt, NMFPriors, AddMessage)
             if ErrMessage != "":
-                return [Mt, Mev, Mw, diff, Mh, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed]
+                return [Mt, Mw, diff, Mh, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed]
         else:
             NMFPriors[np.where(NMFPriors > 0)] = 1
 
@@ -640,11 +589,11 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
             else:
                 # Projected gradient
                 if (NMFConvex > 0) & (NMFFindParts > 0):
-                    Mw, tolMw = ProjGradKernel(Kernel, M, Mmis, Mh, Mw, NMFAlgo, tolMw, NMFMaxIterProj, NMFPriors.T)
+                    Mw, tolMw = NMFProjGradKernel(Kernel, M, Mmis, Mh, Mw, NMFAlgo, tolMw, NMFMaxIterProj, NMFPriors.T)
                 elif (NMFConvex > 0) & (NMFFindCentroids > 0):
-                    Mh, tolMh, dummy = ProjGrad(In, np.array([]), Mt, Mh.T, NMFAlgo, -1, tolMh, NMFMaxIterProj, np.array([]))
+                    Mh, tolMh, dummy = NMFProjGrad(In, np.array([]), Mt, Mh.T, NMFAlgo, -1, tolMh, NMFMaxIterProj, np.array([]))
                 else:
-                    Mw, tolMw, lambdaw = ProjGrad(M, Mmis, Mt, Mw.T, NMFAlgo, lambdaw, tolMw, \
+                    Mw, tolMw, lambdaw = NMFProjGrad(M, Mmis, Mt, Mw.T, NMFAlgo, lambdaw, tolMw, \
                                                                 NMFMaxIterProj, NMFPriors.T)
 
             if (NMFConvex > 0) & (NMFFindParts > 0):
@@ -669,11 +618,11 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
             else:
                 # Projected gradient
                 if (NMFConvex > 0) & (NMFFindParts > 0):
-                    Mh, tolMh, dummy = ProjGrad(Ip, np.array([]), Mw, Mh.T, NMFAlgo, -1, tolMh, NMFMaxIterProj, np.array([]))
+                    Mh, tolMh, dummy = NMFProjGrad(Ip, np.array([]), Mw, Mh.T, NMFAlgo, -1, tolMh, NMFMaxIterProj, np.array([]))
                 elif (NMFConvex > 0) & (NMFFindCentroids > 0):
-                    Mt, tolMt = ProjGradKernel(Kernel, M.T, Mmis.T, Mh, Mt, NMFAlgo, tolMt, NMFMaxIterProj, np.array([]))
+                    Mt, tolMt = NMFProjGradKernel(Kernel, M.T, Mmis.T, Mh, Mt, NMFAlgo, tolMt, NMFMaxIterProj, np.array([]))
                 else:
-                    Mt, tolMt, lambdat = ProjGrad(M.T, Mmis.T, Mw, Mt.T, NMFAlgo,
+                    Mt, tolMt, lambdat = NMFProjGrad(M.T, Mmis.T, Mw, Mt.T, NMFAlgo,
                                                             lambdat, tolMt, NMFMaxIterProj, np.array([]))
 
             # Scaling
@@ -743,7 +692,7 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
             myStatusBox.update_bar(delay=1, step=pbar_step)
             if myStatusBox.cancel_pressed:
                 cancel_pressed = 1
-                return [Mt, Mev, Mw, diff, Mh, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed]
+                return [Mt, Mw, diff, Mh, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed]
 
             if LogIter == 1:
                 if (NMFAlgo == 2) | (NMFAlgo == 4):
@@ -771,14 +720,14 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
                     Ip = np.identity(p)
                     if (NMFAlgo == 2) or (NMFAlgo == 4):
                         if n_Mmis > 0:
-                            Kernel = ApplyKernel(Mmis * M, 1, np.array([]), np.array([]))
+                            Kernel = NMFApplyKernel(Mmis * M, 1, np.array([]), np.array([]))
                         else:
-                            Kernel = ApplyKernel(M, 1, np.array([]), np.array([]))
+                            Kernel = NMFApplyKernel(M, 1, np.array([]), np.array([]))
                     else:
                         if n_Mmis > 0:
-                            Kernel = ApplyKernel(Mmis * (M / (Mt @ Mw.T)), 1, np.array([]), np.array([]))
+                            Kernel = NMFApplyKernel(Mmis * (M / (Mt @ Mw.T)), 1, np.array([]), np.array([]))
                         else:
-                            Kernel = ApplyKernel(M / (Mt @ Mw.T), 1, np.array([]), np.array([]))
+                            Kernel = NMFApplyKernel(M / (Mt @ Mw.T), 1, np.array([]), np.array([]))
 
                     TraceKernel = np.trace(Kernel)
                     try:
@@ -801,14 +750,14 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
                     In = np.identity(n)
                     if (NMFAlgo == 2) or (NMFAlgo == 4):
                         if n_Mmis > 0:
-                            Kernel = ApplyKernel(Mmis.T * M.T, 1, np.array([]), np.array([]))
+                            Kernel = NMFApplyKernel(Mmis.T * M.T, 1, np.array([]), np.array([]))
                         else:
-                            Kernel = ApplyKernel(M.T, 1, np.array([]), np.array([]))
+                            Kernel = NMFApplyKernel(M.T, 1, np.array([]), np.array([]))
                     else:
                         if n_Mmis > 0:
-                            Kernel = ApplyKernel(Mmis.T * (M.T / (Mt @ Mw.T).T), 1, np.array([]), np.array([]))
+                            Kernel = NMFApplyKernel(Mmis.T * (M.T / (Mt @ Mw.T).T), 1, np.array([]), np.array([]))
                         else:
-                            Kernel = ApplyKernel(M.T / (Mt @ Mw.T).T, 1, np.array([]), np.array([]))
+                            Kernel = NMFApplyKernel(M.T / (Mt @ Mw.T).T, 1, np.array([]), np.array([]))
 
                     TraceKernel = np.trace(Kernel)
                     try:
@@ -841,14 +790,14 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
                 Mw = (Mh.T @ M).T
                 if (NMFAlgo == 2) or (NMFAlgo == 4):
                     if n_Mmis > 0:
-                        Kernel = ApplyKernel(Mmis.T * M.T, NMFKernel, Mw, Mt)
+                        Kernel = NMFApplyKernel(Mmis.T * M.T, NMFKernel, Mw, Mt)
                     else:
-                        Kernel = ApplyKernel(M.T, NMFKernel, Mw, Mt)
+                        Kernel = NMFApplyKernel(M.T, NMFKernel, Mw, Mt)
                 else:
                     if n_Mmis > 0:
-                        Kernel = ApplyKernel(Mmis.T * (M.T / (Mt @ Mw.T).T), NMFKernel, Mw, Mt)
+                        Kernel = NMFApplyKernel(Mmis.T * (M.T / (Mt @ Mw.T).T), NMFKernel, Mw, Mt)
                     else:
-                        Kernel = ApplyKernel(M.T / (Mt @ Mw.T).T, NMFKernel, Mw, Mt)
+                        Kernel = NMFApplyKernel(M.T / (Mt @ Mw.T).T, NMFKernel, Mw, Mt)
 
                 TraceKernel = np.trace(Kernel)
                 try:
@@ -907,7 +856,7 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
     if NMFFindParts > 0:
         # Make Mt convex
         Mt = M @ Mh
-        Mt, Mw, Mh, flagNonconvex2, AddMessage, ErrMessage, cancel_pressed = GetConvexScores(Mt, Mw, Mh, flagNonconvex,
+        Mt, Mw, Mh, flagNonconvex2, AddMessage, ErrMessage, cancel_pressed = NMFGetConvexScores(Mt, Mw, Mh, flagNonconvex,
                                                                                          AddMessage)
     #        if flagNonconvex2 > flagNonconvex:
     #            flagNonconvex = flagNonconvex2
@@ -927,28 +876,10 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
 
         Mw = (Mh.T @ M).T
 
-    if (NMFConvex == 0) & (NMFFixUserLHE == 0) & (NMFFixUserRHE == 0):
-        # Scale
-        for k in range(0, nc):
-            if (NMFAlgo == 2) | (NMFAlgo == 4):
-                ScaleMt = np.linalg.norm(Mt[:, k])
-                ScaleMw = np.linalg.norm(Mw[:, k])
-            else:
-                ScaleMt = np.sum(Mt[:, k])
-                ScaleMw = np.sum(Mw[:, k])
-
-            if ScaleMt > 0:
-                Mt[:, k] = Mt[:, k] / ScaleMt
-
-            if ScaleMw > 0:
-                Mw[:, k] = Mw[:, k] / ScaleMw
-
-            Mev[k] = ScaleMt * ScaleMw
-
     if (NMFKernel > 1) & (NLKernelApplied == 1):
         diff /= TraceKernel / nxp
 
-    return [Mt, Mev, Mw, diff, Mh, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed]
+    return [Mt, Mw, diff, Mh, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed]
 
 def NTFStack(M, Mmis, NBlocks):
     """Unfold tensor M
@@ -1017,7 +948,7 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
          Mt: Left hand matrix
          Mw: Right hand matrix
          Mb: Block hand matrix
-         Mres: Residual tensor
+         diff: objective cost
     
     Reference
     ---------
@@ -1164,7 +1095,7 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
     if (n_Mmis > 0) & (NMFFixUserBHE == 0):
         Mb *= denomBlock
 
-    return [np.array([]), Mt, Mw, Mb, Mres, cancel_pressed]
+    return [np.array([]), Mt, Mw, Mb, diff, cancel_pressed]
 
 def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
              NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
@@ -1196,8 +1127,8 @@ def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIt
          Mt_conv : if NTFNConv > 0 only otherwise empty. Contains sub-components for each phase in convolution window
          Mw: Right hand matrix
          Mb: Block hand matrix
-         Mres: Residual tensor
-     
+         diff: objective cost
+    
      Note: This code extends HALS to allow for shifting on the 3rd dimension of the tensor
 
      """
@@ -1318,7 +1249,7 @@ def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIt
             myStatusBox.update_bar(delay=1, step=pbar_step)
             if myStatusBox.cancel_pressed:
                 cancel_pressed = 1
-                return [Mt, Mt_simple, Mw_simple, Mb_simple, Mres, cancel_pressed]
+                return [Mt, Mt_simple, Mw_simple, Mb_simple, cancel_pressed]
 
             if LogIter == 1:
                 myStatusBox.myPrint(Status0 + " Iter: " + str(iIter) + " MSR: " + str(diff))
@@ -1368,7 +1299,7 @@ def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIt
     if (n_Mmis > 0) & (NMFFixUserBHE == 0):
         Mb *= denomBlock
 
-    return [Mt, Mt_simple, Mw_simple, Mb_simple, Mres, cancel_pressed]
+    return [Mt, Mt_simple, Mw_simple, Mb_simple, diff, cancel_pressed]
 
 def NTFSolveFast(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, Status0, MaxIterations, NMFFixUserLHE,
                  NMFFixUserRHE, NMFFixUserBHE, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents,
@@ -1399,7 +1330,7 @@ def NTFSolveFast(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, Stat
          Mt: Left hand matrix
          Mw: Right hand matrix
          Mb: Block hand matrix
-         Mres: Residual tensor
+         diff: objective cost
 
      Note: This code does not support missing values, nor sparsity constraint
 
@@ -1709,7 +1640,7 @@ def NTFSolveFast(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, Stat
     if n_Mmis > 0:
         Mb *= denomBlock
 
-    return [Mt, Mw, Mb, Mres, cancel_pressed]
+    return [Mt, Mw, Mb, diff, cancel_pressed]
 
 def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres, \
         NMFFixUserLHE, denomt, Mw2, denomCutoff, alpha, \

@@ -5,7 +5,9 @@ Author: Paul Fogel
 
 License: MIT
 
-Release date: Jan 4 '20
+Release date: Jan 6 '20
+
+Version: 11.0.0
 
 https://github.com/paulfogel/NMTF
 

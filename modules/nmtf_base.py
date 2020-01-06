@@ -146,11 +146,10 @@ def rNMFSolve(
          NMFPriors: Priors on right hand matrix
     Output:
          Mt: Left hand matrix
-         Mev: Scaling matrix
          Mw: Right hand matrix
          MtPct: Percent robust clustered rows
          MwPct: Percent robust clustered columns
-         diff: Objective cost
+         diff: Objective minimum achieved
          Mh: Convexity matrix
          flagNonconvex: Updated non-convexity flag on left hand matrix
 
@@ -162,8 +161,7 @@ def rNMFSolve(
     cancel_pressed = 0
     nc = int(nc)
     if NMFFixUserLHE*NMFFixUserRHE == 1:
-        Mev = np.ones(nc)
-        return Mt0, Mev, Mw0, np.array([]), np.array([]), 0, np.array([]), 0, AddMessage, ErrMessage, cancel_pressed
+        return Mt0, Mw0, np.array([]), np.array([]), 0, np.array([]), 0, AddMessage, ErrMessage, cancel_pressed
 
     if (nc == 1) & (NMFAlgo > 2):
         NMFAlgo -= 2
@@ -209,23 +207,21 @@ def rNMFSolve(
 
     # Step 1: NMF
     Status = "Step 1 - NMF Ncomp=" + str(nc) + ": "
-    Mt, Mev, Mw, diffsup, Mhsup, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = NMFSolve(
+    Mt, Mw, diffsup, Mhsup, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = NMFSolve(
         M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status, MaxIterations, NMFAlgo,
         NMFFixUserLHE, NMFFixUserRHE, NMFMaxInterm, 100, NMFSparseLevel,
         NMFFindParts, NMFFindCentroids, NMFKernel, NMFReweighColumns, NMFPriors, flagNonconvex, AddMessage, myStatusBox)
     Mtsup = np.copy(Mt)
-    Mevsup = np.copy(Mev)
     Mwsup = np.copy(Mw)
     if (n_NMFPriors > 0) & (NMFReweighColumns > 0):
         #     Run again with fixed LHE & no priors
         Status = "Step 1bis - NMF (fixed LHE) Ncomp=" + str(nc) + ": "
         Mw = np.ones((p, nc)) / math.sqrt(p)
-        Mt, Mev, Mw, diffsup, Mh, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = NMFSolve(
+        Mt, Mw, diffsup, Mh, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = NMFSolve(
             M, Mmis, Mtsup, Mw, nc, tolerance, precision, LogIter, Status, MaxIterations, NMFAlgo, nc, 0, NMFMaxInterm, 100,
             NMFSparseLevel, NMFFindParts, NMFFindCentroids, NMFKernel, 0, NMFPriors, flagNonconvex, AddMessage,
             myStatusBox)
         Mtsup = np.copy(Mt)
-        Mevsup = np.copy(Mev)
         Mwsup = np.copy(Mw)
 
     # Bootstrap to assess robust clustering
@@ -238,18 +234,18 @@ def rNMFSolve(
             Status = "Step 2 - " + \
                      "Boot " + str(iBootstrap + 1) + "/" + str(NMFRobustNRuns) + " NMF Ncomp=" + str(nc) + ": "
             if n_Mmis > 0:
-                Mt, Mev, Mw, diff, Mh, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = NMFSolve(
+                Mt, Mw, diff, Mh, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = NMFSolve(
                     M[Boot, :], Mmis[Boot, :], Mtsup[Boot, :], Mwsup, nc, 1.e-3, precision, LogIter, Status, MaxIterations, NMFAlgo, nc, 0,
                     NMFMaxInterm, 20, NMFSparseLevel, NMFFindParts, NMFFindCentroids, NMFKernel, NMFReweighColumns,
                     NMFPriors, flagNonconvex, AddMessage, myStatusBox)
             else:
-                Mt, Mev, Mw, diff, Mh, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = NMFSolve(
+                Mt, Mw, diff, Mh, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = NMFSolve(
                     M[Boot, :], Mmis, Mtsup[Boot, :], Mwsup, nc, 1.e-3, precision, LogIter, Status, MaxIterations, NMFAlgo, nc, 0,
                     NMFMaxInterm, 20, NMFSparseLevel, NMFFindParts, NMFFindCentroids, NMFKernel, NMFReweighColumns,
                     NMFPriors, flagNonconvex, AddMessage, myStatusBox)
 
             for k in range(0, nc):
-                MwBlk[:, k * NMFRobustNRuns + iBootstrap] = Mw[:, k] * Mev[k]
+                MwBlk[:, k * NMFRobustNRuns + iBootstrap] = Mw[:, k]
 
             Mwn = np.zeros((p, nc))
             for k in range(0, nc):
@@ -284,7 +280,7 @@ def rNMFSolve(
             for k in range(0, nc):
                 Mw[:, k] = MwBlk[:, k * NMFRobustNRuns + iBootstrap]
 
-            Mt, Mev, Mw, diff, Mh, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = NMFSolve(
+            Mt, Mw, diff, Mh, NMFPriors, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = NMFSolve(
                 M, Mmis, Mtsup, Mw, nc, 1.e-3, precision, LogIter, Status, MaxIterations, NMFAlgo, 0, nc, NMFMaxInterm, 20,
                 NMFSparseLevel, NMFFindParts, NMFFindCentroids, NMFKernel, NMFReweighColumns, NMFPriors, flagNonconvex,
                 AddMessage, myStatusBox)
@@ -304,7 +300,6 @@ def rNMFSolve(
     Mt = Mtsup
     Mw = Mwsup
     Mh = Mhsup
-    Mev = Mevsup
     diff = diffsup
 
     if NMFRobustResampleColumns > 0:
@@ -315,7 +310,7 @@ def rNMFSolve(
         MtPct = np.copy(MwPct)
         MwPct = Mtemp
 
-    return Mt, Mev, Mw, MtPct, MwPct, diff, Mh, flagNonconvex, AddMessage, ErrMessage, cancel_pressed
+    return Mt, Mw, MtPct, MwPct, diff, Mh, flagNonconvex, AddMessage, ErrMessage, cancel_pressed
 
 def NTFInit(M, Mmis, MtxMw, Mb2, nc, tolerance, precision, LogIter, NTFUnimodal,
             NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox):
@@ -363,12 +358,10 @@ def NTFInit(M, Mmis, MtxMw, Mb2, nc, tolerance, precision, LogIter, NTFUnimodal,
         print("Galderma version! In NTFInit, NNSVD has been superseded by SVD prior to NMF initialization")
 
     # Quick NMF
-    MtxMw, Mev2, Mb2, diff, Mh, dummy1, dummy2, AddMessage, ErrMessage, cancel_pressed = NMFSolve(
+    MtxMw, Mb2, diff, Mh, dummy1, dummy2, AddMessage, ErrMessage, cancel_pressed = NMFSolve(
         Mstacked, Mmis_stacked, MtxMw, Mb2, nc2, tolerance, precision, LogIter, Status0, 10, 2, 0, 0, 1, 1, 0, 0, 0, 1, 0, np.array([]), 0,
         AddMessage,
         myStatusBox)
-    for k in range(0, nc2):
-        Mb2[:, k] = Mb2[:, k] * Mev2[k]
 
     # Factorize Left vectors and distribute multiple factors if nc2 < nc
     Mt = np.zeros((n, nc))
@@ -476,9 +469,9 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
          Mt: Left hand matrix
          Mw: Right hand matrix
          Mb: Block hand matrix
-         Mres: Residual tensor
          MtPct: Percent robust clustered rows
          MwPct: Percent robust clustered columns
+         diff : Objective minimum achieved
      """
     AddMessage = []
     ErrMessage = ''
@@ -528,17 +521,17 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
     Status0 = "Step 1 - NTF Ncomp=" + str(nc) + ": "
     if NTFFastHALS > 0:
         if NTFNIterations > 0:
-            Mt_conv, Mt, Mw, Mb, Mres, cancel_pressed = NTFSolve(
+            Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = NTFSolve(
                 M, Mmis, Mt, Mw, Mb, nc, tolerance, LogIter, Status0,
                 NTFNIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE, 0, NTFUnimodal, NTFSmooth,
                 NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
 
-        Mt, Mw, Mb, Mres, cancel_pressed = NTFSolveFast(
+        Mt, Mw, Mb, diff, cancel_pressed = NTFSolveFast(
             M, Mmis, Mt, Mw, Mb, nc, tolerance, precision, LogIter, Status0,
             MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE, NTFUnimodal, NTFSmooth,
             NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox)
     else:
-        Mt_conv, Mt, Mw, Mb, Mres, cancel_pressed = NTFSolve(
+        Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = NTFSolve(
             M, Mmis, Mt, Mw, Mb, nc, tolerance, LogIter, Status0,
             MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE, NMFSparseLevel, NTFUnimodal, NTFSmooth,
             NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
@@ -556,23 +549,23 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
                       "Boot " + str(iBootstrap + 1) + "/" + str(NMFRobustNRuns) + " NTF Ncomp=" + str(nc) + ": "
             if NTFFastHALS > 0:
                 if n_Mmis > 0:
-                    Mt, Mw, Mb, Mres, cancel_pressed = NTFSolveFast(
+                    Mt, Mw, Mb, diff, cancel_pressed = NTFSolveFast(
                         M[Boot, :], Mmis[Boot, :], Mtsup[Boot, :], Mwsup, Mb, nc, 1.e-3, precision, LogIter, Status0,
                         MaxIterations, 1, 0, NMFFixUserBHE, NTFUnimodal, NTFSmooth,
                         NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox)
                 else:
-                    Mt, Mw, Mb, Mres, cancel_pressed = NTFSolveFast(
+                    Mt, Mw, Mb, diff, cancel_pressed = NTFSolveFast(
                         M[Boot, :], np.array([]), Mtsup[Boot, :], Mwsup, Mb, nc, 1.e-3, precision, LogIter, Status0,
                         MaxIterations, 1, 0, NMFFixUserBHE, NTFUnimodal, NTFSmooth,
                         NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox)
             else:
                 if n_Mmis > 0:
-                    Mt_conv, Mt, Mw, Mb, Mres, cancel_pressed = NTFSolve(
+                    Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = NTFSolve(
                         M[Boot, :], Mmis[Boot, :], Mtsup[Boot, :], Mwsup, Mb, nc, 1.e-3, LogIter, Status0,
                         MaxIterations, 1, 0, NMFFixUserBHE, NMFSparseLevel, NTFUnimodal, NTFSmooth,
                         NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
                 else:
-                    Mt_conv, Mt, Mw, Mb, Mres, cancel_pressed = NTFSolve(
+                    Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = NTFSolve(
                         M[Boot, :], np.array([]), Mtsup[Boot, :], Mwsup, Mb, nc, 1.e-3, LogIter, Status0,
                         MaxIterations, 1, 0, NMFFixUserBHE, NMFSparseLevel, NTFUnimodal, NTFSmooth,
                         NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
@@ -610,12 +603,12 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
                 Mw[:, k] = MwBlk[:, k * NMFRobustNRuns + iBootstrap]
 
             if NTFFastHALS > 0:
-                Mt, Mw, Mb, Mres, cancel_pressed = NTFSolveFast(
+                Mt, Mw, Mb, diff, cancel_pressed = NTFSolveFast(
                     M, Mmis, Mtsup, Mw, Mb, nc, 1.e-3, precision, LogIter, Status0, MaxIterations, 0, 1, NMFFixUserBHE,
                     NTFUnimodal, NTFSmooth,
                     NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox)
             else:
-                Mt_conv, Mt, Mw, Mb, Mres, cancel_pressed = NTFSolve(
+                Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = NTFSolve(
                     M, Mmis, Mtsup, Mw, Mb, nc, 1.e-3, LogIter, Status0, MaxIterations, 0, 1, NMFFixUserBHE,
                     NMFSparseLevel, NTFUnimodal, NTFSmooth,
                     NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
@@ -638,7 +631,7 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
     if reverse2HALS > 0:
         AddMessage.insert(len(AddMessage), 'Currently, Fast HALS cannot be applied with missing data or convolution window and was reversed to Simple HALS.')
 
-    return Mt_conv, Mt, Mw, Mb, Mres, MtPct, MwPct, AddMessage, ErrMessage, cancel_pressed
+    return Mt_conv, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed
 
 def rSVDSolve(M, Mmis, nc, tolerance, LogIter, LogTrials, Status0, MaxIterations,
               SVDAlgo, SVDCoverage, SVDNTrials, myStatusBox):
@@ -1051,7 +1044,7 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
     H : array-like, shape (n_features, n_components)
         Solution to the non-negative least squares problem.
 
-    V : scalar, volume occupied by W and H
+    volume : scalar, volume occupied by W and H
 
     WB : array-like, shape (n_samples, n_components)
         Percent consistently clustered rows for each component.
@@ -1063,11 +1056,13 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
 
     B : array-like, shape (n_observations, n_components) or (n_features, n_components)
         only if active convex variant, H = B.T @ X or W = X @ B
+    
+    diff : Objective minimum achieved
 
         """
 
     if use_hals:
-        #convex and kullback-leibler loss opions are not supported
+        #convex and kullback-leibler loss options are not supported
         beta_loss='frobenius'
         convex=None
     
@@ -1197,7 +1192,7 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
         else:
             NTFAlgo = 6
         
-        Mt_conv, Mt, Mw, Mb, Mres, MtPct, MwPct, AddMessage, ErrMessage, cancel_pressed = rNTFSolve(
+        Mt_conv, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed = rNTFSolve(
             M, np.array([]), Mt, Mw, np.array([]), nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
             1, NTFAlgo, NMFRobustNRuns, NMFCalculateLeverage, NMFUseRobustLeverage,
             0, 0, NMFSparseLevel, 0, 0, 0, 0, 0, 1, 0, myStatusBox)
@@ -1215,11 +1210,27 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
 
                 Mev[k] = ScaleMt * ScaleMw
     else:
-        Mt, Mev, Mw, MtPct, MwPct, diff0, Mh, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = rNMFSolve(
+        Mt, Mw, MtPct, MwPct, diff, Mh, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = rNMFSolve(
             M, np.array([]), Mt, Mw, nc, tolerance, precision, LogIter, MaxIterations, NMFAlgo, NMFFixUserLHE,
             NMFFixUserRHE, NMFMaxInterm,
             NMFSparseLevel, NMFRobustResampleColumns, NMFRobustNRuns, NMFCalculateLeverage, NMFUseRobustLeverage,
             NMFFindParts, NMFFindCentroids, NMFKernel, NMFReweighColumns, NMFPriors, myStatusBox)
+
+        Mev = np.ones(nc)
+        if (NMFFindParts == 0) & (NMFFindCentroids == 0) & (NMFFixUserLHE == 0) & (NMFFixUserRHE == 0):
+            # Scale
+            for k in range(0, nc):
+                if (NMFAlgo == 2) | (NMFAlgo == 4):
+                    ScaleMt = np.linalg.norm(Mt[:, k])
+                    ScaleMw = np.linalg.norm(Mw[:, k])
+                else:
+                    ScaleMt = np.sum(Mt[:, k])
+                    ScaleMw = np.sum(Mw[:, k])
+
+                Mev[k] = ScaleMt * ScaleMw
+                if Mev[k] > 0:
+                    Mt[:, k] = Mt[:, k] / ScaleMt
+                    Mw[:, k] = Mw[:, k] / ScaleMw
     
     volume = NMFDet(Mt, Mw, 1)
 
@@ -1251,15 +1262,15 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
     estimator = {}
     if NMFRobustNRuns <= 1:
         if (NMFFindParts == 0) & (NMFFindCentroids == 0):
-            estimator.update([('W', Mt), ('H', Mw), ('V', volume)])
+            estimator.update([('W', Mt), ('H', Mw), ('volume', volume), ('diff', diff)])
         else:
-            estimator.update([('W', Mt), ('H', Mw), ('V', volume), ('B', Mh)])
+            estimator.update([('W', Mt), ('H', Mw), ('volume', volume), ('B', Mh), ('diff', diff)])
 
     else:
         if (NMFFindParts == 0) & (NMFFindCentroids == 0):
-            estimator.update([('W', Mt), ('H', Mw), ('V', volume), ('WB', MtPct), ('HB', MwPct)])
+            estimator.update([('W', Mt), ('H', Mw), ('volume', volume), ('WB', MtPct), ('HB', MwPct), ('diff', diff)])
         else:
-            estimator.update([('W', Mt), ('H', Mw), ('V', volume), ('B', Mh), ('WB', MtPct), ('HB', MwPct)])
+            estimator.update([('W', Mt), ('H', Mw), ('volume', volume), ('B', Mh), ('WB', MtPct), ('HB', MwPct), ('diff', diff)])
 
     return estimator
 
@@ -1565,11 +1576,8 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
 
         Q : array-like, shape (n_blocks, n_components)
             Solution to the non-negative least squares problem.
-        
-        E : array-like, shape (n_samples, n_features x n_blocks)
-            E is the residual tensor with shape (n_samples, n_features, n_blocks), however unfolded along 2nd and 3rd dimensions.
-        
-        V : scalar, volume occupied by W and H
+               
+        volume : scalar, volume occupied by W and H
         
         WB : array-like, shape (n_samples, n_components)
             Percent consistently clustered rows for each component.
@@ -1693,7 +1701,7 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
     else:
         NMFFixUserBHE = 1
 
-    Mt_conv, Mt, Mw, Mb, Mres, MtPct, MwPct, AddMessage, ErrMessage, cancel_pressed = rNTFSolve(
+    Mt_conv, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed = rNTFSolve(
         M, np.array([]), Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
         NMFFixUserBHE, NMFAlgo, NMFRobustNRuns,
         NMFCalculateLeverage, NMFUseRobustLeverage, NTFFastHALS, NTFNIterations, NMFSparseLevel, NTFUnimodal, NTFSmooth,
@@ -1708,8 +1716,8 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
 
     estimator = {}
     if NMFRobustNRuns <= 1:
-        estimator.update([('W', Mt), ('H', Mw), ('Q', Mb), ('E', Mres), ('V', volume)])
+        estimator.update([('W', Mt), ('H', Mw), ('Q', Mb), ('volume', volume), ('diff', diff)])
     else:
-        estimator.update([('W', Mt), ('H', Mw), ('Q', Mb), ('E', Mres), ('V', volume), ('WB', MtPct), ('HB', MwPct)])
+        estimator.update([('W', Mt), ('H', Mw), ('Q', Mb), ('volume', volume), ('WB', MtPct), ('HB', MwPct), ('diff', diff)])
 
     return estimator

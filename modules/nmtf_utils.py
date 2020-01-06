@@ -7,7 +7,6 @@
 # License: MIT
 # Jan 4, '20
 
-# Initialize progressbar
 from tkinter import *
 from tkinter import ttk
 from tqdm import tqdm
@@ -146,6 +145,54 @@ def NMFDet(Mt, Mw, NMFExactDet):
 
     detXcells = np.linalg.det(Xcells.T @ Xcells)
     return detXcells
+
+def NMFGetConvexScores(Mt, Mw, Mh, flag, AddMessage):
+    """Rescale scores to sum up to 1 (used with deconvolution)
+    Input:
+        Mt: Left factoring matrix
+        Mw: Right factoring matrix
+        flag:  Current value
+    Output:
+
+       Mt: Left factoring matrix
+        Mw: Right factoring matrix
+        flag: += 1: Negative weights found
+    """
+    ErrMessage = ''
+    cancel_pressed = 0
+
+    n, nc = Mt.shape
+    n_Mh = Mh.shape[0]
+    try:
+        Malpha = np.linalg.inv(Mt.T @ Mt) @ (Mt.T @ np.ones(n))
+    except:
+        Malpha = np.linalg.pinv(Mt.T @ Mt) @ (Mt.T @ np.ones(n))
+
+    if np.where(Malpha < 0)[0].size > 0:
+        flag += 1
+        Malpha = nnls(Mt, np.ones(n))[0]
+
+    n_zeroed = 0
+    for k in range(0, nc):
+        Mt[:, k] *= Malpha[k]
+        if n_Mh > 0:
+            Mh[:, k] *= Malpha[k]
+        if Malpha[k] > 0:
+            Mw[:, k] /= Malpha[k]
+        else:
+            n_zeroed += 1
+        
+    if n_zeroed > 0:
+        AddMessage.insert(len(AddMessage), 'Ncomp=' + str(nc) + ': ' + str(n_zeroed) + ' components were zeroed')
+
+    # Goodness of fit
+    R2 = 1 - np.linalg.norm(np.sum(Mt.T, axis=0).T - np.ones(n)) ** 2 / n
+    AddMessage.insert(len(AddMessage), 'Ncomp=' + str(nc) + ': Goodness of mixture fit before adjustement = ' + str(round(R2, 2)))
+
+    for i in range(0, n):
+        Mt[i, :] /= np.sum(Mt[i, :])
+
+    return [Mt, Mw, Mh, flag, AddMessage, ErrMessage, cancel_pressed]
 
 def percentile_exc(a, q):
     """Percentile, exclusive
