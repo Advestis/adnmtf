@@ -23,7 +23,7 @@ if not hasattr(sys, 'argv'):
     sys.argv  = ['']
 
 EPSILON = np.finfo(np.float32).eps
-GALDERMA_FLAG = False
+compatibility_flag = False
 
 def NMFInit(M, Mmis, Mt0, Mw0, nc, tolerance, LogIter, myStatusBox):
     """Initialize NMF components using NNSVD
@@ -61,19 +61,8 @@ def NMFInit(M, Mmis, Mt0, Mw0, nc, tolerance, LogIter, myStatusBox):
     Mt = np.copy(Mt0)
     Mw = np.copy(Mw0)
     if (Mt.shape[0] == 0) or (Mw.shape[0] == 0):
-        if (n >= nc) and (p >= nc):
-            Msvd = M
-        else:
-            if n < nc:
-                # Replicate rows until > nc 
-                Msvd = np.repeat(M, np.ceil(nc/n), axis=0)
-            
-            if p < nc:
-                # Replicate rows until > nc
-                Msvd = np.repeat(Msvd, np.ceil(nc/p), axis=1)
-
         if n_Mmis == 0:
-            t, d, w = randomized_svd(Msvd,
+            t, d, w = randomized_svd(M,
                                      n_components=nc,
                                      n_iter='auto',
                                      random_state=None)         
@@ -81,15 +70,9 @@ def NMFInit(M, Mmis, Mt0, Mw0, nc, tolerance, LogIter, myStatusBox):
             Mw = w.T
         else:
             Mt, d, Mw, Mmis, Mmsr, Mmsr2, AddMessage, ErrMessage, cancel_pressed = rSVDSolve(
-                Msvd, Mmis, nc, tolerance, LogIter, 0, "", 200,
+                M, Mmis, nc, tolerance, LogIter, 0, "", 200,
                 1, 1, 1, myStatusBox)
-
-        if n < nc:
-            Mt = np.concatenate(Mt, np.ones((n,nc-n)))
-        
-        if p < nc:
-            Mw = np.concatenate(Mw, np.ones((p,nc-p)))
-    
+   
     for k in range(0, nc):
         U1 = Mt[:, k]
         U2 = -Mt[:, k]
@@ -352,17 +335,16 @@ def NTFInit(M, Mmis, MtxMw, Mb2, nc, tolerance, precision, LogIter, NTFUnimodal,
         MtxMw, Mb2 = NMFInit(Mstacked, Mmis_stacked, np.array([]),  np.array([]), nc2, tolerance, LogIter, myStatusBox)
     # NOTE: NMFInit (NNSVD) should always be called to prevent initializing NMF with signed components.
     # Creates minor differences in AD clustering, correction non implemented in Galderma version
-    if not GALDERMA_FLAG:
+    if not compatibility_flag:
         MtxMw, Mb2 = NMFInit(Mstacked, Mmis_stacked, MtxMw, Mb2, nc2, tolerance, LogIter, myStatusBox)
     else:
-        print("Galderma version! In NTFInit, NNSVD has been superseded by SVD prior to NMF initialization")
+        print("In NTFInit, NMFInit was not called for the sake of compatibility with previous versions")
 
     # Quick NMF
     MtxMw, Mb2, diff, Mh, dummy1, dummy2, AddMessage, ErrMessage, cancel_pressed = NMFSolve(
-        Mstacked, Mmis_stacked, MtxMw, Mb2, nc2, tolerance, precision, LogIter, Status0, 10, 2, 0, 0, 1, 1, 0, 0, 0, 1, 0, np.array([]), 0,
-        AddMessage,
-        myStatusBox)
-
+        Mstacked, Mmis_stacked, MtxMw, Mb2, nc2, tolerance, precision, LogIter, Status0,
+        10, 2, 0, 0, 1, 1, 0, 0, 0, 1, 0, np.array([]), 0, AddMessage, myStatusBox)
+ 
     # Factorize Left vectors and distribute multiple factors if nc2 < nc
     Mt = np.zeros((n, nc))
     Mw = np.zeros((int(p / NBlocks), nc))
@@ -1202,13 +1184,11 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
             for k in range(0, nc):
                 ScaleMt = np.linalg.norm(Mt[:, k])
                 ScaleMw = np.linalg.norm(Mw[:, k])
-                if ScaleMt > 0:
+                Mev[k] = ScaleMt * ScaleMw                
+                if Mev[k] > 0:
                     Mt[:, k] = Mt[:, k] / ScaleMt
-
-                if ScaleMw > 0:
                     Mw[:, k] = Mw[:, k] / ScaleMw
 
-                Mev[k] = ScaleMt * ScaleMw
     else:
         Mt, Mw, MtPct, MwPct, diff, Mh, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = rNMFSolve(
             M, np.array([]), Mt, Mw, nc, tolerance, precision, LogIter, MaxIterations, NMFAlgo, NMFFixUserLHE,

@@ -856,17 +856,8 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
     if NMFFindParts > 0:
         # Make Mt convex
         Mt = M @ Mh
-        Mt, Mw, Mh, flagNonconvex2, AddMessage, ErrMessage, cancel_pressed = NMFGetConvexScores(Mt, Mw, Mh, flagNonconvex,
+        Mt, Mw, Mh, flagNonconvex, AddMessage, ErrMessage, cancel_pressed = NMFGetConvexScores(Mt, Mw, Mh, flagNonconvex,
                                                                                          AddMessage)
-    #        if flagNonconvex2 > flagNonconvex:
-    #            flagNonconvex = flagNonconvex2
-    #            # Calculate column centroids
-    #            for k in range(0, nc):
-    #                ScaleMh = np.sum(Mh[:, k])
-    #                Mh[:, k] = Mh[:, k] / ScaleMh
-    #                Mw[:, k] = Mw[:, k] * ScaleMh
-    #
-    #            Mt = M @ Mh
     elif NMFFindCentroids > 0:
         # Calculate row centroids
         for k in range(0, nc):
@@ -1707,9 +1698,12 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
         if n_Mmis > 0:
             denomt[:] = 0
             Mw2[:] = Mw[:, k] ** 2
-            for iBlock in range(0, NBlocks):
-                # Broadcast missing cells into Mw to calculate Mw.T * Mw
-                denomt += Mb[iBlock, k]**2 * Mmis[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] @ Mw2
+            if NBlocks > 1:
+                for iBlock in range(0, NBlocks):
+                    # Broadcast missing cells into Mw to calculate Mw.T * Mw
+                    denomt += Mb[iBlock, k]**2 * Mmis[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] @ Mw2
+            else:
+                denomt += Mmis[:, IDBlockp[0]:IDBlockp[0] + p] @ Mw2
 
             denomt /= np.max(denomt)
             denomt[denomt < denomCutoff] = denomCutoff
@@ -1754,9 +1748,12 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
         if n_Mmis > 0:
             denomw[:] = 0
             Mt2[:] = Mt[:, k] ** 2
-            for iBlock in range(0, NBlocks):
-                # Broadcast missing cells into Mw to calculate Mt.T * Mt
-                denomw += Mb[iBlock, k] ** 2 * Mmis[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p].T @ Mt2
+            if NBlocks > 1:
+                for iBlock in range(0, NBlocks):
+                    # Broadcast missing cells into Mw to calculate Mt.T * Mt
+                    denomw += Mb[iBlock, k] ** 2 * Mmis[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p].T @ Mt2
+            else:
+                denomw += Mmis[:, IDBlockp[0]:IDBlockp[0] + p].T @ Mt2
 
             denomw /= np.max(denomw)
             denomw[denomw < denomCutoff] = denomCutoff

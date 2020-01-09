@@ -639,6 +639,8 @@ def sparse_opt(b, alpha):
         return b
     
     b_rank = np.argsort(-b)
+    ranks = np.empty_like(b_rank)
+    ranks[b_rank] = np.arange(m)
     b_norm= np.linalg.norm(b)
     a = b[b_rank] / b_norm
     k = math.sqrt(m) - alpha * (math.sqrt(m)-1)
@@ -661,4 +663,4 @@ def sparse_opt(b, alpha):
     
     x = np.zeros(m)
     x[0:p0] = -b_norm * (a[0:p0] + mu) / mylambda
-    return x[b_rank]
+    return x[ranks]
