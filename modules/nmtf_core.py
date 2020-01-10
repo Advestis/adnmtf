@@ -1114,13 +1114,15 @@ def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIt
          NBlocks: Number of NTF blocks
          NTFNConv: Half-Size of the convolution window on 3rd-dimension of the tensor
      Output:
-         Mt: Left hand matrix (sum of columns Mt_conv for each k)
-         Mt_conv : if NTFNConv > 0 only otherwise empty. Contains sub-components for each phase in convolution window
-         Mw: Right hand matrix
-         Mb: Block hand matrix
+         Mt : if NTFNConv > 0 only otherwise empty. Contains sub-components for each phase in convolution window
+         Mt_simple: Left hand matrix (sum of columns Mt_conv for each k)
+         Mw_simple: Right hand matrix
+         Mb_simple: Block hand matrix
          diff: objective cost
     
-     Note: This code extends HALS to allow for shifting on the 3rd dimension of the tensor
+     Note: 
+         This code extends HALS to allow for shifting on the 3rd dimension of the tensor. Suffix '_simple' is added to 
+         the non-convolutional components. Convolutional components are named the usual way.
 
      """
     cancel_pressed = 0
