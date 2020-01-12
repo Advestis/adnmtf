@@ -898,20 +898,24 @@ def NTFStack(M, Mmis, NBlocks):
     return [Mstacked, Mmis_stacked]
 
 def NTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
+             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks,
+             NTFNConv, NTFminDiv, myStatusBox):
     """Interface to:
             - NTFSolve_simple
             - NTFSolve_conv
     """
     if NTFNConv > 0:
         return NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
+             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks,
+             NTFNConv, NTFminDiv, myStatusBox)
     else:
         return NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox)
+             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks,
+             NTFminDiv, myStatusBox)
 
 def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, myStatusBox):
+             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks,
+             NTFminDiv, myStatusBox):
     """
     Estimate NTF matrices (HALS)
     Input:
@@ -1014,7 +1018,7 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
                 NMFFixUserLHE, denomt, Mw2, denomCutoff, alpha ,\
                 NTFUnimodal, NTFLeftComponents, NTFSmooth, A, NMFFixUserRHE, \
                 denomw, Mt2, NTFRightComponents, B, NMFFixUserBHE, MtMw, nxp, \
-                denomBlock, NTFBlockComponents, C, Mfit)
+                denomBlock, NTFBlockComponents, C, Mfit, NTFminDiv)
                        
         if iIter % StepIter == 0:
             # Check convergence
@@ -1089,7 +1093,8 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
     return [np.array([]), Mt, Mw, Mb, diff, cancel_pressed]
 
 def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
+             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks,
+             NTFNConv, NTFminDiv, myStatusBox):
     """Estimate NTF matrices (HALS)
      Input:
          M: Input matrix
@@ -1206,7 +1211,7 @@ def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIt
                     NMFFixUserLHE, denomt, Mw2, denomCutoff, alpha, \
                     NTFUnimodal, NTFLeftComponents, NTFSmooth, A, NMFFixUserRHE, \
                     denomw, Mt2, NTFRightComponents, B, NMFFixUserBHE, MtMw, nxp, \
-                    denomBlock, NTFBlockComponents, C, Mfit)
+                    denomBlock, NTFBlockComponents, C, Mfit, NTFminDiv)
             
             #Update Mt_simple, Mw_simple & Mb_simple
             k = k3*NTFNConv2+NTFNConv
@@ -1639,14 +1644,14 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
         NMFFixUserLHE, denomt, Mw2, denomCutoff, alpha, \
         NTFUnimodal, NTFLeftComponents, NTFSmooth, A, NMFFixUserRHE, \
         denomw, Mt2, NTFRightComponents, B, NMFFixUserBHE, MtMw, nxp, \
-        denomBlock, NTFBlockComponents, C, Mfit):
+        denomBlock, NTFBlockComponents, C, Mfit, NTFMinDiv):
     """Core updating code called by NTFSolve_simple & NTF Solve_conv
     Input:
         All variables in the calling function used in the function 
     Output:
         Same as Input
     """
-    
+
     # Compute kth-part
     if NBlocks > 1:
         for iBlock in range(0, NBlocks):
@@ -1655,11 +1660,29 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
     else:
         Mpart[:, IDBlockp[0]:IDBlockp[0] + p] = np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
 
+    if NTFMinDiv:
+        if n_Mmis > 0:
+            ID = (Mmis==0)
+            Mpart[(Mpart == 0) & ID] = EPSILON
+            Mweight = np.zeros_like(Mpart)
+            Mweight[ID] = 1 / Mpart[ID]
+        else:
+            Mpart[Mpart == 0] = EPSILON
+            Mweight = 1 / Mpart
+
+        Mweight /= np.sum(Mweight)
+    
+    Mpart += Mres
     if n_Mmis > 0:
         Mpart *= Mmis
 
-    Mpart += Mres 
-
+    if NTFMinDiv:
+        Mpart0 = np.copy(Mpart)
+        Mmis0 = np.copy(Mmis)
+        Mpart *= Mweight
+        Mmis = Mweight
+        n_Mmis = Mmis.shape[0]
+ 
     if NMFFixUserBHE > 0:
         NormBHE = True
         if NMFFixUserRHE == 0:
@@ -1840,6 +1863,10 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
     else:
         Mfit[:, IDBlockp[0]:IDBlockp[0] + p] += np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
 
+    if NTFMinDiv:
+        Mpart = Mpart0
+        Mmis = Mmis0
+        n_Mmis = Mmis.shape[0]
 
     if n_Mmis > 0:
         Mres[:,:] = (Mpart - Mfit) * Mmis

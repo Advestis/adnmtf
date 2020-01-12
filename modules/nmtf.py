@@ -17,14 +17,6 @@ class NMF:
     n_components : integer
         Number of components, if n_components is not set : n_components = min(n_samples, n_features)
 
-    n_update_W : integer
-        Estimate last n_update_W components from initial guesses.
-        If n_update_W is not set : n_update_W = n_components.
-
-    n_update_H : integer
-        Estimate last n_update_H components from initial guesses.
-        If n_update_H is not set : n_update_H = n_components.
-
     beta_loss : string, default 'frobenius'
         String must be in {'frobenius', 'kullback-leibler'}.
         Beta divergence to be minimized, measuring the distance between X
@@ -354,6 +346,14 @@ class NTF:
     n_components : integer
         Number of components, if n_components is not set : n_components = min(n_samples, n_features)
 
+    beta_loss : string, default 'frobenius'
+        String must be in {'frobenius', 'kullback-leibler'}.
+        Beta divergence to be minimized, measuring the distance between X
+        and the dot product WH. Note that values different from 'frobenius'
+        (or 2) and 'kullback-leibler' (or 1) lead to significantly slower
+        fits. Note that for beta_loss == 'kullback-leibler', the input
+        matrix X cannot contain zeros.
+    
     fast_hals : boolean, default: False
         Use fast implementation of HALS
 
@@ -409,6 +409,7 @@ class NTF:
     """
 
     def __init__(self, n_components=None,
+                       beta_loss='frobenius',
                        fast_hals=False, n_iter_hals=2, n_shift=0,
                        unimodal=False, smooth=False,
                        apply_left=False, apply_right=False, apply_block=False,
@@ -418,6 +419,7 @@ class NTF:
                        random_state=None,
                        verbose=0):
         self.n_components = n_components
+        self.beta_loss = beta_loss
         self.fast_hals = fast_hals
         self.n_iter_hals = n_iter_hals
         self.n_shift = n_shift
@@ -517,6 +519,7 @@ class NTF:
         """
 
         return non_negative_tensor_factorization(X, n_blocks, W=W, H=H, Q=Q, n_components=self.n_components,
+                                                beta_loss=self.beta_loss,
                                                 update_W=update_W,
                                                 update_H=update_H,
                                                 update_Q=update_Q,
