@@ -663,11 +663,15 @@ def NMFSolve(M, Mmis, Mt0, Mw0, nc, tolerance, precision, LogIter, Status0, MaxI
                     else:
                         Mdiff = Mt @ Mw.T - M
 
+                    diff = np.linalg.norm(Mdiff) / nxp
                 else:
                     MF0 = Mt @ Mw.T
-                    Mdiff = M * np.log(M / MF0 + precision) + MF0 - M
+                    if n_Mmis > 0:
+                        Mdiff = (M * np.log(M / (MF0 + precision)) + MF0 - M) * Mmis
+                    else:
+                        Mdiff = M * np.log(M / (MF0 + precision)) + MF0 - M
 
-                diff = (np.linalg.norm(Mdiff)) ** 2 / nxp
+                    diff = np.sum(Mdiff) / nxp
 
             Status = Status0 + 'Iteration: %s' % int(iIter)
 
@@ -978,10 +982,10 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
     for k in range(0, nc):
         if NBlocks > 1:
             for iBlock in range(0, NBlocks):
-                Mfit[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] += Mb[iBlock, k] * np.reshape(Mt[:, k], (n, 1)) @ np.reshape(
+                Mfit[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] = Mb[iBlock, k] * np.reshape(Mt[:, k], (n, 1)) @ np.reshape(
                     Mw[:, k], (1, p))
         else:
-            Mfit[:, IDBlockp[0]:IDBlockp[0] + p] += np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
+            Mfit[:,:] = np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
 
     denomt = np.zeros(n)
     denomw = np.zeros(p)
@@ -1022,8 +1026,22 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
                        
         if iIter % StepIter == 0:
             # Check convergence
-            diff = np.linalg.norm(Mres) ** 2 / nxp0
-            if (diff0 - diff) / diff0 < tolerance:
+            if NTFminDiv:
+                for k in range(0, nc):
+                    if NBlocks > 1:
+                        for iBlock in range(0, NBlocks):
+                            Mfit[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] = Mb[iBlock, k] * \
+                                np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
+                    else:
+                        Mfit[:,:] = np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
+            
+                diff = np.sum(M * np.log(M / (Mfit + EPSILON)) + Mfit - M) / nxp0
+            else:
+                diff = np.linalg.norm(Mres) / nxp0
+
+            print(diff0, diff)
+
+            if abs(diff0 - diff) / diff0 < tolerance:
                 cont = 0
             else:
                 diff0 = diff
@@ -1644,7 +1662,7 @@ def NTFSetWeights (Mt, Mw, Mb, NBlocks, k, n, p, IDBlockp, Mweight):
     """Weigh part by inverse component-wise approximation 
        to iteratively minimize divergence
     """
-    # Update pure part
+    # Update pure part and derive weights
     if NBlocks > 1:
         for iBlock in range(0, NBlocks):
             Mweight[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] = Mb[iBlock, k] * \
@@ -1669,13 +1687,15 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
     Output:
         Same as Input
     """
+
+    n_iter = 100 #Hard-coded number of iterations for divergence minimization through irls
     # Compute kth-part
     if NBlocks > 1:
         for iBlock in range(0, NBlocks):
             Mpart[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] = Mb[iBlock, k] * \
                 np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
     else:
-        Mpart = np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
+        Mpart[:,:] = np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
   
     Mpart += Mres
     if n_Mmis > 0:
@@ -1684,42 +1704,74 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
     if NTFMinDiv:
         Mweight = np.zeros_like(Mpart)
  
-    if NMFFixUserBHE > 0:
+    if (NMFFixUserBHE > 0) & (NMFFixUserLHE > 0):
+        NormLHE = False
+        NormRHE = False
+        NormBHE = False
+    elif (NMFFixUserBHE > 0) & (NMFFixUserRHE > 0):
+        NormLHE = False
+        NormRHE = False
+        NormBHE = False
+    elif (NMFFixUserLHE > 0) & (NMFFixUserRHE > 0):
+        NormLHE = False
+        NormRHE = False
+        NormBHE = False
+    elif NMFFixUserBHE > 0:
+        NormLHE = True
+        NormRHE = False
+        NormBHE = False
+    elif NMFFixUserRHE > 0:
+        NormLHE = True
+        NormRHE = False
+        NormBHE = False
+    elif NMFFixUserLHE > 0:
+        NormLHE = False
+        NormRHE = False
         NormBHE = True
-        if NMFFixUserRHE == 0:
-            NormLHE = True
-            NormRHE = False
-        else:
-            NormLHE = False
-            NormRHE = True
     else:
-            NormBHE = False
-            NormLHE = True
-            NormRHE = True
+        NormLHE = True
+        NormRHE = True
+        NormBHE = False
 
-    if (NMFFixUserLHE > 0) & NormLHE:
-        norm = np.linalg.norm(Mt[:, k])
+    """
+    if NormLHE:
+        if NTFMinDiv:
+            norm = np.sum(Mt[:, k])
+        else:
+            norm = np.linalg.norm(Mt[:, k])
+
         if norm > 0:
             Mt[:, k] /= norm
 
-    if (NMFFixUserRHE > 0) & NormRHE:
-        norm = np.linalg.norm(Mw[:, k])
+    if NormRHE:
+        if NTFMinDiv:
+            norm = np.sum(Mw[:, k])
+        else:
+            norm = np.linalg.norm(Mw[:, k])
+        
         if norm > 0:
             Mw[:, k] /= norm
         
-    if (NMFFixUserBHE > 0) & NormBHE & (NBlocks > 1):
-        norm = np.linalg.norm(Mb[:, k])
+    if NormBHE:
+        if NTFMinDiv:
+            norm = np.sum(Mb[:, k])
+        else:
+            norm = np.linalg.norm(Mb[:, k])
+        
         if norm > 0:
             Mb[:, k] /= norm
+    """
 
-    n_iter = 100
     if NMFFixUserLHE == 0:
         t0 = np.full(n, EPSILON)
         iIter = 0
-        while (np.linalg.norm(Mt[:, k]-t0)/np.linalg.norm(t0) > EPSILON) & (iIter <= n_iter):
+        cont = True
+        while cont:
             if NTFMinDiv:
-                iIter += 1
                 Mweight = NTFSetWeights (Mt, Mw, Mb, NBlocks, k, n, p, IDBlockp, Mweight)
+                if n_Mmis > 0:
+                    Mweight *= Mmis
+
                 t0[:] = Mt[:, k]
 
             # Update Mt
@@ -1728,7 +1780,6 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
                 for iBlock in range(0, NBlocks):
                     if NTFMinDiv:
                         X = Mweight[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p]
-                        X *= np.reshape(p/np.tile(np.sum(X,axis=1),p),(p,n)).T
                         Mt[:, k] += Mb[iBlock, k] * \
                             (X * Mpart[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p]) @ Mw[:, k]
                     else:
@@ -1736,28 +1787,45 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
                             Mpart[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] @ Mw[:, k]
             else: 
                 if NTFMinDiv:
-                    Mweight *= np.reshape(p/np.tile(np.sum(Mweight,axis=1),p),(p,n)).T
                     Mt[:, k] = Mweight * Mpart @ Mw[:, k]
                 else:
                     Mt[:, k] = Mpart @ Mw[:, k]
 
-            if (n_Mmis > 0) & (NTFMinDiv is False):
-                denomt[:] = 0
+            if (n_Mmis > 0) or NTFMinDiv:
                 Mw2[:] = Mw[:, k] ** 2
                 if NBlocks > 1:
+                    denomt[:] = 0
                     for iBlock in range(0, NBlocks):
-                        # Broadcast missing cells into Mw to calculate Mw.T * Mw
-                        denomt += Mb[iBlock, k]**2 * Mmis[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] @ Mw2
-                else:
-                    denomt += Mmis[:, IDBlockp[0]:IDBlockp[0] + p] @ Mw2
+                        if NTFMinDiv:
+                            denomt += Mb[iBlock, k]**2 * Mweight[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] @ Mw2
+                        else:
+                            denomt += Mb[iBlock, k]**2 * Mmis[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] @ Mw2
 
-                denomt /= np.max(denomt)
-                denomt[denomt < denomCutoff] = denomCutoff
+                else:
+                    if NTFMinDiv:
+                        denomt = Mweight[:, IDBlockp[0]:IDBlockp[0] + p] @ Mw2
+                    else:
+                        denomt = Mmis[:, IDBlockp[0]:IDBlockp[0] + p] @ Mw2
+
+                max_denomt = np.max(denomt)
+                denomt[denomt < denomCutoff*max_denomt] = denomCutoff*max_denomt
                 Mt[:, k] /= denomt
 
             Mt[Mt[:, k] < 0, k] = 0
+            if NormLHE:
+                if NTFMinDiv:
+                    norm = np.sum(Mt[:, k])
+                else:
+                    norm = np.linalg.norm(Mt[:, k])
+
+                if norm > 0:
+                    Mt[:, k] /= norm
+
             if not NTFMinDiv:
-                break
+                cont = False
+            else:
+                iIter += 1
+                cont = (np.linalg.norm(Mt[:, k]-t0)/np.linalg.norm(t0) > EPSILON) & (iIter < n_iter)
 
         if alpha < 0:
             Mt[:, k] = sparse_opt(Mt[:, k], -alpha)
@@ -1780,18 +1848,16 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
 
             Mt[:, k] = A
 
-        if NormLHE:
-            norm = np.linalg.norm(Mt[:, k])
-            if norm > 0:
-                Mt[:, k] /= norm
-
     if NMFFixUserRHE == 0:
         w0 = np.full(p, EPSILON)
         iIter = 0
-        while (np.linalg.norm(Mw[:, k]-w0)/np.linalg.norm(w0) > EPSILON) & (iIter <= n_iter):
+        cont = True
+        while cont:
             if NTFMinDiv:
-                iIter += 1
                 Mweight = NTFSetWeights (Mt, Mw, Mb, NBlocks, k, n, p, IDBlockp, Mweight)
+                if n_Mmis > 0:
+                    Mweight *= Mmis
+
                 w0[:] = Mw[:, k]
 
             # Update Mw
@@ -1800,36 +1866,51 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
                 for iBlock in range(0, NBlocks):
                     if NTFMinDiv:
                         X = Mweight[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p].T
-                        X *= np.reshape(n/np.tile(np.sum(X,axis=1),n),(n,p)).T
                         Mw[:, k] += X * Mpart[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p].T @ Mt[:, k] * Mb[iBlock, k]
                     else:
                         Mw[:, k] += Mpart[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p].T @ Mt[:, k] * Mb[iBlock, k]
             else:
                 if NTFMinDiv:
                     X = Mweight.T
-                    X *= np.reshape(n/np.tile(np.sum(X,axis=1),n),(n,p)).T
                     Mw[:, k] = X * Mpart.T @ Mt[:, k]
                 else:
                     Mw[:, k] = Mpart.T @ Mt[:, k]
 
-            if (n_Mmis > 0) & (NTFMinDiv is False):
-                denomw[:] = 0
+            if (n_Mmis > 0) or NTFMinDiv:
                 Mt2[:] = Mt[:, k] ** 2
                 if NBlocks > 1:
+                    denomw[:] = 0
                     for iBlock in range(0, NBlocks):
-                        # Broadcast missing cells into Mw to calculate Mt.T * Mt
-                        denomw += Mb[iBlock, k] ** 2 * Mmis[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p].T @ Mt2
-                else:
-                    denomw += Mmis[:, IDBlockp[0]:IDBlockp[0] + p].T @ Mt2
+                        if NTFMinDiv:
+                            denomw += Mb[iBlock, k] ** 2 * Mweight[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p].T @ Mt2
+                        else:
+                            denomw += Mb[iBlock, k] ** 2 * Mmis[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p].T @ Mt2
 
-                denomw /= np.max(denomw)
-                denomw[denomw < denomCutoff] = denomCutoff
+                else:
+                    if NTFMinDiv:
+                        denomw = Mweight[:, IDBlockp[0]:IDBlockp[0] + p].T @ Mt2
+                    else:
+                        denomw = Mmis[:, IDBlockp[0]:IDBlockp[0] + p].T @ Mt2
+
+                max_denomw = np.max(denomw)
+                denomw[denomw < max_denomw*denomCutoff] = max_denomw*denomCutoff
                 Mw[:, k] /= denomw
 
             Mw[Mw[:, k] < 0, k] = 0
-            if not NTFMinDiv:
-                break
+            if NormRHE:
+                if NTFMinDiv:
+                    norm = np.sum(Mw[:, k])
+                else:
+                    norm = np.linalg.norm(Mw[:, k])
 
+                if norm > 0:
+                    Mw[:, k] /= norm
+
+            if not NTFMinDiv:
+                cont = False
+            else:
+                iIter += 1
+                cont = (np.linalg.norm(Mw[:, k]-w0)/np.linalg.norm(w0) > EPSILON) & (iIter < n_iter)
         if alpha > 0:
             Mw[:, k] = sparse_opt(Mw[:, k], alpha)
 
@@ -1851,46 +1932,58 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
 
             Mw[:, k] = B
 
-        if NormRHE:
-            norm = np.linalg.norm(Mw[:, k])
-            if norm > 0:
-                Mw[:, k] /= norm
-
     if NMFFixUserBHE == 0:
         b0 = np.full(NBlocks, EPSILON)
         iIter = 0
-        while (np.linalg.norm(Mb[:, k]-b0)/np.linalg.norm(b0) > EPSILON) & (iIter <= n_iter):
+        cont = True
+        while cont:
             if NTFMinDiv:
-                iIter += 1
                 Mweight = NTFSetWeights (Mt, Mw, Mb, NBlocks, k, n, p, IDBlockp, Mweight)
+                if n_Mmis > 0:
+                    Mweight *= Mmis
+
                 b0[:] = Mb[:, k]
 
             # Update Mb
-            Mb[:, k] = 0
             MtMw[:] = np.reshape((np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))), nxp)
 
             for iBlock in range(0, NBlocks):
                 if NTFMinDiv:
-                    X = np.reshape(Mweight[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p], nxp)
-                    X *= nxp/np.tile(np.sum(X),nxp)
-                    Mb[iBlock, k] = X.T * np.reshape(Mpart[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p], nxp).T @ MtMw
+                    X = np.reshape(Mweight[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p], nxp).T
+                    Mb[iBlock, k] = X * np.reshape(Mpart[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p], nxp).T @ MtMw
                 else:
                     Mb[iBlock, k] = np.reshape(Mpart[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p], nxp).T @ MtMw
 
-            if (n_Mmis > 0) & (NTFMinDiv is False):                          
+            if (n_Mmis > 0) or NTFMinDiv:                          
                 MtMw[:] = MtMw[:] ** 2
                 for iBlock in range(0, NBlocks):
-                    # Broadcast missing cells into Mb to calculate Mb.T * Mb
-                    denomBlock[iBlock, k] = np.reshape(Mmis[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p], (1, nxp)) @ MtMw
+                    if NTFMinDiv:
+                        denomBlock[iBlock, k] = np.reshape(Mweight[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p], (1, nxp)) @ MtMw
+                    else:
+                        denomBlock[iBlock, k] = np.reshape(Mmis[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p], (1, nxp)) @ MtMw
 
                 max_denomBlock = np.max(denomBlock[:, k])
                 denomBlock[denomBlock[:, k] < denomCutoff * max_denomBlock] = denomCutoff * max_denomBlock
                 Mb[:, k] /= denomBlock[:, k]
 
             Mb[Mb[:, k] < 0, k] = 0
-        
+            if NormBHE:
+                if NTFMinDiv:
+                    norm = np.sum(Mb[:, k])
+                else:
+                    norm = np.linalg.norm(Mb[:, k])
+
+                if norm > 0:
+                    Mb[:, k] /= norm
+
+            if not NTFMinDiv:
+                cont = False
+            else:
+                iIter += 1
+                cont = (np.linalg.norm(Mb[:, k]-b0)/np.linalg.norm(b0) > EPSILON) & (iIter < n_iter)
+      
         if (NTFUnimodal > 0) & (NTFBlockComponents > 0):
-            #                 Enforce unimodal distribution
+            #             Enforce unimodal distribution
             bmax = np.argmax(Mb[:, k])
             for iBlock in range(bmax + 1, NBlocks):
                 Mb[iBlock, k] = min(Mb[iBlock - 1, k], Mb[iBlock, k])
@@ -1907,19 +2000,13 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
 
             Mb[:, k] = C
   
-        if NormBHE:
-            norm = np.linalg.norm(Mb[:, k])
-            if norm > 0:
-                Mb[:, k] /= norm
-
     # Update residual tensor
-    Mfit[:,:] = 0
     if NBlocks > 1:
         for iBlock in range(0, NBlocks):
-            Mfit[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] += Mb[iBlock, k] * \
+            Mfit[:, IDBlockp[iBlock]:IDBlockp[iBlock] + p] = Mb[iBlock, k] * \
                 np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
     else:
-        Mfit[:, IDBlockp[0]:IDBlockp[0] + p] += np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
+        Mfit[:,:] = np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p))
 
     if n_Mmis > 0:
         Mres[:,:] = (Mpart - Mfit) * Mmis
