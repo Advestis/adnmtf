@@ -414,8 +414,7 @@ def NTFInit(M, Mmis, MtxMw, Mb2, nc, tolerance, precision, LogIter, NTFUnimodal,
   
 def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
               NMFFixUserBHE, NMFAlgo, NMFRobustNRuns, NMFCalculateLeverage, NMFUseRobustLeverage, NTFFastHALS, NTFNIterations,
-              NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks,
-              NTFNConv, NTFminDiv, myStatusBox):
+              NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox):
     """Estimate NTF matrices (robust version)
 
      Input:
@@ -507,7 +506,7 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
             Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = NTFSolve(
                 M, Mmis, Mt, Mw, Mb, nc, tolerance, LogIter, Status0,
                 NTFNIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE, 0, NTFUnimodal, NTFSmooth,
-                NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, NTFminDiv, myStatusBox)
+                NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
 
         Mt, Mw, Mb, diff, cancel_pressed = NTFSolveFast(
             M, Mmis, Mt, Mw, Mb, nc, tolerance, precision, LogIter, Status0,
@@ -517,7 +516,7 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
         Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = NTFSolve(
             M, Mmis, Mt, Mw, Mb, nc, tolerance, LogIter, Status0,
             MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE, NMFSparseLevel, NTFUnimodal, NTFSmooth,
-            NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, NTFminDiv, myStatusBox)
+            NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
 
     Mtsup = np.copy(Mt)
     Mwsup = np.copy(Mw)
@@ -546,12 +545,12 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
                     Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = NTFSolve(
                         M[Boot, :], Mmis[Boot, :], Mtsup[Boot, :], Mwsup, Mb, nc, 1.e-3, LogIter, Status0,
                         MaxIterations, 1, 0, NMFFixUserBHE, NMFSparseLevel, NTFUnimodal, NTFSmooth,
-                        NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, NTFminDiv, myStatusBox)
+                        NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
                 else:
                     Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = NTFSolve(
                         M[Boot, :], np.array([]), Mtsup[Boot, :], Mwsup, Mb, nc, 1.e-3, LogIter, Status0,
                         MaxIterations, 1, 0, NMFFixUserBHE, NMFSparseLevel, NTFUnimodal, NTFSmooth,
-                        NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, NTFminDiv, myStatusBox)
+                        NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
 
             for k in range(0, nc):
                 MwBlk[:, k * NMFRobustNRuns + iBootstrap] = Mw[:, k]
@@ -594,7 +593,7 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
                 Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = NTFSolve(
                     M, Mmis, Mtsup, Mw, Mb, nc, 1.e-3, LogIter, Status0, MaxIterations, 0, 1, NMFFixUserBHE,
                     NMFSparseLevel, NTFUnimodal, NTFSmooth,
-                    NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, NTFminDiv, myStatusBox)
+                    NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
 
             RowClust = np.zeros(n, dtype=int)
             if NMFCalculateLeverage > 0:
@@ -1045,7 +1044,8 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
         """
 
     if use_hals:
-        #convex option not supported
+        #convex and kullback-leibler loss options are not supported
+        beta_loss='frobenius'
         convex=None
     
     M = X
@@ -1174,15 +1174,10 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
         else:
             NTFAlgo = 6
         
-        if (NMFAlgo == 1) | (NMFAlgo == 3):
-            NTFminDiv = True
-        else:
-            NTFminDiv = False
-        
         Mt_conv, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed = rNTFSolve(
             M, np.array([]), Mt, Mw, np.array([]), nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
             1, NTFAlgo, NMFRobustNRuns, NMFCalculateLeverage, NMFUseRobustLeverage,
-            0, 0, NMFSparseLevel, 0, 0, 0, 0, 0, 1, 0, NTFminDiv, myStatusBox)
+            0, 0, NMFSparseLevel, 0, 0, 0, 0, 0, 1, 0, myStatusBox)
         Mev = np.ones(nc)
         if (NMFFixUserLHE == 0) & (NMFFixUserRHE == 0):
             # Scale
@@ -1452,7 +1447,6 @@ def nmf_permutation_test_score(estimator, y, n_permutations=100, verbose=0):
     return estimator
 
 def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_components=None,
-                                      beta_loss='frobenius',
                                       update_W=True,
                                       update_H=True,
                                       update_Q=True,
@@ -1495,14 +1489,6 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
 
     n_components : integer
         Number of components, if n_components is not set : n_components = min(n_samples, n_features)
-    
-    beta_loss : string, default 'frobenius'
-        String must be in {'frobenius', 'kullback-leibler'}.
-        Beta divergence to be minimized, measuring the distance between X
-        and the dot product WH. Note that values different from 'frobenius'
-        (or 2) and 'kullback-leibler' (or 1) lead to significantly slower
-        fits. Note that for beta_loss == 'kullback-leibler', the input
-        matrix X cannot contain zeros.
 
     update_W : boolean, default: True
         Update or keep W fixed
@@ -1695,16 +1681,11 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
     else:
         NMFFixUserBHE = 1
 
-    if beta_loss == 'frobenius':
-        NTFMinDiv = False
-    else:
-        NTFMinDiv = True
-
     Mt_conv, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed = rNTFSolve(
         M, np.array([]), Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
         NMFFixUserBHE, NMFAlgo, NMFRobustNRuns,
         NMFCalculateLeverage, NMFUseRobustLeverage, NTFFastHALS, NTFNIterations, NMFSparseLevel, NTFUnimodal, NTFSmooth,
-        NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, NTFMinDiv, myStatusBox)
+        NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, myStatusBox)
 
     volume = NMFDet(Mt, Mw, 1)
 
