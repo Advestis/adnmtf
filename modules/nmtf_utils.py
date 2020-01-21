@@ -12,6 +12,7 @@ from tkinter import ttk
 from tqdm import tqdm
 import math
 from scipy.stats import hypergeom
+from scipy.optimize import nnls
 import numpy as np
 
 EPSILON = np.finfo(np.float32).eps
