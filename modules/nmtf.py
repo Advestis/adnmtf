@@ -150,8 +150,10 @@ class NMF:
             Select whether the regularization affects the components (H), the
             transformation (W) or none of them.
 
-        sparsity : integer, default: 0
-            Sparsity target with 0 <= sparsity <= 1 representing the % rows in W or H set to 0.
+        sparsity : float, default: 0
+            Sparsity target with 0 <= sparsity <= 1 representing either:
+            - the % rows in W or H set to 0 (when use_hals = False)
+            - the mean % rows per column in W or H set to 0 (when use_hals = True)
 
         skewness : boolean, default False
             When solving mixture problems, columns of X at the extremities of the convex hull will be given largest weights.
@@ -432,7 +434,10 @@ class NTF:
         self.random_state = random_state
         self.verbose = verbose
 
-    def fit_transform(self, X, n_blocks, n_bootstrap=None, sparsity=0, W=None, H=None, Q=None, update_W=True, update_H=True, update_Q=True):
+    def fit_transform(self, X, n_blocks, n_bootstrap=None, 
+                            regularization=None, sparsity=0, 
+                            W=None, H=None, Q=None, 
+                            update_W=True, update_H=True, update_Q=True):
 
         """Compute Non-negative Tensor Factorization (NTF)
 
@@ -454,9 +459,13 @@ class NTF:
 
         n_bootstrap : Number of bootstrap runs
 
-        sparsity : integer, default: 0
-            Sparsity target with 0 <= sparsity <= 1 representing the % rows in W or H set to 0.
+        regularization :  None | 'components' | 'transformation'
+            Select whether the regularization affects the components (H), the
+            transformation (W) or none of them.
 
+        sparsity : integer, default: 0
+            Sparsity target with 0 <= sparsity <= 1 representing the mean % rows per column in W or H set to 0
+.
         W : array-like, shape (n_samples, n_components)
             prior W
 
@@ -521,7 +530,7 @@ class NTF:
                                                 update_H=update_H,
                                                 update_Q=update_Q,
                                                 fast_hals=self.fast_hals, n_iter_hals=self.n_iter_hals, n_shift=self.n_shift, 
-                                                sparsity=sparsity, unimodal=self.unimodal, smooth=self.smooth,
+                                                regularization=regularization, sparsity=sparsity, unimodal=self.unimodal, smooth=self.smooth,
                                                 apply_left=self.apply_left,
                                                 apply_right=self.apply_right,
                                                 apply_block=self.apply_block,

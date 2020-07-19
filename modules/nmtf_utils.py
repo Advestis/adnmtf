@@ -188,10 +188,11 @@ def NMFGetConvexScores(Mt, Mw, Mh, flag, AddMessage):
 
     # Goodness of fit
     R2 = 1 - np.linalg.norm(np.sum(Mt.T, axis=0).T - np.ones(n)) ** 2 / n
-    AddMessage.insert(len(AddMessage), 'Ncomp=' + str(nc) + ': Goodness of mixture fit before adjustement = ' + str(round(R2, 2)))
+    AddMessage.insert(len(AddMessage), 'Ncomp=' + str(nc) + ': Goodness of mixture fit = ' + str(round(R2, 2)))
+    # AddMessage.insert(len(AddMessage), 'Ncomp=' + str(nc) + ': Goodness of mixture fit before adjustement = ' + str(round(R2, 2)))
 
-    for i in range(0, n):
-        Mt[i, :] /= np.sum(Mt[i, :])
+    # for i in range(0, n):
+    #     Mt[i, :] /= np.sum(Mt[i, :])
 
     return [Mt, Mw, Mh, flag, AddMessage, ErrMessage, cancel_pressed]
 
@@ -620,7 +621,7 @@ def shift(arr, num, fill_value=EPSILON):
         result[:] = arr
     return result
 
-def sparse_opt(b, alpha):
+def sparse_opt(b, alpha, two_sided):
     """Return the L2-closest vector with sparsity alpha 
     
     Input:
@@ -635,9 +636,10 @@ def sparse_opt(b, alpha):
     
     """
     m = b.size
-    m_alpha = (np.sqrt(m) - np.linalg.norm(b, ord=1)/np.linalg.norm(b, ord=2))/(np.sqrt(m)-1)
-    if (alpha == 0) or (alpha <= m_alpha):
-        return b
+    if two_sided is False:
+        m_alpha = (np.sqrt(m) - np.linalg.norm(b, ord=1)/np.linalg.norm(b, ord=2))/(np.sqrt(m)-1)
+        if (alpha == 0) or (alpha <= m_alpha):
+            return b
     
     b_rank = np.argsort(-b)
     ranks = np.empty_like(b_rank)
