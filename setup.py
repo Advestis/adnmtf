@@ -34,6 +34,8 @@ def get_last_tag() -> str:
 
 
 def get_nb_commits_until(tag: str) -> int:
+    if tag == "v-1.-1":
+        return 0
     return len(run_cmd(f'git log {tag}..HEAD --oneline'))
 
 
