@@ -5,25 +5,6 @@ on:
 
 name: master
 jobs:
-  make-documentation:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@main
-    - name: Pull
-      run: git config --global user.email "pcotte@advestis.com" && git config --global user.name "pcotteadvestis" && git config pull.rebase false && git pull
-    - name: Create Documentation
-      run: chmod +x ./sudo-install-and-docs.sh && ./sudo-install-and-docs.sh
-    - name: Upload Documentation to Wiki
-      uses: docker://decathlon/wiki-page-creator-action:latest
-      env:
-        ACTION_MAIL: pcotteadvestis@users.noreply.github.com
-        ACTION_NAME: pcotteadvestis
-        GH_PAT: ${{ secrets.GH_PAT }}
-        MD_FOLDER: docs/markdown
-        OWNER: Advestis
-        REPO_NAME: nmtf
-        SKIP_MD: README.md
-
   build-docker:
     runs-on: ubuntu-latest
     steps:
