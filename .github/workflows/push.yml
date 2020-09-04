@@ -21,3 +21,37 @@ jobs:
           repository: sandbox-281209/nmtf
           tag_with_ref: true
           tag_with_sha: true
+
+  build-pypi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+        with:
+          ref: master
+          fetch-depth: 0
+      - name: Pull
+        run: |
+          git config --global user.email "pcotte@advestis.com" && \
+          git config --global user.name "pcotteadvestis" && \
+          git config pull.rebase false && \
+          git pull
+
+      - name: setup
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.6' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
+      - run: python3 setup.py sdist
+
+      - name: Authenticate on GCS
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          service_account_email: 570907508813-compute@developer.gserviceaccount.com
+          service_account_key: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Deploy
+        run: |
+          v=$(git tag -l v* | sort --version-sort | tail -n 1) && \
+          sv=$(git log $v..HEAD --oneline | wc -l) && \
+          v=${v//v/}.$sv && \
+          thefile=$(find dist/* | grep ".tar.gz" | head -n 1) && \
+          gsutil cp $thefile gs://pypi_server_sand/adutils/adutils-$v.tar.gz
