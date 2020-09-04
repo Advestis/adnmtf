@@ -54,8 +54,4 @@ jobs:
           service_account_key: ${{ secrets.DOCKER_PASSWORD }}
       - name: Deploy
         run: |
-          v=$(git tag -l v* | sort --version-sort | tail -n 1) && \
-          sv=$(git log $v..HEAD --oneline | wc -l) && \
-          v=${v//v/}.$sv && \
-          thefile=$(find dist/* | grep ".tar.gz" | head -n 1) && \
-          gsutil cp $thefile gs://pypi_server_sand/nmtf/nmtf-$v.tar.gz
+          gsutil cp $thefile gs://pypi_server_sand/nmtf/
