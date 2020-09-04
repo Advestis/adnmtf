@@ -10,7 +10,11 @@ jobs:
     steps:
       - uses: actions/checkout@main
       - name: Pull
-        run: git config --global user.email "pcotte@advestis.com" && git config --global user.name "pcotteadvestis" && git config pull.rebase false && git pull
+        run: |
+          git config --global user.email "pcotte@advestis.com" && \
+          git config --global user.name "pcotteadvestis" && \
+          git config pull.rebase false && \
+          git pull
 
       - name: Build and push Docker images
         uses: docker/build-push-action@v1.1.0
