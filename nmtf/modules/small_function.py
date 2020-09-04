@@ -209,3 +209,161 @@ def do_if_nmf_algo(nmf_algo, n_vmis, w, vmis, h, v, wt_wh, wt_v, wt_w):
         else:
             wt_v = w.T @ (v / (w @ h))
     return wt_wh, wt_v
+
+
+def do_initgrad(kernel, nc, m2, m3, m4, tol=None):
+
+    trace_kernel = np.trace(kernel)
+    # noinspection PyBroadException
+    try:
+        m1 = m2 @ np.linalg.inv(m2.T @ m2)
+    except BaseException:
+        m1 = m2 @ np.linalg.pinv(m2.T @ m2)
+
+    m1[np.where(m1 < 0)] = 0
+    for k in range(0, nc):
+        scale = np.linalg.norm(m2[:, k])
+        m2[:, k] = m2[:, k] / scale
+        m1[:, k] = m1[:, k] * scale
+
+    grad_1 = m3 @ (m4.T @ m4) - m4
+    grad_2 = ((m3.T @ m3) @ m4.T - m3.T).T
+    initgrad = np.linalg.norm(np.concatenate((grad_1, grad_2), axis=0))
+    tol_1 = 1.0e-3 * initgrad
+    if tol is not None:
+        tol_2 = tol
+    else:
+        tol_2 = tol_1
+    return m1, m2, grad_1, grad_2, initgrad, tol_1, tol_2, trace_kernel
+
+
+def do_nmf_sparse(x, m, nc, percent_zeros, iter_sparse):
+    sparse_test = np.zeros((x, 1))
+    for k in range(0, nc):
+        sparse_test[np.where(m[:, k] > 0)] = 1
+
+    percent_zeros0 = percent_zeros
+    n_sparse_test = np.where(sparse_test == 0)[0].size
+    percent_zeros = max(n_sparse_test / x, 0.01)
+    if percent_zeros == percent_zeros0:
+        iter_sparse += 1
+    else:
+        iter_sparse = 0
+    return percent_zeros0, iter_sparse, percent_zeros
+
+
+def preinit_ntf_solve(m, mmis, nc, n_blocks):
+    n, p0 = m.shape
+    n_mmis = mmis.shape[0]
+    nc = int(nc)
+    n_blocks = int(n_blocks)
+    p = int(p0 / n_blocks)
+    n0 = int(n * n_blocks)
+    nxp = int(n * p)
+    nxp0 = int(n * p0)
+    return n, p0, n_mmis, nc, n_blocks, p, nxp, nxp0, n0
+
+
+def init_ntf_solve(m, mmis, nc, n_blocks, mt0, mw0, mb0, max_iterations):
+    n, p0, n_mmis, nc, n_blocks, p, nxp, nxp0, n0 = preinit_ntf_solve(
+        m, mmis, nc, n_blocks
+    )
+    mt = np.copy(mt0)
+    mw = np.copy(mw0)
+    mb = np.copy(mb0)
+    #     step_iter = math.ceil(max_iterations/10)
+    step_iter = 1
+    pbar_step = 100 * step_iter / max_iterations
+
+    id_blockp = np.arange(0, (n_blocks - 1) * p + 1, p)
+    a = np.zeros(n)
+    b = np.zeros(p)
+    c = np.zeros(n_blocks)
+    return n, p0, n_mmis, nc, n_blocks, p, nxp, nxp0, mt, mw, mb, step_iter, pbar_step, id_blockp, a, b, c
+
+
+def second_init_ntf_solve(nxp, n_mmis, m, mfit, mmis, my_status_box, n, p0):
+    mtw = np.zeros(nxp)
+    denom_cutoff = 0.1
+
+    if n_mmis > 0:
+        mres = (m - mfit) * mmis
+    else:
+        mres = m - mfit
+
+    my_status_box.init_bar(delay=1)
+
+    # Loop
+    cont = 1
+    i_iter = 0
+    diff0 = 1.0e99
+    mpart = np.zeros((n, p0))
+    return mtw, denom_cutoff, mres, cont, i_iter, diff0, mpart
+
+
+def reshape_mfit(n_blocks, mfit, id_blockp, mt, k, mw, n, mb, p):
+    if n_blocks > 1:
+        mfit = reshape_fit_if_nblocks(n_blocks, id_blockp, mfit, p, mb, k, mt, n, mw)
+    else:
+        mfit[:, id_blockp[0]: id_blockp[0] + p] += np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+    return mfit
+
+
+def reshape_fit_if_nblocks(n_blocks, id_blockp, mfit, p, mb, k, mt, n, mw):
+    for i_block in range(0, n_blocks):
+        mfit[:, id_blockp[i_block]: id_blockp[i_block] + p] += (
+            mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+        )
+    return mfit
+
+
+def update_status(status0, i_iter, nmf_sparse_level, percent_zeros, alpha, log_iter, my_status_box, pbar_step, m1, m2,
+                  m3, m4, m5, diff):
+    status = status0 + "Iteration: %s" % int(i_iter)
+
+    if nmf_sparse_level != 0:
+        status = status + "; Achieved sparsity: " + str(round(percent_zeros, 2)) + "; alpha: " + str(round(alpha, 2))
+        if log_iter == 1:
+            my_status_box.my_print(status)
+
+    my_status_box.update_status(delay=1, status=status)
+    my_status_box.update_bar(delay=1, step=pbar_step)
+    if my_status_box.cancel_pressed:
+        cancel_pressed = 1
+        if m1 is None:
+            return [m2, m3, m4, m5, cancel_pressed]
+        else:
+            return [m1, m2, m3, m4, m5, cancel_pressed]
+
+    if log_iter == 1:
+        my_status_box.my_print(status0 + " Iter: " + str(i_iter) + " MSR: " + str(diff))
+
+
+def denom_and_t2(denom, cutoff, id_block, k, t2, n_blocks, mtw, mb, mx_mmis, x):
+    denom /= np.max(denom)
+    denom[denom < cutoff] = cutoff
+    for i_block in range(0, n_blocks):
+        t2[:, k] += mx_mmis[:, id_block[i_block]: id_block[i_block] + x] @ mtw[:, k] * mb[i_block, k]
+
+    t2[:, k] /= denom
+    return denom, t2
+
+
+def three_ifs(nmf_fix_user_lhe, norm_lhe, mt, k, nmf_fix_user_rhe, norm_rhe, mw, nmf_fix_user_bhe, norm_bhe, mb,
+              n_blocks=None):
+    norm = None
+    if (nmf_fix_user_lhe > 0) & norm_lhe:
+        norm = np.linalg.norm(mt[:, k])
+        if norm > 0:
+            mt[:, k] /= norm
+
+    if (nmf_fix_user_rhe > 0) & norm_rhe:
+        norm = np.linalg.norm(mw[:, k])
+        if norm > 0:
+            mw[:, k] /= norm
+
+    if (nmf_fix_user_bhe > 0) & norm_bhe & ((n_blocks > 1) if n_blocks is not None else True):
+        norm = np.linalg.norm(mb[:, k])
+        if norm > 0:
+            mb[:, k] /= norm
+    return norm, mt, mw, mb

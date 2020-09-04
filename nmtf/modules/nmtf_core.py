@@ -11,7 +11,9 @@ import math
 import numpy as np
 
 from .nmtf_utils import percentile_exc, nmf_get_convex_scores, shift, sparse_opt
-from .small_function import in_loop_update_m, do_inner_iter, do_if_nmf_algo
+from .small_function import in_loop_update_m, do_inner_iter, do_if_nmf_algo, do_initgrad, do_nmf_sparse, \
+    reshape_mfit, init_ntf_solve, second_init_ntf_solve, reshape_fit_if_nblocks, update_status, denom_and_t2, \
+    three_ifs, preinit_ntf_solve
 
 
 def nmf_proj_grad(v, vmis, w, hinit, nmf_algo, lambdax, tol, max_iterations, nmf_priors):
@@ -685,24 +687,9 @@ def nmf_solve(
                         else:
                             kernel = nmf_apply_kernel(m / (mt @ mw.T), 1, np.array([]), np.array([]))
 
-                    trace_kernel = np.trace(kernel)
-                    # noinspection PyBroadException
-                    try:
-                        mh = mw @ np.linalg.inv(mw.T @ mw)
-                    except BaseException:
-                        mh = mw @ np.linalg.pinv(mw.T @ mw)
-
-                    mh[np.where(mh < 0)] = 0
-                    for k in range(0, nc):
-                        scale_mw = np.linalg.norm(mw[:, k])
-                        mw[:, k] = mw[:, k] / scale_mw
-                        mh[:, k] = mh[:, k] * scale_mw
-
-                    grad_mh = mh @ (mw.T @ mw) - mw
-                    grad_mw = ((mh.T @ mh) @ mw.T - mh.T).T
-                    initgrad = np.linalg.norm(np.concatenate((grad_mh, grad_mw), axis=0))
-                    tol_mh = 1.0e-3 * initgrad
-                    tol_mw = tol_mt
+                    mh, mw, grad_mh, grad_mw, initgrad, tol_mh, tol_mw, trace_kernel = do_initgrad(
+                        kernel, nc, mw, mh, mw, tol=tol_mt
+                    )
                 elif nmf_find_centroids > 0:
                     the_in = np.identity(n)
                     if (nmf_algo == 2) or (nmf_algo == 4):
@@ -716,24 +703,9 @@ def nmf_solve(
                         else:
                             kernel = nmf_apply_kernel(m.T / (mt @ mw.T).T, 1, np.array([]), np.array([]))
 
-                    trace_kernel = np.trace(kernel)
-                    # noinspection PyBroadException
-                    try:
-                        mh = mt @ np.linalg.inv(mt.T @ mt)
-                    except BaseException:
-                        mh = mt @ np.linalg.pinv(mt.T @ mt)
-
-                    mh[np.where(mh < 0)] = 0
-                    for k in range(0, nc):
-                        scale_mt = np.linalg.norm(mt[:, k])
-                        mt[:, k] = mt[:, k] / scale_mt
-                        mh[:, k] = mh[:, k] * scale_mt
-
-                    grad_mt = mt @ (mh.T @ mh) - mh
-                    grad_mh = ((mt.T @ mt) @ mh.T - mt.T).T
-                    initgrad = np.linalg.norm(np.concatenate((grad_mt, grad_mh), axis=0))
-                    tol_mh = 1.0e-3 * initgrad
-                    tol_mt = tol_mh
+                    mh, mt, grad_mt, grad_mh, initgrad, tol_mh, tol_mt, trace_kernel = do_initgrad(
+                        kernel, nc, mt, mt, mh
+                    )
 
             elif (nmf_convex > 0) & (nmf_kernel > 1) & (nl_kernel_applied == 0):
                 nl_kernel_applied = 1
@@ -757,37 +729,14 @@ def nmf_solve(
                     else:
                         kernel = nmf_apply_kernel(m.T / (mt @ mw.T).T, nmf_kernel, mw, mt)
 
-                trace_kernel = np.trace(kernel)
-                # noinspection PyBroadException
-                try:
-                    mh = mt @ np.linalg.inv(mt.T @ mt)
-                except BaseException:
-                    mh = mt @ np.linalg.pinv(mt.T @ mt)
-
-                mh[np.where(mh < 0)] = 0
-                for k in range(0, nc):
-                    scale_mt = np.linalg.norm(mt[:, k])
-                    mt[:, k] = mt[:, k] / scale_mt
-                    mh[:, k] = mh[:, k] * scale_mt
-
-                grad_mt = mt @ (mh.T @ mh) - mh
-                grad_mh = ((mt.T @ mt) @ mh.T - mt.T).T
-                initgrad = np.linalg.norm(np.concatenate((grad_mt, grad_mh), axis=0))
-                tol_mh = 1.0e-3 * initgrad
-                tol_mt = tol_mh
+                mh, mt, grad_mt, grad_mh, initgrad, tol_mh, tol_mt, trace_kernel = do_initgrad(
+                    kernel, nc, mt, mt, mh
+                )
 
             if nmf_sparse_level > 0:
-                sparse_test = np.zeros((p, 1))
-                for k in range(0, nc):
-                    sparse_test[np.where(mw[:, k] > 0)] = 1
-
-                percent_zeros0 = percent_zeros
-                n_sparse_test = np.where(sparse_test == 0)[0].size
-                percent_zeros = max(n_sparse_test / p, 0.01)
-                if percent_zeros == percent_zeros0:
-                    iter_sparse += 1
-                else:
-                    iter_sparse = 0
+                percent_zeros0, iter_sparse, percent_zeros = do_nmf_sparse(
+                    p, mw, nc, percent_zeros, iter_sparse
+                )
 
                 if (percent_zeros < 0.99 * nmf_sparse_level) & (iter_sparse < 50):
                     lambdaw *= min(1.01 * nmf_sparse_level / percent_zeros, 1.10)
@@ -795,17 +744,9 @@ def nmf_solve(
                     cont = 1
 
             elif nmf_sparse_level < 0:
-                sparse_test = np.zeros((n, 1))
-                for k in range(0, nc):
-                    sparse_test[np.where(mt[:, k] > 0)] = 1
-
-                percent_zeros0 = percent_zeros
-                n_sparse_test = np.where(sparse_test == 0)[0].size
-                percent_zeros = max(n_sparse_test / n, 0.01)
-                if percent_zeros == percent_zeros0:
-                    iter_sparse += 1
-                else:
-                    iter_sparse = 0
+                percent_zeros0, iter_sparse, percent_zeros = do_nmf_sparse(
+                    n, mt, nc, percent_zeros, iter_sparse
+                )
 
                 if (percent_zeros < 0.99 * abs(nmf_sparse_level)) & (iter_sparse < 50):
                     lambdat *= min(1.01 * abs(nmf_sparse_level) / percent_zeros, 1.10)
@@ -951,6 +892,7 @@ def ntf_solve(
         )
 
 
+# noinspection DuplicatedCode
 def ntf_solve_simple(
         m,
         mmis,
@@ -1017,56 +959,36 @@ def ntf_solve_simple(
     diff = None
     cancel_pressed = 0
 
-    n, p0 = m.shape
-    n_mmis = mmis.shape[0]
-    nc = int(nc)
-    n_blocks = int(n_blocks)
-    p = int(p0 / n_blocks)
-    nxp = int(n * p)
-    nxp0 = int(n * p0)
-    mt = np.copy(mt0)
-    mw = np.copy(mw0)
-    mb = np.copy(mb0)
-    #     step_iter = math.ceil(max_iterations/10)
-    step_iter = 1
-    pbar_step = 100 * step_iter / max_iterations
-
-    id_blockp = np.arange(0, (n_blocks - 1) * p + 1, p)
-    a = np.zeros(n)
-    b = np.zeros(p)
-    c = np.zeros(n_blocks)
+    (n,
+     p0,
+     n_mmis,
+     nc, n_blocks,
+     p,
+     nxp,
+     nxp0,
+     mt,
+     mw,
+     mb,
+     step_iter,
+     pbar_step,
+     id_blockp,
+     a,
+     b,
+     c) = init_ntf_solve(m, mmis, nc, n_blocks, mt0, mw0, mb0, max_iterations)
 
     # Compute Residual tensor
     mfit = np.zeros((n, p0))
     for k in range(0, nc):
-        if n_blocks > 1:
-            for i_block in range(0, n_blocks):
-                mfit[:, id_blockp[i_block]: id_blockp[i_block] + p] += (
-                    mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
-                )
-        else:
-            mfit[:, id_blockp[0]: id_blockp[0] + p] += np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+        mfit = reshape_mfit(n_blocks, mfit, id_blockp, mt, k, mw, n, mb, p)
 
     denomt = np.zeros(n)
     denomw = np.zeros(p)
     denom_block = np.zeros((n_blocks, nc))
     mt2 = np.zeros(n)
     mw2 = np.zeros(p)
-    mt_mw = np.zeros(nxp)
-    denom_cutoff = 0.1
-
-    if n_mmis > 0:
-        mres = (m - mfit) * mmis
-    else:
-        mres = m - mfit
-
-    my_status_box.init_bar(delay=1)
-
-    # Loop
-    cont = 1
-    i_iter = 0
-    diff0 = 1.0e99
-    mpart = np.zeros((n, p0))
+    mt_mw, denom_cutoff, mres, cont, i_iter, diff0, mpart = second_init_ntf_solve(
+        nxp, n_mmis, m, mfit, mmis, my_status_box, n, p0
+    )
     # alpha = nmf_sparse_level
     alpha = nmf_sparse_level / 2
     percent_zeros = 0
@@ -1157,6 +1079,10 @@ def ntf_solve_simple(
 
                 diff0 = diff
 
+            ret = update_status(status0, i_iter, nmf_sparse_level, percent_zeros, alpha, log_iter, my_status_box,
+                                pbar_step, np.array([]), mt, mw, mb, mres, diff)
+            if ret is not None:
+                return ret
             status = status0 + "Iteration: %s" % int(i_iter)
 
             if nmf_sparse_level != 0:
@@ -1217,17 +1143,22 @@ def ntf_solve_simple(
             #             i_iter = 1
             #             cont = 1
 
-            if nmf_sparse_level > 0:
-                sparse_test = np.zeros((nc, 1))
-                percent_zeros0 = percent_zeros
-                for k in range(0, nc):
-                    sparse_test[k] = np.where(mw[:, k] == 0)[0].size
+            def a_function(_nc, _percent_zeros, _mw, x, _iter_sparse):
+                _sparse_test = np.zeros((_nc, 1))
+                _percent_zeros0 = _percent_zeros
+                for _k in range(0, _nc):
+                    sparse_test[_k] = np.where(_mw[:, _k] == 0)[0].size
 
-                percent_zeros = np.mean(sparse_test) / p
-                if percent_zeros < percent_zeros0:
-                    iter_sparse += 1
+                _percent_zeros = np.mean(sparse_test) / x
+                if _percent_zeros < percent_zeros0:
+                    _iter_sparse += 1
                 else:
-                    iter_sparse = 0
+                    _iter_sparse = 0
+                return _sparse_test, _percent_zeros0, _percent_zeros, _iter_sparse
+
+            if nmf_sparse_level > 0:
+                sparse_test, percent_zeros0, percent_zeros, iter_sparse = a_function(nc, percent_zeros, mw, p,
+                                                                                     iter_sparse)
 
                 if (percent_zeros < 0.99 * nmf_sparse_level) & (iter_sparse < 50):
                     alpha *= min(1.01 * nmf_sparse_level / percent_zeros, 1.1)
@@ -1236,16 +1167,8 @@ def ntf_solve_simple(
                         cont = 1
 
             elif nmf_sparse_level < 0:
-                sparse_test = np.zeros((nc, 1))
-                percent_zeros0 = percent_zeros
-                for k in range(0, nc):
-                    sparse_test[k] = np.where(mw[:, k] == 0)[0].size
-
-                percent_zeros = np.mean(sparse_test) / n
-                if percent_zeros < percent_zeros0:
-                    iter_sparse += 1
-                else:
-                    iter_sparse = 0
+                sparse_test, percent_zeros0, percent_zeros, iter_sparse = a_function(nc, percent_zeros, mw, n,
+                                                                                     iter_sparse)
 
                 if (percent_zeros < 0.99 * abs(nmf_sparse_level)) & (iter_sparse < 50):
                     alpha *= min(1.01 * abs(nmf_sparse_level) / percent_zeros, 1.1)
@@ -1259,6 +1182,7 @@ def ntf_solve_simple(
     return [np.array([]), mt, mw, mb, diff, cancel_pressed]
 
 
+# noinspection DuplicatedCode
 def ntf_solve_conv(
         m,
         mmis,
@@ -1322,28 +1246,27 @@ def ntf_solve_conv(
 
      """
 
+    ntfn_conv = int(ntfn_conv)
     diff = None
     cancel_pressed = 0
 
-    n, p0 = m.shape
-    n_mmis = mmis.shape[0]
-    nc = int(nc)
-    n_blocks = int(n_blocks)
-    ntfn_conv = int(ntfn_conv)
-    p = int(p0 / n_blocks)
-    nxp = int(n * p)
-    nxp0 = int(n * p0)
-    mt_simple = np.copy(mt0)
-    mw_simple = np.copy(mw0)
-    mb_simple = np.copy(mb0)
-    #     step_iter = math.ceil(max_iterations/10)
-    step_iter = 1
-    pbar_step = 100 * step_iter / max_iterations
+    (n,
+     p0,
+     n_mmis,
+     nc, n_blocks,
+     p,
+     nxp,
+     nxp0,
+     mt_simple,
+     mw_simple,
+     mb_simple,
+     step_iter,
+     pbar_step,
+     id_blockp,
+     a,
+     b,
+     c) = init_ntf_solve(m, mmis, nc, n_blocks, mt0, mw0, mb0, max_iterations)
 
-    id_blockp = np.arange(0, (n_blocks - 1) * p + 1, p)
-    a = np.zeros(n)
-    b = np.zeros(p)
-    c = np.zeros(n_blocks)
     mt_mw = np.zeros(nxp)
     ntfn_conv2 = 2 * ntfn_conv + 1
 
@@ -1364,30 +1287,15 @@ def ntf_solve_conv(
     for k3 in range(0, nc):
         for k2 in range(0, ntfn_conv2):
             k = k3 * ntfn_conv2 + k2
-            for i_block in range(0, n_blocks):
-                mfit[:, id_blockp[i_block]: id_blockp[i_block] + p] += (
-                    mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
-                )
+            mfit = reshape_fit_if_nblocks(n_blocks, id_blockp, mfit, p, mb, k, mt, n, mw)
 
     denomt = np.zeros(n)
     denomw = np.zeros(p)
     denom_block = np.zeros((n_blocks, nc))
     mt2 = np.zeros(n)
-    mw2 = np.zeros(p)
-    denom_cutoff = 0.1
-
-    if n_mmis > 0:
-        mres = (m - mfit) * mmis
-    else:
-        mres = m - mfit
-
-    my_status_box.init_bar(delay=1)
-
-    # Loop
-    cont = 1
-    i_iter = 0
-    diff0 = 1.0e99
-    mpart = np.zeros((n, p0))
+    mw2, denom_cutoff, mres, cont, i_iter, diff0, mpart = second_init_ntf_solve(
+        nxp, n_mmis, m, mfit, mmis, my_status_box, n, p0
+    )
     alpha = nmf_sparse_level
     # alpha_blocks = 0  # Unused ?
     percent_zeros = 0
@@ -1491,40 +1399,18 @@ def ntf_solve_conv(
             else:
                 diff0 = diff
 
-            status = status0 + "Iteration: %s" % int(i_iter)
-
-            if nmf_sparse_level != 0:
-                status = (
-                    status + "; Achieved sparsity: " + str(round(percent_zeros, 2)) + "; alpha: " + str(
-                        round(alpha, 2))
-                )
-                if log_iter == 1:
-                    my_status_box.my_print(status)
-
-            my_status_box.update_status(delay=1, status=status)
-            my_status_box.update_bar(delay=1, step=pbar_step)
-            if my_status_box.cancel_pressed:
-                cancel_pressed = 1
-                return [mt, mt_simple, mw_simple, mb_simple, cancel_pressed]
-
-            if log_iter == 1:
-                my_status_box.my_print(status0 + " Iter: " + str(i_iter) + " MSR: " + str(diff))
+            ret = update_status(status0, i_iter, nmf_sparse_level, percent_zeros, alpha, log_iter, my_status_box,
+                                pbar_step, None, mt, mt_simple, mw_simple, mb_simple, diff)
+            if ret is not None:
+                return ret
 
         i_iter += 1
 
         if (cont == 0) | (i_iter == max_iterations):
             if nmf_sparse_level > 0:
-                sparse_test = np.zeros((p, 1))
-                for k in range(0, nc):
-                    sparse_test[np.where(mw[:, k] > 0)] = 1
-
-                percent_zeros0 = percent_zeros
-                n_sparse_test = np.where(sparse_test == 0)[0].size
-                percent_zeros = max(n_sparse_test / p, 0.01)
-                if percent_zeros == percent_zeros0:
-                    iter_sparse += 1
-                else:
-                    iter_sparse = 0
+                percent_zeros0, iter_sparse, percent_zeros = do_nmf_sparse(
+                    p, mw, nc, percent_zeros, iter_sparse
+                )
 
                 if (percent_zeros < 0.99 * nmf_sparse_level) & (iter_sparse < 50):
                     alpha *= min(1.01 * nmf_sparse_level / percent_zeros, 1.01)
@@ -1533,17 +1419,9 @@ def ntf_solve_conv(
                         cont = 1
 
             elif nmf_sparse_level < 0:
-                sparse_test = np.zeros((n, 1))
-                for k in range(0, nc):
-                    sparse_test[np.where(mt[:, k] > 0)] = 1
-
-                percent_zeros0 = percent_zeros
-                n_sparse_test = np.where(sparse_test == 0)[0].size
-                percent_zeros = max(n_sparse_test / n, 0.01)
-                if percent_zeros == percent_zeros0:
-                    iter_sparse += 1
-                else:
-                    iter_sparse = 0
+                percent_zeros0, iter_sparse, percent_zeros = do_nmf_sparse(
+                    n, mt, nc, percent_zeros, iter_sparse
+                )
 
                 if (percent_zeros < 0.99 * abs(nmf_sparse_level)) & (iter_sparse < 50):
                     alpha *= min(1.01 * abs(nmf_sparse_level) / percent_zeros, 1.01)
@@ -1615,14 +1493,9 @@ def ntf_solve_fast(
     mx_mmis2 = denom_block = denomt = denom_cutoff = mx_mmis = denomw = diff = None
     cancel_pressed = 0
 
-    n, p0 = m.shape
-    n_mmis = mmis.shape[0]
-    nc = int(nc)
-    n_blocks = int(n_blocks)
-    p = int(p0 / n_blocks)
-    n0 = int(n * n_blocks)
-    nxp = int(n * p)
-    nxp0 = int(n * p0)
+    n, p0, n_mmis, nc, n_blocks, p, nxp, nxp0, n0 = preinit_ntf_solve(
+        m, mmis, nc, n_blocks
+    )
     mt = np.copy(mt0)
     mw = np.copy(mw0)
     mb = np.copy(mb0)
@@ -1649,20 +1522,8 @@ def ntf_solve_fast(
         norm_rhe = True
 
     for k in range(0, nc):
-        if (nmf_fix_user_lhe > 0) & norm_lhe:
-            norm = np.linalg.norm(mt[:, k])
-            if norm > 0:
-                mt[:, k] /= norm
-
-        if (nmf_fix_user_rhe > 0) & norm_rhe:
-            norm = np.linalg.norm(mw[:, k])
-            if norm > 0:
-                mw[:, k] /= norm
-
-        if (nmf_fix_user_bhe > 0) & norm_bhe:
-            norm = np.linalg.norm(mb[:, k])
-            if norm > 0:
-                mb[:, k] /= norm
+        norm, mt, mw, mb = three_ifs(nmf_fix_user_lhe, norm_lhe, mt, k, nmf_fix_user_rhe, norm_rhe, mw,
+                                     nmf_fix_user_bhe, norm_bhe, mb)
 
     # Normalize factors to unit length
     #    for k in range(0, nc):
@@ -1733,12 +1594,7 @@ def ntf_solve_fast(
                             mmis[:, id_blockp[i_block]: id_blockp[i_block] + p].T * mwn, axis=0
                         )
 
-                    denomt /= np.max(denomt)
-                    denomt[denomt < denom_cutoff] = denom_cutoff
-                    for i_block in range(0, n_blocks):
-                        t2t[:, k] += mx_mmis[:, id_blockp[i_block]: id_blockp[i_block] + p] @ mw[:, k] * mb[i_block, k]
-
-                    t2t[:, k] /= denomt
+                    denomt, t2t = denom_and_t2(denomt, denom_cutoff, id_blockp, k, t2t, n_blocks, mw, mb, mx_mmis, p)
                 else:
                     for i_block in range(0, n_blocks):
                         t2t[:, k] += m[:, id_blockp[i_block]: id_blockp[i_block] + p] @ mw[:, k] * mb[i_block, k]
@@ -1773,12 +1629,7 @@ def ntf_solve_fast(
                             mmis[:, id_blockp[i_block]: id_blockp[i_block] + p] * mtp, axis=0
                         )
 
-                    denomw /= np.max(denomw)
-                    denomw[denomw < denom_cutoff] = denom_cutoff
-                    for i_block in range(0, n_blocks):
-                        t2w[:, k] += mx_mmis2[:, id_blockn[i_block]: id_blockn[i_block] + n] @ mt[:, k] * mb[i_block, k]
-
-                    t2w[:, k] /= denomw
+                    denomw, t2w = denom_and_t2(denomw, denom_cutoff, id_blockn, k, t2w, n_blocks, mt, mb, mx_mmis2, n)
                 else:
                     for i_block in range(0, n_blocks):
                         t2w[:, k] += m2[:, id_blockn[i_block]: id_blockn[i_block] + n] @ mt[:, k] * mb[i_block, k]
@@ -1801,6 +1652,10 @@ def ntf_solve_fast(
             t1 = t3 * mw2
 
         if nmf_fix_user_bhe == 0:
+            def a_reshape(_mx_mmis, _id_blockp, _i_block, _p, _nxp, _mt, _k, _n, _mw):
+                return np.reshape(_mx_mmis[:, _id_blockp[_i_block]: _id_blockp[_i_block] + _p], _nxp).T @ (np.reshape((
+                    np.reshape(_mt[:, _k], (_n, 1)) @ np.reshape(_mw[:, _k], (1, _p))), _nxp))
+
             # Update mb
             for k in range(0, nc):
                 if n_mmis > 0:
@@ -1817,16 +1672,13 @@ def ntf_solve_fast(
                     denom_block[denom_block[:, k] < denom_cutoff * maxdenom_block] = denom_cutoff * maxdenom_block
                     for i_block in range(0, n_blocks):
                         t2_block[i_block, k] = (
-                            np.reshape(mx_mmis[:, id_blockp[i_block]: id_blockp[i_block] + p], nxp).T
-                            @ (np.reshape((np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))), nxp))
-                            / denom_block[i_block, k]
+                            a_reshape(mx_mmis, id_blockp, i_block, p, nxp, mt, k, n, mw) / denom_block[i_block, k]
                         )
 
                 else:
                     for i_block in range(0, n_blocks):
-                        t2_block[i_block, k] = np.reshape(m[:, id_blockp[i_block]: id_blockp[i_block] + p], nxp).T @ (
-                            np.reshape((np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))), nxp)
-                        )
+                        t2_block[i_block, k] = a_reshape(
+                            m, id_blockp, i_block, p, nxp, mt, k, n, mw) / denom_block[i_block, k]
 
             mb2 = mb.T @ mb
             mb2[mb2 == 0] = precision
@@ -1847,21 +1699,13 @@ def ntf_solve_fast(
             mfit[:, :] = 0
 
             for k in range(0, nc):
+                for i_block in range(0, n_blocks):
+                    mfit[:, id_blockp[i_block]: id_blockp[i_block] + p] += mb[i_block, k] * (
+                        np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+                    )
                 if n_mmis > 0:
-                    for i_block in range(0, n_blocks):
-                        # mfit[:, id_blockp[i_block]:id_blockp[i_block] + p] +=
-                        # denom_block[i_block, k] * mb[i_block, k] * (
-                        mfit[:, id_blockp[i_block]: id_blockp[i_block] + p] += mb[i_block, k] * (
-                            np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
-                        )
-
                     mres = (m - mfit) * mmis
                 else:
-                    for i_block in range(0, n_blocks):
-                        mfit[:, id_blockp[i_block]: id_blockp[i_block] + p] += mb[i_block, k] * (
-                            np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
-                        )
-
                     mres = m - mfit
 
             # Check convergence
@@ -1965,20 +1809,8 @@ def ntf_update(
         norm_lhe = True
         norm_rhe = True
 
-    if (nmf_fix_user_lhe > 0) & norm_lhe:
-        norm = np.linalg.norm(mt[:, k])
-        if norm > 0:
-            mt[:, k] /= norm
-
-    if (nmf_fix_user_rhe > 0) & norm_rhe:
-        norm = np.linalg.norm(mw[:, k])
-        if norm > 0:
-            mw[:, k] /= norm
-
-    if (nmf_fix_user_bhe > 0) & norm_bhe & (n_blocks > 1):
-        norm = np.linalg.norm(mb[:, k])
-        if norm > 0:
-            mb[:, k] /= norm
+    norm, mt, mw, mb = three_ifs(nmf_fix_user_lhe, norm_lhe, mt, k, nmf_fix_user_rhe, norm_rhe, mw, nmf_fix_user_bhe,
+                                 norm_bhe, mb, n_blocks)
 
     if nmf_fix_user_lhe == 0:
         # Update m
@@ -2082,13 +1914,7 @@ def ntf_update(
 
     # Update residual tensor
     mfit[:, :] = 0
-    if n_blocks > 1:
-        for i_block in range(0, n_blocks):
-            mfit[:, id_blockp[i_block]: id_blockp[i_block] + p] += (
-                mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
-            )
-    else:
-        mfit[:, id_blockp[0]: id_blockp[0] + p] += np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+    mfit = reshape_mfit(n_blocks, mfit, id_blockp, mt, k, mw, n, mb, p)
 
     if n_mmis > 0:
         mres[:, :] = (mpart - mfit) * mmis
