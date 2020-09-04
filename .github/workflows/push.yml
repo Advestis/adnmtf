@@ -53,5 +53,4 @@ jobs:
           service_account_email: 570907508813-compute@developer.gserviceaccount.com
           service_account_key: ${{ secrets.DOCKER_PASSWORD }}
       - name: Deploy
-        run: |
-          gsutil cp $thefile gs://pypi_server_sand/nmtf/
+        run: gsutil cp dist/* gs://pypi_server_sand/nmtf/
