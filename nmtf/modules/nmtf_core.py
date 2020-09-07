@@ -1147,10 +1147,10 @@ def ntf_solve_simple(
                 _sparse_test = np.zeros((_nc, 1))
                 _percent_zeros0 = _percent_zeros
                 for _k in range(0, _nc):
-                    sparse_test[_k] = np.where(_mw[:, _k] == 0)[0].size
+                    _sparse_test[_k] = np.where(_mw[:, _k] == 0)[0].size
 
-                _percent_zeros = np.mean(sparse_test) / x
-                if _percent_zeros < percent_zeros0:
+                _percent_zeros = np.mean(_sparse_test) / x
+                if _percent_zeros < _percent_zeros0:
                     _iter_sparse += 1
                 else:
                     _iter_sparse = 0
@@ -1297,7 +1297,6 @@ def ntf_solve_conv(
         nxp, n_mmis, m, mfit, mmis, my_status_box, n, p0
     )
     alpha = nmf_sparse_level
-    # alpha_blocks = 0  # Unused ?
     percent_zeros = 0
     iter_sparse = 0
 
