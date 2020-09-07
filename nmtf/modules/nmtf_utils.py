@@ -57,8 +57,8 @@ class StatusBox:
         self.pbar.after(delay, lambda: self.root.quit())
         self.root.mainloop()
 
-    def init_bar(self):
-        self.update_bar(delay=1, step=100 - self.n_steps)
+    def init_bar(self, delay=1):
+        self.update_bar(delay=delay, step=100 - self.n_steps)
         self.n_steps = 0
 
     def update_status(self, delay=1, status=''):
@@ -82,15 +82,15 @@ class StatusBoxTqdm:
 
         self.cancel_pressed = False
 
-    def update_bar(self, step=1):
+    def update_bar(self, step=1, **kwargs):
         if self.log_iter == 0:
             self.pbar.update(n=step)
 
-    def init_bar(self):
+    def init_bar(self, **kwargs):
         if self.log_iter == 0:
             self.pbar.n = 0
 
-    def update_status(self, status=""):
+    def update_status(self, status="", **kwargs):
         if self.log_iter == 0:
             self.pbar.set_description(status, refresh=False)
             self.pbar.refresh()
@@ -653,7 +653,6 @@ def global_sign(nrun, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup
 
             if irun < nrun - 1:
                 # permute row groups
-                # boot = np.random.permutation  # Unused ?
                 row_groups = row_groups0[np.random.permutation(n)]
             else:
                 # Restore
