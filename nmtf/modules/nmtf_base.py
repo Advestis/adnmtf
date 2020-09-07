@@ -494,12 +494,12 @@ def ntf_init(
         u, d, v = randomized_svd(
             np.reshape(mtx_mw[:, k], (int(p / n_blocks), n)).T, n_components=n_fact, n_iter="auto", random_state=None
         )
-        # v = v.T  # Unused ?
+        v = v.T
         my_status_box.update_status(delay=1, status="SVD completed")
         for i_fact in range(0, n_fact):
             ind = i_fact * n_blocks + k
             if ind < nc:
-                u1, u2, v1, v2 = set_uv(mt, mw, i_fact, n)
+                u1, u2, v1, v2 = set_uv(u, v, i_fact, n)
                 v1 = np.reshape(v1, (1, int(p / n_blocks)))
                 u2 = np.reshape(u2, (n, 1))
                 v2 = np.reshape(v2, (1, int(p / n_blocks)))
@@ -2087,8 +2087,6 @@ def non_negative_tensor_factorization(
             mt0[:, k] /= scale_ratio
             mw0[:, k] /= scale_ratio
             mb0[:, k] /= scale_ratio
-
-        # mfit = do_mfit(n, p, nc, n_blocks, p_block, mb0, mt0, mw0)  # Unused ?
 
     ntf_fast_hals = fast_hals
     ntfn_iterations = n_iter_hals
