@@ -1,5 +1,0 @@
-pandas
-numpy
-sklearn
-tqdm
-scipy
