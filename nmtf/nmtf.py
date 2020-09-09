@@ -7,7 +7,7 @@
 # License: MIT
 # Dec 28, '19
 
-from nmtf_base import *
+from .nmtf_base import *
 
 class NMF:
     """Initialize NMF model
