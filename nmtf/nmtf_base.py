@@ -15,8 +15,8 @@ from tqdm import tqdm
 from scipy.stats import hypergeom
 from scipy.optimize import nnls
 
-from nmtf_core import *
-from nmtf_utils import *
+from .nmtf_core import *
+from .nmtf_utils import *
 
 import sys
 if not hasattr(sys, 'argv'):
