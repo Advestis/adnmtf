@@ -22,6 +22,8 @@ def test():
     estimator = my_nt_fmodel.fit_transform(m0, n_blocks, sparsity=.8, n_bootstrap=10)
     estimator = my_nt_fmodel.predict(estimator)
     for key in estimator:
+        print("")
+        print(f"Testing {key}...")
         key_exp = key
         if key not in expected_estimator:
             key_exp = key.upper()
@@ -37,3 +39,4 @@ def test():
                 raise e
         else:
             assert estimator[key] == expected_estimator[key_exp]
+        print("...ok")
