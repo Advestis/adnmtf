@@ -21,22 +21,38 @@ def test():
     my_nt_fmodel = NTF(n_components=5)
     estimator = my_nt_fmodel.fit_transform(m0, n_blocks, sparsity=.8, n_bootstrap=10)
     estimator = my_nt_fmodel.predict(estimator)
+    failed = False
     for key in estimator:
         print("")
         print(f"Testing {key}...")
         key_exp = key
         if key not in expected_estimator:
             key_exp = key.upper()
-        if isinstance(estimator[key], np.ndarray):
-            try:
+
+        if key not in expected_estimator:
+            print(f"{key} not found in expected elements")
+            failed = True
+            continue
+
+        if not isinstance(estimator[key], type(expected_estimator[key_exp])):
+            print("")
+            print(f"Type of {key} is {type(estimator[key])} while expected type if {type(expected_estimator[key_exp])}")
+            failed = True
+            continue
+
+        try:
+            if isinstance(estimator[key], np.ndarray):
                 np.testing.assert_array_almost_equal(estimator[key], expected_estimator[key_exp])
-            except AssertionError as e:
-                np.set_printoptions(threshold=sys.maxsize)
-                print("")
-                print(f"Estimator[{key}]:{estimator[key]}")
-                print(f"Expected:{expected_estimator[key_exp]}")
-                print("Differences:", estimator[key] - expected_estimator[key_exp])
-                raise e
-        else:
-            assert estimator[key] == expected_estimator[key_exp]
-        print("...ok")
+            else:
+                assert estimator[key] == expected_estimator[key_exp]
+            print("...ok")
+        except AssertionError:
+            np.set_printoptions(threshold=sys.maxsize)
+            print("")
+            print(f"Estimator[{key}]:{estimator[key]}")
+            print(f"Expected:{expected_estimator[key_exp]}")
+            print("Differences:", estimator[key] - expected_estimator[key_exp])
+            failed = True
+
+    if failed:
+        raise AssertionError("Some tests failed")
