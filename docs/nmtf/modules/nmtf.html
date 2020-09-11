@@ -126,8 +126,10 @@ If n_update_H = 0 , it is used as a constant, to solve for W only.</dd>
 <dt><strong><code>regularization</code></strong> :&ensp;<code>None | 'components' | 'transformation'</code></dt>
 <dd>Select whether the regularization affects the components (H), the
 transformation (W) or none of them.</dd>
-<dt><strong><code>sparsity</code></strong> :&ensp;<code>integer</code>, default<code>: 0</code></dt>
-<dd>Sparsity target with 0 &lt;= sparsity &lt;= 1 representing the % rows in W or H set to 0.</dd>
+<dt><strong><code>sparsity</code></strong> :&ensp;<code>float</code>, default<code>: 0</code></dt>
+<dd>Sparsity target with 0 &lt;= sparsity &lt;= 1 representing either:
+- the % rows in W or H set to 0 (when use_hals = False)
+- the mean % rows per column in W or H set to 0 (when use_hals = True)</dd>
 <dt><strong><code>skewness</code></strong> :&ensp;<code>boolean</code>, default <code>False</code></dt>
 <dd>When solving mixture problems, columns of X at the extremities of the convex hull will be given largest weights.
 The column weight is a function of the skewness and its sign.
@@ -326,69 +328,92 @@ IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.</p>
 <h3>Methods</h3>
 <dl>
 <dt id="nmtf.modules.nmtf.NTF.fit_transform"><code class="name flex">
-<span>def <span class="ident">fit_transform</span></span>(<span>self, X, n_blocks, n_bootstrap=None, sparsity=0, W=None, H=None, Q=None, update_W=True, update_H=True, update_Q=True)</span>
+<span>def <span class="ident">fit_transform</span></span>(<span>self, X, n_blocks, n_bootstrap=None, regularization=None, sparsity=0, W=None, H=None, Q=None, update_W=True, update_H=True, update_Q=True)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Compute Non-negative Tensor Factorization (NTF)</p>
-<p>Find three non-negative matrices (W, H, Q) such as x = W @@ H @@ Q + Error (@@ = tensor product).
-This factorization can be used for example for
-dimensionality reduction, source separation or topic extraction.</p>
-<p>The objective function is minimized with an alternating minimization of W
-and H.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>X</code></strong> :&ensp;<code>array-like, shape (n_samples, n_features x n_blocks)</code></dt>
-<dd>Constant matrix.
-X is a tensor with shape (n_samples, n_features, n_blocks), however unfolded along 2nd and 3rd dimensions.</dd>
-<dt><strong><code>n_blocks</code></strong> :&ensp;<code>integer, number</code> of <code>blocks defining the 3rd dimension</code> of <code>the tensor</code></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>n_bootstrap</code></strong> :&ensp;<code>Number</code> of <code>bootstrap runs</code></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>sparsity</code></strong> :&ensp;<code>integer</code>, default<code>: 0</code></dt>
-<dd>Sparsity target with 0 &lt;= sparsity &lt;= 1 representing the % rows in W or H set to 0.</dd>
-<dt><strong><code>W</code></strong> :&ensp;<code>array-like, shape (n_samples, n_components)</code></dt>
-<dd>prior W</dd>
-<dt><strong><code>H</code></strong> :&ensp;<code>array-like, shape (n_features, n_components)</code></dt>
-<dd>prior H</dd>
-<dt><strong><code>Q</code></strong> :&ensp;<code>array-like, shape (n_blocks, n_components)</code></dt>
-<dd>prior Q</dd>
-<dt><strong><code>update_W</code></strong> :&ensp;<code>boolean</code>, default<code>: True</code></dt>
-<dd>Update or keep W fixed</dd>
-<dt><strong><code>update_H</code></strong> :&ensp;<code>boolean</code>, default<code>: True</code></dt>
-<dd>Update or keep H fixed</dd>
-<dt><strong><code>update_Q</code></strong> :&ensp;<code>boolean</code>, default<code>: True</code></dt>
-<dd>Update or keep Q fixed</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>Estimator (dictionary) with following entries</code></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>W</code></strong> :&ensp;<code>array-like, shape (n_samples, n_components)</code></dt>
-<dd>Solution to the non-negative least squares problem.</dd>
-<dt><strong><code>H</code></strong> :&ensp;<code>array-like, shape (n_features, n_components)</code></dt>
-<dd>Solution to the non-negative least squares problem.</dd>
-<dt><strong><code>Q</code></strong> :&ensp;<code>array-like, shape (n_blocks, n_components)</code></dt>
-<dd>Solution to the non-negative least squares problem.</dd>
-<dt><strong><code>volume</code></strong> :&ensp;<code>scalar, volume occupied by W and H</code></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>WB</code></strong> :&ensp;<code>array-like, shape (n_samples, n_components)</code></dt>
-<dd>Percent consistently clustered rows for each component.
-only if n_bootstrap &gt; 0.</dd>
-<dt><strong><code>HB</code></strong> :&ensp;<code>array-like, shape (n_features, n_components)</code></dt>
-<dd>Percent consistently clustered columns for each component.
-only if n_bootstrap &gt; 0.</dd>
-<dt><strong><code>diff</code></strong> :&ensp;<code>scalar, objective minimum achieved</code></dt>
-<dd>&nbsp;</dd>
-</dl>
-<h2 id="example">Example</h2>
-<pre><code class="python-repl">&gt;&gt;&gt; from nmtf import *
-&gt;&gt;&gt; myNTFmodel = NTF(n_components=4)
-&gt;&gt;&gt; # M: tensor with 5 blocks to be factorized
-&gt;&gt;&gt; estimator = myNTFmodel.fit_transform(M, 5)
+<pre><code>    Find three non-negative matrices (W, H, Q) such as x = W @@ H @@ Q + Error (@@ = tensor product).
+    This factorization can be used for example for
+    dimensionality reduction, source separation or topic extraction.
+
+    The objective function is minimized with an alternating minimization of W
+    and H.
+
+    Parameters
+    ----------
+
+    X : array-like, shape (n_samples, n_features x n_blocks)
+        Constant matrix.
+        X is a tensor with shape (n_samples, n_features, n_blocks), however unfolded along 2nd and 3rd dimensions.
+
+    n_blocks : integer, number of blocks defining the 3rd dimension of the tensor
+
+    n_bootstrap : Number of bootstrap runs
+
+    regularization :  None | 'components' | 'transformation'
+        Select whether the regularization affects the components (H), the
+        transformation (W) or none of them.
+
+    sparsity : integer, default: 0
+        Sparsity target with 0 &lt;= sparsity &lt;= 1 representing the mean % rows per column in W or H set to 0
 </code></pre>
-<h2 id="reference">Reference</h2>
-<p>A. Cichocki, P.H.A.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor factorizations,
-IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.</p></div>
+<p>.
+W : array-like, shape (n_samples, n_components)
+prior W</p>
+<pre><code>    H : array-like, shape (n_features, n_components)
+        prior H
+
+    Q : array-like, shape (n_blocks, n_components)
+        prior Q
+
+    update_W : boolean, default: True
+        Update or keep W fixed
+
+    update_H : boolean, default: True
+        Update or keep H fixed
+
+    update_Q : boolean, default: True
+        Update or keep Q fixed
+
+    Returns
+    -------
+
+    Estimator (dictionary) with following entries
+
+    W : array-like, shape (n_samples, n_components)
+        Solution to the non-negative least squares problem.
+
+    H : array-like, shape (n_features, n_components)
+        Solution to the non-negative least squares problem.
+
+    Q : array-like, shape (n_blocks, n_components)
+        Solution to the non-negative least squares problem.
+
+    volume : scalar, volume occupied by W and H
+
+    WB : array-like, shape (n_samples, n_components)
+        Percent consistently clustered rows for each component.
+        only if n_bootstrap &gt; 0.
+
+    HB : array-like, shape (n_features, n_components)
+        Percent consistently clustered columns for each component.
+        only if n_bootstrap &gt; 0.
+
+    diff : scalar, objective minimum achieved
+
+    Example
+    -------
+    &gt;&gt;&gt; from nmtf import *
+    &gt;&gt;&gt; myNTFmodel = NTF(n_components=4)
+    &gt;&gt;&gt; # M: tensor with 5 blocks to be factorized
+    &gt;&gt;&gt; estimator = myNTFmodel.fit_transform(M, 5)
+
+    Reference
+    ---------
+
+    A. Cichocki, P.H.A.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor factorizations,
+    IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
+</code></pre></div>
 </dd>
 <dt id="nmtf.modules.nmtf.NTF.permutation_test_score"><code class="name flex">
 <span>def <span class="ident">permutation_test_score</span></span>(<span>self, estimator, y, n_permutations=100)</span>

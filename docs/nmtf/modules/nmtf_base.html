@@ -200,8 +200,10 @@ False-&gt; Projected gradiant</dd>
 <dt><strong><code>regularization</code></strong> :&ensp;<code>None | 'components' | 'transformation'</code></dt>
 <dd>Select whether the regularization affects the components (H), the
 transformation (W) or none of them.</dd>
-<dt><strong><code>sparsity</code></strong> :&ensp;<code>integer</code>, default<code>: 0</code></dt>
-<dd>Sparsity target with 0 &lt;= sparsity &lt;= 1 representing the % rows in W or H set to 0.</dd>
+<dt><strong><code>sparsity</code></strong> :&ensp;<code>float</code>, default<code>: 0</code></dt>
+<dd>Sparsity target with 0 &lt;= sparsity &lt;= 1 representing either:
+- the % rows in W or H set to 0 (when use_hals = False)
+- the mean % rows per column in W or H set to 0 (when use_hals = True)</dd>
 <dt><strong><code>leverage</code></strong> :&ensp;<code>None | 'standard' | 'robust'</code>, default <code>'standard'</code></dt>
 <dd>Calculate leverage of W and H rows on each component.</dd>
 <dt><strong><code>convex</code></strong> :&ensp;<code>None | 'components' | 'transformation'</code>, default <code>None</code></dt>
@@ -248,7 +250,7 @@ only if n_bootstrap &gt; 0.</dd>
 </dl></div>
 </dd>
 <dt id="nmtf.modules.nmtf_base.non_negative_tensor_factorization"><code class="name flex">
-<span>def <span class="ident">non_negative_tensor_factorization</span></span>(<span>X, n_blocks, W=None, H=None, Q=None, n_components=None, update_W=True, update_H=True, update_Q=True, fast_hals=True, n_iter_hals=2, n_shift=0, sparsity=0, unimodal=False, smooth=False, apply_left=False, apply_right=False, apply_block=False, n_bootstrap=None, tol=1e-06, max_iter=150, leverage='standard', random_state=None, verbose=0)</span>
+<span>def <span class="ident">non_negative_tensor_factorization</span></span>(<span>X, n_blocks, W=None, H=None, Q=None, n_components=None, update_W=True, update_H=True, update_Q=True, fast_hals=True, n_iter_hals=2, n_shift=0, regularization=None, sparsity=0, unimodal=False, smooth=False, apply_left=False, apply_right=False, apply_block=False, n_bootstrap=None, tol=1e-06, max_iter=150, leverage='standard', random_state=None, verbose=0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Compute Non-negative Tensor Factorization (NTF)</p>
@@ -284,8 +286,11 @@ X is a tensor with shape (n_samples, n_features, n_blocks), however unfolded alo
 <dd>Number of HALS iterations prior to fast HALS</dd>
 <dt><strong><code>n_shift</code></strong> :&ensp;<code>integer</code>, default<code>: 0</code></dt>
 <dd>max shifting in convolutional NTF</dd>
+<dt><strong><code>regularization</code></strong> :&ensp;<code>None | 'components' | 'transformation'</code></dt>
+<dd>Select whether the regularization affects the components (H), the
+transformation (W) or none of them.</dd>
 <dt><strong><code>sparsity</code></strong> :&ensp;<code>integer</code>, default<code>: 0</code></dt>
-<dd>sparsity level (as defined by Hoyer); +/- = make W/H sparse</dd>
+<dd>Sparsity target with 0 &lt;= sparsity &lt;= 1 representing the mean % rows per column in W or H set to 0</dd>
 <dt><strong><code>unimodal</code></strong> :&ensp;<code>Boolean</code>, default<code>: False</code></dt>
 <dd>&nbsp;</dd>
 <dt><strong><code>smooth</code></strong> :&ensp;<code>Boolean</code>, default<code>: False</code></dt>
