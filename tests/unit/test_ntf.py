@@ -77,7 +77,7 @@ def test():
             if isinstance(estimator[key], np.ndarray):
                 np.testing.assert_array_almost_equal(estimator[key], expected_estimator[key_exp])
             elif isinstance(estimator[key], float):
-                assert pytest.approx(estimator[key], 1e-10) == pytest.approx(expected_estimator[key], 1e-10)
+                assert pytest.approx(estimator[key], rel=1e-10) == expected_estimator[key]
             else:
                 assert estimator[key] == expected_estimator[key_exp]
             print("...ok")
