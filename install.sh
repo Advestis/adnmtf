@@ -20,3 +20,5 @@ fi
 if [ -d "dist" ] ; then rm -r dist ; fi
 if [ -d "build" ] ; then rm -r build ; fi
 if ls "$PACKAGE".egg-info* &> /dev/null ; then rm -r "$PACKAGE".egg-info* ; fi
+
+pdoc --force --html --config show_source_code=False --output-dir docs nmtf

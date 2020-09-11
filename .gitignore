@@ -245,3 +245,4 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+/nmtf_indt.zip
