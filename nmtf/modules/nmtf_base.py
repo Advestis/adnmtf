@@ -1519,7 +1519,7 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
         Select whether the regularization affects the components (H), the
         transformation (W) or none of them.
 
-    sparsity : integer, default: 0
+    sparsity : float, default: 0
         Sparsity target with 0 <= sparsity <= 1 representing the mean % rows per column in W or H set to 0
   
     unimodal : Boolean, default: False
