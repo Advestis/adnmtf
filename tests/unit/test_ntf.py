@@ -62,7 +62,7 @@ def test():
         if key not in expected_estimator:
             key_exp = key.upper()
 
-        if key not in expected_estimator:
+        if key_exp not in expected_estimator:
             print(f"{key} not found in expected elements")
             failed = True
             continue
@@ -77,7 +77,7 @@ def test():
             if isinstance(estimator[key], np.ndarray):
                 np.testing.assert_array_almost_equal(estimator[key], expected_estimator[key_exp])
             elif isinstance(estimator[key], float):
-                assert pytest.approx(estimator[key], rel=1e-10) == expected_estimator[key]
+                assert pytest.approx(estimator[key], rel=1e-10) == expected_estimator[key_exp]
             else:
                 assert estimator[key] == expected_estimator[key_exp]
             print("...ok")
