@@ -524,6 +524,7 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
     Mtsup = np.copy(Mt)
     Mwsup = np.copy(Mw)
     Mbsup = np.copy(Mb)
+    diff_sup = diff
     # Bootstrap to assess robust clustering
     if NMFRobustNRuns > 1:
         #     Update Mwsup
@@ -615,6 +616,7 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
     Mt = Mtsup
     Mw = Mwsup
     Mb = Mbsup
+    diff = diff_sup
     if reverse2HALS > 0:
         AddMessage.insert(len(AddMessage), 'Currently, Fast HALS cannot be applied with missing data or convolution window and was reversed to Simple HALS.')
 
