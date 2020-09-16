@@ -37,7 +37,7 @@ def get_greatest_version(versions: List[str]) -> str:
 def get_last_tag() -> str:
     result = [v for v in run_cmd("git tag -l v*") if not v == ""]
     if len(result) == 0:
-        run_cmd("git tag v0.0.1")
+        run_cmd("git tag v0.1")
     result = [v for v in run_cmd("git tag -l v*") if not v == "" and v.startswith("v")]
     return get_greatest_version(result)
 
@@ -48,7 +48,7 @@ def get_nb_commits_until(tag: str) -> int:
 
 def get_version() -> str:
     last_tag = get_last_tag()
-    return f"{'.'.join(last_tag.split('.')[:-1])}.{get_nb_commits_until(last_tag)}"
+    return f"{'.'.join(last_tag.split('.'))}.{get_nb_commits_until(last_tag)}"
 
 
 try:
