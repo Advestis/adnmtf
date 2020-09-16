@@ -58,6 +58,9 @@ def test():
     for key in estimator:
         print("")
         print(f"Testing {key}...")
+        if key.lower() == "wb" or key.lower() == "hb":
+            print(f"Ignoring {key}...")
+            continue
         key_exp = key
         if key not in expected_estimator:
             key_exp = key.upper()
