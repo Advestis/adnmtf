@@ -51,7 +51,13 @@ def get_version() -> str:
     return f"{'.'.join(last_tag.split('.')[:-1])}.{get_nb_commits_until(last_tag)}"
 
 
-long_description = Path("README.md").read_text()
+try:
+    long_description = Path("README.md").read_text()
+except UnicodeDecodeError:
+    with open("README.md", "rb") as ifile:
+        lines = [line.decode("utf-8") for line in ifile.readlines()]
+        long_description = "".join(lines)
+
 requirements = Path("requirements.txt").read_text().splitlines()
 version = get_version()
 
