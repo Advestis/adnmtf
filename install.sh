@@ -13,6 +13,13 @@ done
 
 pip3 uninstall "$PACKAGE" -y || echo "No $PACKAGE to uninstall"
 pip3 install setuptools
+
+if command -v sudo > /dev/null ; then
+  sudo apt-get install $(grep -vE "^\s*#" apt-requirements.txt  | tr "\n" " ")
+else
+  apt-get install $(grep -vE "^\s*#" apt-requirements.txt  | tr "\n" " ")
+fi
+
 python3 setup.py install
 if $publish && [ -f "$HOME/bin/gspip" ] ; then
   gspip push -s "  "

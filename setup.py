@@ -11,37 +11,21 @@ def run_cmd(cmd):
     return subprocess.check_output(cmd).decode(encoding="UTF-8").split("\n")
 
 
-def get_greatest_version(versions: List[str]) -> str:
-    g_major, g_minor = -1, -1
-    for v in versions:
-        if v.startswith("v"):
-            major, minor = map(int, v[1:].split("."))
-            if major > g_major:
-                g_major = major
-                g_minor = minor
-            elif minor > g_minor:
-                g_minor = minor
-    if g_major == g_minor == "-1":
-        run_cmd("git tag v0.1")
-        g_major = "0"
-        g_minor = "1"
-    return f"v{g_major}.{g_minor}"
-
-
 def get_last_tag() -> str:
-    result = run_cmd("git tag -l v*")
-    return get_greatest_version(result)
+    result = [v for v in run_cmd("git tag -l v*") if not v == ""]
+    if len(result) == 0:
+        run_cmd("git tag v0.0.1")
+    result = [v for v in run_cmd("git tag -l v*") if not v == ""]
+    return result[-1]
 
 
 def get_nb_commits_until(tag: str) -> int:
-    if tag == "v-1.-1":
-        return 0
     return len(run_cmd(f'git log {tag}..HEAD --oneline'))
 
 
 def get_version() -> str:
     last_tag = get_last_tag()
-    return f"{last_tag[1:]}.{get_nb_commits_until(last_tag)}"
+    return f"{'.'.join(last_tag.split('.')[:-1])}.{get_nb_commits_until(last_tag)}"
 
 
 long_description = Path("README.md").read_text()

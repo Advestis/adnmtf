@@ -3,3 +3,4 @@ numpy
 sklearn
 tqdm
 scipy
+pdoc3
