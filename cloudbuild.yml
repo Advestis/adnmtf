@@ -1,0 +1,70 @@
+steps:
+  # Step 0: Access the nmtf file from Secret Manager, containing the public ssh key for the git repository
+  - name: gcr.io/cloud-builders/gcloud
+    entrypoint: 'bash'
+    args: [ '-c', 'gcloud secrets versions access latest --secret=nmtf > /root/.ssh/nmtf' ]
+    volumes:
+    - name: 'ssh'
+      path: /root/.ssh
+
+
+  # Step 1: Set up git with key and domain
+  - name: 'gcr.io/cloud-builders/git'
+    entrypoint: 'bash'
+    args:
+    - '-c'
+    - |
+      chmod 600 /root/.ssh/nmtf
+      echo "Writing Hostname github.com\nIdentityFile /root/.ssh/nmtf to ssh config..."
+      cat <<EOF >/root/.ssh/config
+      Hostname github.com
+      IdentityFile /root/.ssh/nmtf
+      EOF
+      echo "Adding github to known host..."
+      ssh-keyscan -t rsa github.com > /root/.ssh/known_hosts
+    volumes:
+    - name: 'ssh'
+      path: /root/.ssh
+
+
+  # Step 2: Connect to the repository
+  - name: 'gcr.io/cloud-builders/git'
+    args:
+    - clone
+    - --branch=$BRANCH_NAME
+    - git@github.com:Advestis/nmtf
+    - /repo
+    volumes:
+    - name: 'ssh'
+      path: /root/.ssh
+    - name: 'repo'
+      path: /repo
+
+
+  # Step 3: Get the .git directory. We need this in most of our Advestis setup.py to define the version properly. Indeed, we use git commands to count the number of commits since the last 
+  # tag, to generate a version name. But by default the Cloud Build triggers do not copy the .git directory, which makes the git commands fail. So we explicitly clone the repo in another
+  # folder and copy back the ".git". We de not need to copy anything else since the trigger already has the repository content in ".". If you are sure you do not need this part, you can remove
+  # this step and all the previous ones, which are only here to make "git clone" work.
+  - name: 'gcr.io/cloud-builders/git'
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - mv /repo/.git ./.git && let attempt=1 ; if ! [ -d .git ] ; then echo "Failed to move .git" ; exit 1 ; fi
+    volumes:
+    - name: 'repo'
+      path: /repo
+
+
+  # Step 4: Build the container image and tag it with "latest" and with the current commit sha.
+  - name: gcr.io/cloud-builders/docker
+    args: [ 'build', '-t', 'eu.gcr.io/$PROJECT_ID/nmtf:latest', '-t', 'eu.gcr.io/$PROJECT_ID/nmtf:$COMMIT_SHA', '.' ]
+
+
+  # Step 5: Push the container image "latest" to Container Registry
+  - name: gcr.io/cloud-builders/docker
+    args: [ 'push', 'eu.gcr.io/$PROJECT_ID/nmtf:latest' ]
+
+
+  # Step 6: Push the container image "$COMMIT_SHA" to Container Registry
+  - name: gcr.io/cloud-builders/docker
+    args: [ 'push', 'eu.gcr.io/$PROJECT_ID/nmtf:$COMMIT_SHA' ]
