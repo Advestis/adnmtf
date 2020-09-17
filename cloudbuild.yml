@@ -1,5 +1,5 @@
 steps:
-  # Step 0: Access the nmtf file from Secret Manager, containing the public ssh key for the git repository
+  # Access the id_github file from Secret Manager
   - name: gcr.io/cloud-builders/gcloud
     entrypoint: 'bash'
     args: [ '-c', 'gcloud secrets versions access latest --secret=nmtf > /root/.ssh/nmtf' ]
@@ -8,8 +8,8 @@ steps:
       path: /root/.ssh
 
 
-  # Step 1: Set up git with key and domain
-  - name: 'gcr.io/cloud-builders/git'
+  # Set up git with key and domain
+  - name: gcr.io/cloud-builders/git
     entrypoint: 'bash'
     args:
     - '-c'
@@ -27,8 +27,8 @@ steps:
       path: /root/.ssh
 
 
-  # Step 2: Connect to the repository
-  - name: 'gcr.io/cloud-builders/git'
+  # Connect to the repository
+  - name: gcr.io/cloud-builders/git
     args:
     - clone
     - --branch=$BRANCH_NAME
@@ -41,11 +41,8 @@ steps:
       path: /repo
 
 
-  # Step 3: Get the .git directory. We need this in most of our Advestis setup.py to define the version properly. Indeed, we use git commands to count the number of commits since the last 
-  # tag, to generate a version name. But by default the Cloud Build triggers do not copy the .git directory, which makes the git commands fail. So we explicitly clone the repo in another
-  # folder and copy back the ".git". We de not need to copy anything else since the trigger already has the repository content in ".". If you are sure you do not need this part, you can remove
-  # this step and all the previous ones, which are only here to make "git clone" work.
-  - name: 'gcr.io/cloud-builders/git'
+  # Get the .git directory
+  - name: gcr.io/cloud-builders/gcloud
     entrypoint: /bin/bash
     args:
       - -c
@@ -55,16 +52,55 @@ steps:
       path: /repo
 
 
-  # Step 4: Build the container image and tag it with "latest" and with the current commit sha.
+  # Create AdUtils' documentation
+  - name: gcr.io/cloud-builders/gsutil
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - |-
+        version="3.6"
+        echo "Updating..."
+        echo "Installing git, gcc, python$version..."
+        add-apt-repository ppa:deadsnakes/ppa
+        apt-get update
+        apt-get install -y build-essential
+        apt-get install -y git gcc python-dev python3-dev python${version}
+        if [ "$version" == "3.5" ] or [ "$version" == "3.6" ] ; then
+          apt-get install -y python${version}-dev
+        elif [ "$version" == "3.7" ] ; then
+          apt-get install -y libpython${version}-dev
+        else
+          echo "warning: will try to install header files for an unsupported version of python: ${version}"
+          if ! apt-get install -y libpython${version}-dev ; then
+            apt-get install -y python${version}-dev
+          fi
+        fi
+        echo "Installing and updating pip3..."
+        curl https://bootstrap.pypa.io/get-pip.py | python3.6
+        pip3 install --upgrade pip
+        echo "Installing setuptools..."
+        pip3 install setuptools
+        chmod +x ./install.sh
+        echo "Installing nmtf..."
+        ./install.sh -v ${version} -c sdist
+        echo "Copying docs/ to gs://pypi_server_sand/nmtf/..."
+        gsutil cp -r docs/ gs://pypi_server_sand/nmtf/
+        echo "Copying dist/* to gs://pypi_server_sand/nmtf/..."
+        gsutil cp dist/* gs://pypi_server_sand/nmtf/
+
+
+  # Build the container image and tag it
   - name: gcr.io/cloud-builders/docker
-    args: [ 'build', '-t', 'eu.gcr.io/$PROJECT_ID/nmtf:latest', '-t', 'eu.gcr.io/$PROJECT_ID/nmtf:$COMMIT_SHA', '.' ]
+    args: [ 'build', '-t', 'eu.gcr.io/$PROJECT_ID/nmtf:latest', '-t', 'eu.gcr.io/$PROJECT_ID/nmtf:$COMMIT_SHA', '-f', 'Dockerfile', '.' ]
 
 
-  # Step 5: Push the container image "latest" to Container Registry
+  # Push the container image to Container Registry
   - name: gcr.io/cloud-builders/docker
     args: [ 'push', 'eu.gcr.io/$PROJECT_ID/nmtf:latest' ]
 
 
-  # Step 6: Push the container image "$COMMIT_SHA" to Container Registry
+  # Push the container image to Container Registry
   - name: gcr.io/cloud-builders/docker
     args: [ 'push', 'eu.gcr.io/$PROJECT_ID/nmtf:$COMMIT_SHA' ]
+
+timeout: "1200s"
