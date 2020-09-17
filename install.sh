@@ -27,7 +27,7 @@ if [ -f gspip-requirements.txt ] ; then
   if command -v gspip > /dev/null ; then
     gspip --upgrade install $(grep -vE "^\s*#" gspip-requirements.txt  | tr "\n" " ")
   else
-   gspip --upgrade install $(grep -vE "^\s*#" gspip-requirements.txt  | tr "\n" " ")
+    gspip --upgrade install $(grep -vE "^\s*#" gspip-requirements.txt  | tr "\n" " ")
   fi
 fi
 
