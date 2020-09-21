@@ -17,9 +17,9 @@ done
 
 if [ -f apt-requirements.txt ] ; then
   if command -v sudo > /dev/null ; then
-    if ! sudo apt-get install $(grep -vE "^\s*#" apt-requirements.txt  | tr "\n" " ") ; then exit 1 ; fi
+    if ! sudo apt-get install -y $(grep -vE "^\s*#" apt-requirements.txt  | tr "\n" " ") ; then exit 1 ; fi
   else
-    if ! apt-get install $(grep -vE "^\s*#" apt-requirements.txt  | tr "\n" " ") ; then exit 1 ; fi
+    if ! apt-get install -y $(grep -vE "^\s*#" apt-requirements.txt  | tr "\n" " ") ; then exit 1 ; fi
   fi
 fi
 
