@@ -17,23 +17,23 @@ done
 
 if [ -f apt-requirements.txt ] ; then
   if command -v sudo > /dev/null ; then
-    sudo apt-get install $(grep -vE "^\s*#" apt-requirements.txt  | tr "\n" " ")
+    if ! sudo apt-get install $(grep -vE "^\s*#" apt-requirements.txt  | tr "\n" " ") ; then exit 1 ; fi
   else
-    apt-get install $(grep -vE "^\s*#" apt-requirements.txt  | tr "\n" " ")
+    if ! apt-get install $(grep -vE "^\s*#" apt-requirements.txt  | tr "\n" " ") ; then exit 1 ; fi
   fi
 fi
 
 if [ -f gspip-requirements.txt ] ; then
   if command -v gspip > /dev/null ; then
-    gspip --upgrade install $(grep -vE "^\s*#" gspip-requirements.txt  | tr "\n" " ")
+    if ! gspip --upgrade install $(grep -vE "^\s*#" gspip-requirements.txt  | tr "\n" " ") ; then exit 1 ; fi
   else
-    gspip --upgrade install $(grep -vE "^\s*#" gspip-requirements.txt  | tr "\n" " ")
+    if ! gspip --upgrade install $(grep -vE "^\s*#" gspip-requirements.txt  | tr "\n" " ") ; then exit 1 ; fi
   fi
 fi
 
 pip3 uninstall "$PACKAGE" -y
 pip3 install setuptools
-python$VERSION setup.py $COMMAND
+if ! python$VERSION setup.py $COMMAND ; then exit 1 ; fi
 if $publish && [ -f "$HOME/bin/gspip" ] ; then
   gspip push -s "  "
 fi
