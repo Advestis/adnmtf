@@ -58,7 +58,7 @@ steps:
     args:
       - -c
       - |-
-        exit 1
+        exit 11
         version="3.6"
         echo "Updating..."
         echo "Installing git, gcc, python$version..."
