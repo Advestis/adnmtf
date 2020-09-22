@@ -82,6 +82,7 @@ steps:
         pip3 install setuptools
         chmod +x ./install.sh
         echo "Installing nmtf..."
+        ./install.sh -v ${version} -c install
         ./install.sh -v ${version} -c sdist
         echo "Copying docs/ to gs://pypi_server_sand/nmtf/..."
         gsutil cp -r docs/ gs://pypi_server_sand/nmtf/
