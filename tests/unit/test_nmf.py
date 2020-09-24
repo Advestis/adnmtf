@@ -29,7 +29,7 @@ def test():
     h = np.array([[0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
                   [0.9, 0.8, 0.7, 0.6, 0.5, 0.4]])
     m0 = w.dot(h)
-    my_nt_fmodel = NMF(n_components=5)
+    my_nt_fmodel = NMF(n_components=2)
     estimator = my_nt_fmodel.fit_transform(m0, sparsity=0.8, n_bootstrap=10)
     estimator = my_nt_fmodel.predict(estimator)
 
