@@ -246,3 +246,4 @@ dmypy.json
 cython_debug/
 
 /nmtf_indt.zip
+docs/

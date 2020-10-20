@@ -34,7 +34,7 @@ def test():
     estimator = my_nt_fmodel.predict(estimator)
 
     # Uncomment to save the estimator in a file
-    # with open(DATA_PATH / "expected_result_nmf.json", "w") as ofile:
+    # with open(DATA_PATH / "expected_result_nmf_new.json", "w") as ofile:
     #     ofile.write(json.dumps(estimator, cls=JSONEncoder))
     # exit(0)
 
