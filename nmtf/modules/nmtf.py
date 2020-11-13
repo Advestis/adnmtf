@@ -390,6 +390,10 @@ class NTF:
         If None, the random number generator is the RandomState instance used
         by `np.random`.
 
+    init_type : integer, default 1
+        init_type = 1 : NMF initialization applied on the reshaped matrix [vectorized (1st & 2nd dim) x 3rd dim] 
+        init_type = 2 : NMF initialization applied on the reshaped matrix [1st dim x vectorized (2nd & 3rd dim)] 
+    
     verbose : integer, default: 0
         The verbosity level (0/1).
 
@@ -418,6 +422,7 @@ class NTF:
                        max_iter=150,
                        leverage='standard',
                        random_state=None,
+                       init_type=1,
                        verbose=0):
         self.n_components = n_components
         self.fast_hals = fast_hals
@@ -432,6 +437,7 @@ class NTF:
         self.max_iter = max_iter
         self.leverage = leverage
         self.random_state = random_state
+        self.init_type = init_type
         self.verbose = verbose
 
     def fit_transform(self, X, n_blocks, n_bootstrap=None, 
@@ -539,6 +545,7 @@ class NTF:
                                                 max_iter=self.max_iter,
                                                 leverage=self.leverage,
                                                 random_state=self.random_state,
+                                                init_type=self.init_type,
                                                 verbose=self.verbose)
 
     def predict(self, estimator, blocks=None, cluster_by_stability=False, custom_order=False):
