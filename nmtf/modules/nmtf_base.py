@@ -62,11 +62,15 @@ def NMFInit(M, Mmis, Mt0, Mw0, nc, tolerance, LogIter, myStatusBox):
     if (Mt.shape[0] == 0) or (Mw.shape[0] == 0):
         if n_Mmis == 0:
             if nc >= min(n,p):
-                #arpack does not accept to factorize at full rank -> need to duplicate in both dimensions to force it work
+                # arpack does not accept to factorize at full rank -> need to duplicate in both dimensions to force it work
                 t, d, w = svds(np.concatenate((np.concatenate((M, M), axis=1),np.concatenate((M, M), axis=1)), axis=0), k=nc)
                 t *= np.sqrt(2)
                 w *= np.sqrt(2)
                 d /= 2
+                # svd causes mem allocation problem with large matrices
+                # t, d, w = np.linalg.svd(M)
+                # Mt = t
+                # Mw = w.T
             else:
                 t, d, w = svds(M, k=nc)
 
@@ -414,6 +418,8 @@ def NTFInit(M, Mmis, Mt_nmf, Mw_nmf, nc, tolerance, precision, LogIter, NTFUnimo
             myStatusBox.update_status(delay=1, status="Start SVD...")
             U, d, V = svds(np.reshape(Mw_nmf[:, k], (int(p / NBlocks), NBlocks)), k=1)
             V = V.T
+            U = np.abs(U) 
+            V = np.abs(V)
             myStatusBox.update_status(delay=1, status="SVD completed")
             Mt[:, k] = Mt_nmf[:, k]
             Mw[:, k] = d[0] * np.reshape(U, int(p / NBlocks))
