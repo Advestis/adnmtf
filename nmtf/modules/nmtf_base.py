@@ -316,11 +316,18 @@ def NTFInit(M, Mmis, Mt_nmf, Mw_nmf, nc, tolerance, precision, LogIter, NTFUnimo
          Mmis: Define missing values (0 = missing cell, 1 = real cell)
          Mt_nmf: initialization of LHM in NMF(unstacked tensor), may be empty
          Mw_nmf: initialization of RHM of NMF(unstacked tensor), may be empty
-         NBlocks: Number of NTF blocks
          nc: NTF rank
          tolerance: Convergence threshold
          precision: Replace 0-values in multiplication rules
          LogIter: Log results through iterations
+         NTFUnimodal: Apply Unimodal constraint on factoring vectors
+         NTFLeftComponents: Apply Unimodal/Smooth constraint on left hand matrix
+         NTFRightComponents: Apply Unimodal/Smooth constraint on right hand matrix
+         NTFBlockComponents: Apply Unimodal/Smooth constraint on block hand matrix
+         NBlocks: Number of NTF blocks
+         init_type : integer, default 0
+             init_type = 0 : NMF initialization applied on the reshaped matrix [1st dim x vectorized (2nd & 3rd dim)] 
+             init_type = 1 : NMF initialization applied on the reshaped matrix [vectorized (1st & 2nd dim) x 3rd dim] 
      Output:
          Mt: Left hand matrix
          Mw: Right hand matrix
@@ -346,7 +353,7 @@ def NTFInit(M, Mmis, Mt_nmf, Mw_nmf, nc, tolerance, precision, LogIter, NTFUnimo
     Status0 = "Step 1 - Quick NMF Ncomp=" + str(nc) + ": "
     
     if init_type == 1:
-        #Init version 1
+        #Init legacy
         Mstacked, Mmis_stacked = NTFStack(M, Mmis, NBlocks)
         nc2 = min(nc, NBlocks)  # factorization rank can't be > number of blocks
         if (Mt_nmf.shape[0] == 0) or (Mw_nmf.shape[0] == 0):
@@ -398,7 +405,7 @@ def NTFInit(M, Mmis, Mt_nmf, Mw_nmf, nc, tolerance, precision, LogIter, NTFUnimo
 
                     Mb[:, ind] = Mw_nmf[:, k]
     else:
-        #Init version 2
+        #Init default
         if (Mt_nmf.shape[0] == 0) or (Mw_nmf.shape[0] == 0):
             Mt_nmf, Mw_nmf = NMFInit(M, Mmis, np.array([]),  np.array([]), nc, tolerance, LogIter, myStatusBox)
         else:
@@ -1511,7 +1518,7 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
                                       max_iter=150,
                                       leverage='standard',
                                       random_state=None,
-                                      init_type=1,
+                                      init_type=0,
                                       verbose=0):
     """Compute Non-negative Tensor Factorization (NTF)
 
@@ -1596,9 +1603,9 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
         If None, the random number generator is the RandomState instance used
         by `np.random`.
 
-    init_type : integer, default 1
+    init_type : integer, default 0
+        init_type = 0 : NMF initialization applied on the reshaped matrix [1st dim x vectorized (2nd & 3rd dim)] 
         init_type = 1 : NMF initialization applied on the reshaped matrix [vectorized (1st & 2nd dim) x 3rd dim] 
-        init_type = 2 : NMF initialization applied on the reshaped matrix [1st dim x vectorized (2nd & 3rd dim)] 
 
     verbose : integer, default: 0
         The verbosity level (0/1).
