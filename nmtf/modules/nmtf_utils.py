@@ -633,7 +633,18 @@ def sparse_opt(b, alpha, two_sided):
     ---------
 
     V. K. Potluru & all (2013) Block Coordinate Descent for Sparse NMF arXiv:1301.3527v2 [cs.LG]
-    
+
+    Examples
+    --------
+    >>> from nmtf.modules.nmtf_utils import sparse_opt
+    >>> b_ = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    >>> alpha_ = 1
+    >>> two_sided_ = True
+    >>> sparse_opt(b_, alpha_, two_sided_)
+    array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0., nan])
+    >>> two_sided_ = False
+    >>> sparse_opt(b_, alpha_, two_sided_)
+    array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0., nan])
     """
     m = b.size
     if two_sided is False:
