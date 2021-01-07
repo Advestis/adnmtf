@@ -37,9 +37,9 @@ if ! python$VERSION setup.py $COMMAND ; then exit 1 ; fi
 if $publish && [ -f "$HOME/bin/gspip" ] ; then
   gspip push -s "  "
 fi
-if [ -d "dist" ] && [ "$COMMAND" != "sdist" ] ; then rm -r dist ; fi
-if [ -d "build" ] ; then rm -r build ; fi
-if ls "$PACKAGE".egg-info* &> /dev/null ; then rm -r "$PACKAGE".egg-info* ; fi
+if [ -d "dist" ] && [[ "$COMMAND" == "install" ]] ; then rm -r dist ; fi
+if [ -d "build" ] && [[ "$COMMAND" == "install" ]] ; then rm -r build ; fi
+if ls "$PACKAGE".egg-info* &> /dev/null && [[ "$COMMAND" == "install" ]] ; then rm -r "$PACKAGE".egg-info* ; fi
 
 if [ "$COMMAND" == "install" ] ; then
   pdoc --force --html --config show_source_code=False --output-dir docs nmtf
