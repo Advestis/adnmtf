@@ -603,11 +603,28 @@ def GlobalSign(Nrun, nbGroups, Mt, RCt, NCt, RowGroups, ListGroups, Ngroup, mySt
 def shift(arr, num, fill_value=EPSILON):
     """Shift a vector
 
-    Input:
+    Parameters
+    ----------
         arr: Input column vector
-        num: number of indexs to shift ( < 0: To the left )
-    Output:
+        num: number of indexes to shift ( < 0: To the left )
+        
+    Returns
+    -------
         result: shifted column vector
+    
+    Examples
+    --------
+    >>> import pytest
+    >>> import numpy as np
+    >>> from nmtf.modules.nmtf_utils import shift
+    >>> arr = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    >>> b = arr
+    >>> num = -2
+    >>> fill_value = 0
+    >>> shift(b, num, fill_value)
+    array([ 3,  4,  5,  6,  7,  8,  9, 10,  0,  0])
+    >>> num = 2
+    array([0, 0, 1, 2, 3, 4, 5, 6, 7, 8])
     """
 
     result = np.empty_like(arr)
