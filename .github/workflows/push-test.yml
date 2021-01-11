@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - pytest
+      - pc.pytest
 
 name: pytest
 jobs:
