@@ -5,6 +5,13 @@ from typing import List
 from setuptools import find_packages, setup
 
 
+name = Path(__file__).parent.stem
+author = "Paul Fogel"
+author_email = "paul_fogel@hotmail.com"
+description = ""
+url = f"https://github.com/paulfogel/NMTF"
+
+
 def run_cmd(cmd):
     if isinstance(cmd, str):
         cmd = cmd.split(" ")
@@ -58,19 +65,57 @@ except UnicodeDecodeError:
         lines = [line.decode("utf-8") for line in ifile.readlines()]
         long_description = "".join(lines)
 
-requirements = Path("requirements.txt").read_text().splitlines()
-version = get_version()
+optional_requirements = {}
+requirements = []
+all_reqs = []
+
+for afile in Path("").glob("*requirements.txt"):
+    if str(afile) == "requirements.txt":
+        requirements = afile.read_text().splitlines()
+        all_reqs = list(set(all_reqs) | set(afile.read_text().splitlines()))
+    else:
+        option = afile.stem.replace("-requirements", "")
+        optional_requirements[option] = afile.read_text().splitlines()
+        all_reqs = list(set(all_reqs) | set(optional_requirements[option]))
+
+if len(optional_requirements) > 0:
+    optional_requirements["all"] = all_reqs
+
+try:
+    version = get_version()
+    with open("VERSION.txt", "w") as vfile:
+        vfile.write(version)
+except FileNotFoundError as e:
+    # noinspection PyBroadException
+    try:
+        with open("VERSION.txt", "r") as vfile:
+            version = vfile.readline()
+    except Exception:
+        version = None
 
 
 if __name__ == "__main__":
     setup(
-        name="nmtf",
+        name=name,
         version=version,
-        packages=find_packages(),
+        author=author,
+        author_email=author_email,
         include_package_data=True,
+        description=description,
         long_description=long_description,
+        long_description_content_type="text/markdown",
+        url=url,
+        packages=find_packages(),
         install_requires=requirements,
         package_data={"": ["*", ".*"]},
+        extras_require=optional_requirements,
+        classifiers=[
+            "Programming Language :: Python :: 3",
+            "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+            "Operating System :: OS Independent",
+            "Development Status :: 5 - Production/Stable"
+        ],
+        python_requires='>=3.6',
     )
 
     if Path("apt-requirements.txt").is_file():
