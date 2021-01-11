@@ -13,9 +13,9 @@ jobs:
         python-version: [ 3.7, 3.8 ]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@master
         with:
-          token: ${{ secrets.TOKEN_CICD }}
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
           fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -31,10 +31,10 @@ jobs:
         python-version: [ 3.7, 3.8 ]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@master
         with:
-          token: ${{ secrets.TOKEN_CICD }}
-          fetch-depth: 0
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+          fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -49,10 +49,10 @@ jobs:
         python-version: [ 3.7, 3.8 ]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@master
         with:
-          token: ${{ secrets.TOKEN_CICD }}
-          fetch-depth: 0
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+          fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -72,11 +72,10 @@ jobs:
       matrix:
         python-version: [ 3.7, 3.8 ]
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
+      - uses: actions/checkout@master
         with:
-          token: ${{ secrets.TOKEN_CICD }}
-          fetch-depth: 0
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+          fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
