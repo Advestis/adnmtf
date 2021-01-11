@@ -25,7 +25,7 @@ jobs:
 
       - name: build
         run: |
-          python setup.py install
+          python setup.py bdist_wininst
 
       - name: commit version
         run: |
