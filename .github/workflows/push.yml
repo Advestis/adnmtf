@@ -68,7 +68,7 @@ jobs:
 #      - name: topypi
 #        uses: pypa/gh-action-pypi-publish@master
 #        with:
-#          user: ${{ secrets.pypi_login }}
-#          password: ${{ secrets.pypi_passwd }}
+#          user: ${{ secrets.PYPI_LOGIN }}
+#          password: ${{ secrets.PYPI_PASSWD }}
 #          skip_existing: true
 #          verbose: true
