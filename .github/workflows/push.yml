@@ -25,7 +25,7 @@ jobs:
 
       - name: build
         run: |
-          pip install .
+          python setup.py install
 
       - name: commit version
         run: |
