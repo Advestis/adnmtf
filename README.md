@@ -1,3 +1,10 @@
+---
+permalink: /docs/index.html
+---
+
+# Docs
+https://paulfogel.github.io/NMTF/
+
 # NMTF
 
 Non-Negative Matrix and Tensor Factorizations
