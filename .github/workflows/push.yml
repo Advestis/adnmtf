@@ -65,10 +65,10 @@ jobs:
           branch: "gh-pages"
           force: true
 
-#      - name: topypi
-#        uses: pypa/gh-action-pypi-publish@master
-#        with:
-#          user: ${{ secrets.PYPI_LOGIN }}
-#          password: ${{ secrets.PYPI_PASSWD }}
-#          skip_existing: true
-#          verbose: true
+      - name: topypi
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: ${{ secrets.PYPI_LOGIN }}
+          password: ${{ secrets.PYPI_PASSWD }}
+          skip_existing: true
+          verbose: true
