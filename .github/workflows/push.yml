@@ -1,9 +1,9 @@
 on:
   push:
     branches:
-      - pc.pytest
+      - master
 
-name: pc.pytest
+name: master
 jobs:
   publish:
     runs-on: ubuntu-latest
