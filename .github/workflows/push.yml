@@ -1,9 +1,9 @@
 on:
   push:
     branches:
-      - master
+      - pc.pytest
 
-name: master
+name: pc.pytest
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -26,51 +26,53 @@ jobs:
       - name: build
         run: |
           python setup.py sdist
-          pip install -r requirements.txt
+          python setup.py bdist_wininst
+          python setup.py install
+          ls
 
-      - name: commit version
-        run: |
-          git add VERSION.txt
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add .
-          git commit -m "VERSION-SKIP-CI"
-
-      - name: Push version
-        if: ${{ matrix.python-version == 3.8 }}
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.TOKEN_CICD }}
-          branch: master
-          force: true
-
-      - name: make doc
-        run: |
-          pip3 install pdoc3
-          pdoc --force --html -o docs nmtf
-          mv docs/nmtf/* docs/
-          rm -r docs/nmtf
-
-      - name: commit doc
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add -f docs
-          git commit -m "docs"
-
-      - name: Push doc
-        if: ${{ matrix.python-version == 3.8 }}
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.TOKEN_CICD }}
-          branch: "gh-pages"
-          force: true
-
-      - name: topypi
-        if: ${{ matrix.python-version == 3.8 }}
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          user: ${{ secrets.PYPI_LOGIN }}
-          password: ${{ secrets.PYPI_PASSWD }}
-          skip_existing: true
-          verbose: true
+#      - name: commit version
+#        run: |
+#          git add VERSION.txt
+#          git config --local user.email "action@github.com"
+#          git config --local user.name "GitHub Action"
+#          git add .
+#          git commit -m "VERSION-SKIP-CI"
+#
+#      - name: Push version
+#        if: ${{ matrix.python-version == 3.8 }}
+#        uses: ad-m/github-push-action@master
+#        with:
+#          github_token: ${{ secrets.TOKEN_CICD }}
+#          branch: master
+#          force: true
+#
+#      - name: make doc
+#        run: |
+#          pip3 install pdoc3
+#          pdoc --force --html -o docs nmtf
+#          mv docs/nmtf/* docs/
+#          rm -r docs/nmtf
+#
+#      - name: commit doc
+#        run: |
+#          git config --local user.email "action@github.com"
+#          git config --local user.name "GitHub Action"
+#          git add -f docs
+#          git commit -m "docs"
+#
+#      - name: Push doc
+#        if: ${{ matrix.python-version == 3.8 }}
+#        uses: ad-m/github-push-action@master
+#        with:
+#          github_token: ${{ secrets.TOKEN_CICD }}
+#          branch: "gh-pages"
+#          force: true
+#
+#      - name: topypi
+#        if: ${{ matrix.python-version == 3.8 }}
+#        uses: pypa/gh-action-pypi-publish@master
+#        with:
+#          user: ${{ secrets.PYPI_LOGIN }}
+#          password: ${{ secrets.PYPI_PASSWD }}
+#          skip_existing: true
+#          verbose: true
