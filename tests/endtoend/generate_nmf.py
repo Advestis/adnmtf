@@ -3,7 +3,7 @@ from nmtf import NMF
 import numpy as np
 import json
 from pathlib import Path
-from ..utils.json_encoder import JSONEncoder
+from json_encoder import JSONEncoder
 
 DATA_PATH = Path(__file__).parent.parent / "data"
 
@@ -27,11 +27,14 @@ def compute():
     h = np.array([[0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
                   [0.9, 0.8, 0.7, 0.6, 0.5, 0.4]])
     m0 = w.dot(h)
-    my_nt_fmodel = NMF(n_components=2)
-    estimator_ = my_nt_fmodel.fit_transform(m0, sparsity=0.8, n_bootstrap=10)
-    estimator_ = my_nt_fmodel.predict(estimator_)
+    my_nmfmodel = NMF(n_components=2)
+    estimator_ = my_nmfmodel.fit_transform(m0, sparsity=0.8, n_bootstrap=10)
+    estimator_ = my_nmfmodel.predict(estimator_)
     return estimator_, expected_estimator_
 
 
 
 estimator, expected_estimator = compute()
+
+np.savetxt(Path(__file__).parent / 'H.csv',estimator['H'], delimiter=',')
+np.savetxt(Path(__file__).parent /'H_expected.csv',expected_estimator['H'], delimiter=',')
