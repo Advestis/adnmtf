@@ -247,3 +247,5 @@ cython_debug/
 
 /nmtf_indt.zip
 docs/
+
+.apt-requirements.txt.swp

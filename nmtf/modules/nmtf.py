@@ -151,9 +151,10 @@ class NMF:
             transformation (W) or none of them.
 
         sparsity : float, default: 0
-            Sparsity target with 0 <= sparsity <= 1 representing either:
+            Sparsity target with 0 <= sparsity < 1 representing either:
             - the % rows in W or H set to 0 (when use_hals = False)
             - the mean % rows per column in W or H set to 0 (when use_hals = True)
+            sparsity == 1: adaptive sparsity through hard thresholding and hhi
 
         skewness : boolean, default False
             When solving mixture problems, columns of X at the extremities of the convex hull will be given largest weights.
@@ -470,7 +471,10 @@ class NTF:
             transformation (W) or none of them.
 
         sparsity : float, default: 0
-            Sparsity target with 0 <= sparsity <= 1 representing the mean % rows per column in W or H set to 0
+            Sparsity target with 0 <= sparsity < 1 representing either:
+            - the % rows in W or H set to 0 (when use_hals = False)
+            - the mean % rows per column in W or H set to 0 (when use_hals = True)
+            sparsity == 1: adaptive sparsity through hard thresholding and hhi
 .
         W : array-like, shape (n_samples, n_components)
             prior W

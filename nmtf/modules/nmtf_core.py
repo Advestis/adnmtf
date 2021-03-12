@@ -1015,8 +1015,11 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
     iIter = 0
     diff0 = 1.e+99
     Mpart = np.zeros((n, p0))
-    # alpha = NMFSparseLevel
-    alpha = NMFSparseLevel * .8
+    if abs(NMFSparseLevel) < 1:
+        alpha = NMFSparseLevel * .8
+    else:
+        alpha = NMFSparseLevel
+
     PercentZeros = 0
     iterSparse = 0
     
@@ -1063,46 +1066,8 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
 
         iIter += 1
 
-        if (cont == 0) | (iIter == MaxIterations):
-            # if NMFSparseLevel > 0:
-            #     SparseTest = np.zeros((p, 1))
-            #     for k in range(0, nc):
-            #         SparseTest[np.where(Mw[:, k] > 0)] = 1
-
-            #     PercentZeros0 = PercentZeros
-            #     n_SparseTest = np.where(SparseTest == 0)[0].size
-            #     PercentZeros = max(n_SparseTest / p, .01)
-            #     if PercentZeros == PercentZeros0:
-            #         iterSparse += 1
-            #     else:
-            #         iterSparse = 0
-
-            #     if (PercentZeros < 0.99 * NMFSparseLevel) & (iterSparse < 50):
-            #         alpha *= min(1.01 * NMFSparseLevel / PercentZeros, 1.01)
-            #         if alpha < .99:
-            #             iIter = 1
-            #             cont = 1
-
-            # elif NMFSparseLevel < 0:
-            #     SparseTest = np.zeros((n, 1))
-            #     for k in range(0, nc):
-            #         SparseTest[np.where(Mt[:, k] > 0)] = 1
-
-            #     PercentZeros0 = PercentZeros
-            #     n_SparseTest = np.where(SparseTest == 0)[0].size
-            #     PercentZeros = max(n_SparseTest / n, .01)
-            #     if PercentZeros == PercentZeros0:
-            #         iterSparse += 1
-            #     else:
-            #         iterSparse = 0
-
-            #     if (PercentZeros < 0.99 * abs(NMFSparseLevel)) & (iterSparse < 50):
-            #         alpha *= min(1.01 * abs(NMFSparseLevel) / PercentZeros, 1.01)
-            #         if abs(alpha) < .99:
-            #             iIter = 1
-            #             cont = 1
-  
-            if NMFSparseLevel > 0:
+        if (cont == 0) | (iIter == MaxIterations):  
+            if (NMFSparseLevel > 0) & (NMFSparseLevel < 1):
                 SparseTest = np.zeros((nc, 1))
                 PercentZeros0 = PercentZeros
                 for k in range(0, nc):
@@ -1120,11 +1085,11 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
                         iIter = 1
                         cont = 1
 
-            elif NMFSparseLevel < 0:
+            elif (NMFSparseLevel < 0) & (NMFSparseLevel > -1):
                 SparseTest = np.zeros((nc, 1))
                 PercentZeros0 = PercentZeros
                 for k in range(0, nc):
-                    SparseTest[k] = np.where(Mw[:, k] == 0)[0].size
+                    SparseTest[k] = np.where(Mt[:, k] == 0)[0].size
                 
                 PercentZeros = np.mean(SparseTest) / n
                 if PercentZeros < PercentZeros0:
@@ -1246,8 +1211,12 @@ def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIt
     cont = 1
     iIter = 0
     diff0 = 1.e+99
-    Mpart = np.zeros((n, p0)) 
-    alpha = NMFSparseLevel
+    Mpart = np.zeros((n, p0))
+    if abs(NMFSparseLevel) < 1:
+        alpha = NMFSparseLevel * .8
+    else:
+        alpha = NMFSparseLevel
+
     alpha_blocks = 0
     PercentZeros = 0
     iterSparse = 0
@@ -1309,7 +1278,7 @@ def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIt
         iIter += 1
 
         if (cont == 0) | (iIter == MaxIterations):
-            if NMFSparseLevel > 0:
+            if (NMFSparseLevel > 0) & (NMFSparseLevel < 1):
                 SparseTest = np.zeros((p, 1))
                 for k in range(0, nc):
                     SparseTest[np.where(Mw[:, k] > 0)] = 1
@@ -1328,7 +1297,7 @@ def NTFSolve_conv(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIt
                         iIter = 1
                         cont = 1
 
-            elif NMFSparseLevel < 0:
+            elif (NMFSparseLevel < 0) & (NMFSparseLevel > -1):
                 SparseTest = np.zeros((n, 1))
                 for k in range(0, nc):
                     SparseTest[np.where(Mt[:, k] > 0)] = 1
@@ -1776,10 +1745,18 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
 
         Mt[Mt[:, k] < 0, k] = 0
         if alpha < 0:
-            Mt[:, k] = sparse_opt(Mt[:, k], -alpha, False)
+            print(alpha)
+            if alpha == -1:
+                t_threshold = Mt[:,k]
+                hhi = int(np.round((np.linalg.norm(t_threshold, ord=1)/np.linalg.norm(t_threshold, ord=2))**2, decimals=0))
+                t_rank = np.argsort(t_threshold)
+                t_threshold[t_rank[0:n-hhi]] = 0
+                print(k, hhi)
+            else:
+                Mt[:, k] = sparse_opt(Mt[:, k], -alpha, False)
          
         if (NTFUnimodal > 0) & (NTFLeftComponents > 0):
-            #                 Enforce unimodal distribution
+            #             Enforce unimodal distribution
             tmax = np.argmax(Mt[:, k])
             for i in range(tmax + 1, n):
                 Mt[i, k] = min(Mt[i - 1, k], Mt[i, k])
@@ -1803,7 +1780,6 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
 
     if NMFFixUserRHE == 0:
         # Update Mw
-        
         Mw[:, k] = 0
         if NBlocks > 1:
             for iBlock in range(0, NBlocks):
@@ -1828,7 +1804,13 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
         Mw[Mw[:, k] < 0, k] = 0
 
         if alpha > 0:
-            Mw[:, k] = sparse_opt(Mw[:, k], alpha, False)
+            if alpha == 1:
+                w_threshold = Mw[:,k]
+                hhi = int(np.round((np.linalg.norm(w_threshold, ord=1)/np.linalg.norm(w_threshold, ord=2))**2, decimals=0))
+                w_rank = np.argsort(w_threshold)
+                w_threshold[w_rank[0:p-hhi]] = 0
+            else:
+                Mw[:, k] = sparse_opt(Mw[:, k], alpha, False)
 
         if (NTFUnimodal > 0) & (NTFRightComponents > 0):
             #Enforce unimodal distribution

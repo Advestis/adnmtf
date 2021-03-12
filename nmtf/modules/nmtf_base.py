@@ -1040,9 +1040,10 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
         transformation (W) or none of them.
 
     sparsity : float, default: 0
-        Sparsity target with 0 <= sparsity <= 1 representing either:
+        Sparsity target with 0 <= sparsity < 1 representing either:
         - the % rows in W or H set to 0 (when use_hals = False)
         - the mean % rows per column in W or H set to 0 (when use_hals = True)
+        sparsity == 1: adaptive sparsity through hard thresholding and hhi
 
     leverage :  None | 'standard' | 'robust', default 'standard'
         Calculate leverage of W and H rows on each component.
