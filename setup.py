@@ -5,8 +5,8 @@ from typing import List
 from setuptools import find_packages, setup
 
 
-#name = Path(__file__).parent.stem
-name = 'nmtf'
+name = "nmtf"
+
 author = "Paul Fogel"
 author_email = "paul_fogel@hotmail.com"
 description = ""

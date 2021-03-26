@@ -26,7 +26,7 @@ jobs:
       - name: build
         run: |
           python setup.py sdist
-          pip install -r requirements.txt
+          python setup.py install
 
       - name: commit version
         run: |
@@ -67,6 +67,7 @@ jobs:
           force: true
 
       - name: topypi
+        if: ${{ matrix.python-version == 3.8 }}
         uses: pypa/gh-action-pypi-publish@master
         with:
           user: ${{ secrets.PYPI_LOGIN }}
