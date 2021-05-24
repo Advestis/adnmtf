@@ -9,6 +9,7 @@
 
 from .nmtf_base import *
 
+
 class NMF:
     """Initialize NMF model
 
