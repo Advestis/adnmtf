@@ -7,8 +7,12 @@
 # License: MIT
 # Jan 4, '20
 
-from tkinter import *
-from tkinter import ttk
+tkinter_ok = True
+try:
+    from tkinter import *
+    from tkinter import ttk
+except ImportError:
+    tkinter_ok = False
 from tqdm import tqdm
 import math
 from scipy.stats import hypergeom
@@ -17,45 +21,46 @@ import numpy as np
 
 EPSILON = np.finfo(np.float32).eps
 
-class StatusBox:
-    def __init__(self):
-        self.root = Tk()
-        self.root.title('irMF status - Python kernel')
-        self.root.minsize(width=230, height=60)
-        self.frame = Frame(self.root, borderwidth=6)
-        self.frame.pack()
-        self.var = StringVar()
-        self.status = Label(self.frame, textvariable=self.var, width=60, height=1)
-        self.status.pack(fill=NONE, padx=6, pady=6)
-        self.pbar = ttk.Progressbar(self.frame, orient=HORIZONTAL, max=100, mode='determinate')
-        self.pbar.pack(fill=NONE, padx=6, pady=6)
-        Button(self.frame, text='Cancel', command=self.close_dialog).pack(fill=NONE, padx=6, pady=6)
-        self.cancel_pressed = False
-        self.n_steps = 0
+if tkinter_ok:
+    class StatusBox:
+        def __init__(self):
+            self.root = Tk()
+            self.root.title('irMF status - Python kernel')
+            self.root.minsize(width=230, height=60)
+            self.frame = Frame(self.root, borderwidth=6)
+            self.frame.pack()
+            self.var = StringVar()
+            self.status = Label(self.frame, textvariable=self.var, width=60, height=1)
+            self.status.pack(fill=NONE, padx=6, pady=6)
+            self.pbar = ttk.Progressbar(self.frame, orient=HORIZONTAL, max=100, mode='determinate')
+            self.pbar.pack(fill=NONE, padx=6, pady=6)
+            Button(self.frame, text='Cancel', command=self.close_dialog).pack(fill=NONE, padx=6, pady=6)
+            self.cancel_pressed = False
+            self.n_steps = 0
 
-    def close_dialog(self):
-        self.cancel_pressed = True
+        def close_dialog(self):
+            self.cancel_pressed = True
 
-    def update_bar(self, delay=1, step=1):
-        self.n_steps += step
-        self.pbar.step(step)
-        self.pbar.after(delay, lambda: self.root.quit())
-        self.root.mainloop()
+        def update_bar(self, delay=1, step=1):
+            self.n_steps += step
+            self.pbar.step(step)
+            self.pbar.after(delay, lambda: self.root.quit())
+            self.root.mainloop()
 
-    def init_bar(self, delay=1):
-        self.update_bar(delay=1, step=100 - self.n_steps)
-        self.n_steps = 0
+        def init_bar(self, delay=1):
+            self.update_bar(delay=1, step=100 - self.n_steps)
+            self.n_steps = 0
 
-    def update_status(self, delay=1, status=''):
-        self.var.set(status)
-        self.status.after(delay, lambda: self.root.quit())
-        self.root.mainloop()
+        def update_status(self, delay=1, status=''):
+            self.var.set(status)
+            self.status.after(delay, lambda: self.root.quit())
+            self.root.mainloop()
 
-    def close(self):
-        self.root.destroy()
+        def close(self):
+            self.root.destroy()
 
-    def myPrint(self, status=''):
-        print(status)
+        def myPrint(self, status=''):
+            print(status)
 
 class StatusBoxTqdm:
     def __init__(self, verbose=0):
