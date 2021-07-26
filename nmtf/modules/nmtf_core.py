@@ -1108,14 +1108,14 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
                 if alpha[0] == -1:
                     for k in range(0, nc):
                         if np.max(Mt[:, k]) > 0:
-                            hhi = int(np.round((np.linalg.norm(Mt[:, k], ord=1)/np.linalg.norm(Mt[:, k], ord=2))**2, decimals=0))
+                            hhi = int(np.round((np.linalg.norm(Mt[:, k], ord=1)/(np.linalg.norm(Mt[:, k], ord=2)+EPSILON))**2, decimals=0))
                             alpha[k] = -1 - (n-hhi)/(n-1)
                         else:
                             alpha[k] = 0
                 else:
                     for k in range(0, nc):
                         if np.max(Mw[:, k]) > 0:
-                            hhi = int(np.round((np.linalg.norm(Mw[:, k], ord=1)/np.linalg.norm(Mw[:, k], ord=2))**2, decimals=0))
+                            hhi = int(np.round((np.linalg.norm(Mw[:, k], ord=1)/(np.linalg.norm(Mw[:, k], ord=2)+EPSILON))**2, decimals=0))
                             alpha[k] = 1 + (p-hhi)/(p-1)
                         else:
                             alpha[k] = 0

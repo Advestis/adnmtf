@@ -3,7 +3,7 @@ from nmtf import NMF
 import numpy as np
 import json
 from pathlib import Path
-from json_encoder import JSONEncoder
+from ..utils.json_encoder import JSONEncoder
 
 DATA_PATH = Path(__file__).parent.parent / "data"
 
