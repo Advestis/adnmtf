@@ -1108,14 +1108,16 @@ def NTFSolve_simple(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, Max
                 if alpha[0] == -1:
                     for k in range(0, nc):
                         if np.max(Mt[:, k]) > 0:
-                            hhi = int(np.round((np.linalg.norm(Mt[:, k], ord=1)/(np.linalg.norm(Mt[:, k], ord=2)+EPSILON))**2, decimals=0))
+                            hhi = int(np.round((np.linalg.norm(Mt[:, k], ord=1)/(np.linalg.norm(Mt[:, k], ord=2)
+                                                                                 + EPSILON))**2, decimals=0))
                             alpha[k] = -1 - (n-hhi)/(n-1)
                         else:
                             alpha[k] = 0
                 else:
                     for k in range(0, nc):
                         if np.max(Mw[:, k]) > 0:
-                            hhi = int(np.round((np.linalg.norm(Mw[:, k], ord=1)/(np.linalg.norm(Mw[:, k], ord=2)+EPSILON))**2, decimals=0))
+                            hhi = int(np.round((np.linalg.norm(Mw[:, k], ord=1)/(np.linalg.norm(Mw[:, k], ord=2)
+                                                                                 + EPSILON))**2, decimals=0))
                             alpha[k] = 1 + (p-hhi)/(p-1)
                         else:
                             alpha[k] = 0
@@ -1788,7 +1790,8 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
             if alpha[0] <= -1:
                 if (alpha[0] == -1) & (np.max(Mt[:,k]) > 0):
                     t_threshold = Mt[:,k]
-                    hhi = int(np.round((np.linalg.norm(t_threshold, ord=1)/np.linalg.norm(t_threshold, ord=2))**2, decimals=0))
+                    hhi = int(np.round((np.linalg.norm(t_threshold, ord=1)/(np.linalg.norm(t_threshold, ord=2)
+                                                                            + EPSILON))**2, decimals=0))
                     t_rank = np.argsort(t_threshold)
                     t_threshold[t_rank[0:n-hhi]] = 0
                 else:
@@ -1848,7 +1851,8 @@ def NTFUpdate(NBlocks, Mpart, IDBlockp, p, Mb, k, Mt, n, Mw, n_Mmis, Mmis, Mres,
             if alpha[0] >= 1:
                 if (alpha[0] == 1) & (np.max(Mw[:,k]) > 0):
                     w_threshold = Mw[:,k]
-                    hhi = int(np.round((np.linalg.norm(w_threshold, ord=1)/np.linalg.norm(w_threshold, ord=2))**2, decimals=0))
+                    hhi = int(np.round((np.linalg.norm(w_threshold, ord=1)/(np.linalg.norm(w_threshold, ord=2)
+                                                                            + EPSILON))**2, decimals=0))
                     w_rank = np.argsort(w_threshold)
                     w_threshold[w_rank[0:p-hhi]] = 0
                 else:
