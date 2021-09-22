@@ -36,5 +36,5 @@ def compute():
 
 estimator, expected_estimator = compute()
 
-np.savetxt(Path(__file__).parent / 'H.csv',estimator['H'], delimiter=',')
-np.savetxt(Path(__file__).parent /'H_expected.csv',expected_estimator['H'], delimiter=',')
+#np.savetxt(Path(__file__).parent / 'H.csv',estimator['H'], delimiter=',')
+#np.savetxt(Path(__file__).parent /'H_expected.csv',expected_estimator['H'], delimiter=',')

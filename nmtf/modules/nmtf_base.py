@@ -44,7 +44,7 @@ def NMFInit(M, Mmis, Mt0, Mw0, nc, tolerance, LogIter, myStatusBox):
     Pattern Recognition Pattern Recognition Volume 41, Issue 4, April 2008, Pages 1350-1362
 
     """
- 
+
     n, p = M.shape
     Mmis = Mmis.astype(np.int)
     n_Mmis = Mmis.shape[0]
@@ -508,6 +508,7 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
          MwPct: Percent robust clustered columns
          diff : Objective minimum achieved
      """
+
     AddMessage = []
     ErrMessage = ''
     cancel_pressed = 0
