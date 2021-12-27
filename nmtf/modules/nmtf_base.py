@@ -84,7 +84,7 @@ def NMFInit(M, Mmis, Mt0, Mw0, nc, tolerance, LogIter, myStatusBox):
             Mt, d, Mw, Mmis, Mmsr, Mmsr2, AddMessage, ErrMessage, cancel_pressed = rSVDSolve(
                 M, Mmis, nc, tolerance, LogIter, 0, "", 200,
                 1, 1, 1, myStatusBox)
-   
+
     for k in range(0, nc):
         U1 = Mt[:, k]
         U2 = -Mt[:, k]
@@ -104,7 +104,7 @@ def NMFInit(M, Mmis, Mt0, Mw0, nc, tolerance, LogIter, myStatusBox):
         else:
             Mt[:, k] = np.reshape(U2, n)
             Mw[:, k] = np.reshape(V2, p)
-        
+
     return [Mt, Mw]
 
 def rNMFSolve(
@@ -1111,6 +1111,15 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
     
     M = X
     n, p = M.shape
+    Mmis = np.array([])
+    Mmis = Mmis.astype(np.int)
+    ID = np.where(np.isnan(M) == True)
+    n_Mmis = ID[0].size
+    if n_Mmis > 0:
+        Mmis = (np.isnan(M) == False)
+        Mmis = Mmis.astype(np.int)
+        M[Mmis == 0] = 0
+
     if n_components is None:
         nc = min(n, p)
     else:
@@ -1126,7 +1135,7 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
     tolerance = tol
     precision = EPSILON
     if (W is None) & (H is None):
-        Mt, Mw = NMFInit(M, np.array([]), np.array([]), np.array([]), nc, tolerance, LogIter, myStatusBox)
+        Mt, Mw = NMFInit(M, Mmis, np.array([]), np.array([]), nc, tolerance, LogIter, myStatusBox)
         init = 'nndsvd'
     else:
         if H is None:
@@ -1236,7 +1245,7 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
             NTFAlgo = 6
         
         Mt_conv, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed = rNTFSolve(
-            M, np.array([]), Mt, Mw, np.array([]), nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
+            M, Mmis, Mt, Mw, np.array([]), nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
             1, NTFAlgo, NMFRobustNRuns, NMFCalculateLeverage, NMFUseRobustLeverage,
             0, 0, NMFSparseLevel, 0, 0, 0, 0, 0, 1, 0, np.array([]), myStatusBox)
         Mev = np.ones(nc)
@@ -1647,6 +1656,14 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
 
     M = X
     n, p = M.shape
+    Mmis = np.array([])
+    Mmis = Mmis.astype(np.int)
+    ID = np.where(np.isnan(M) == True)
+    n_Mmis = ID[0].size
+    if n_Mmis > 0:
+        Mmis = (np.isnan(M) == False)
+        Mmis = Mmis.astype(np.int)
+
     if n_components is None:
         nc = min(n, p)
     else:
@@ -1678,7 +1695,7 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
     myStatusBox = StatusBoxTqdm(verbose=LogIter)
 
     if (W is None) & (H is None) & (Q is None):
-        Mt0, Mw0, Mb0, AddMessage, ErrMessage, cancel_pressed = NTFInit(M, np.array([]), np.array([]), np.array([]), nc,
+        Mt0, Mw0, Mb0, AddMessage, ErrMessage, cancel_pressed = NTFInit(M, Mmis, np.array([]), np.array([]), nc,
                                                                         tolerance, precision, LogIter, NTFUnimodal,
                                                                         NTFLeftComponents, NTFRightComponents,
                                                                         NTFBlockComponents, NBlocks, init_type, myStatusBox)
@@ -1760,7 +1777,7 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
         NMFFixUserBHE = 1
 
     Mt_conv, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed = rNTFSolve(
-        M, np.array([]), Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
+        M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
         NMFFixUserBHE, NMFAlgo, NMFRobustNRuns,
         NMFCalculateLeverage, NMFUseRobustLeverage, NTFFastHALS, NTFNIterations, NMFSparseLevel, NTFUnimodal, NTFSmooth,
         NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NTFNConv, np.array([]), myStatusBox)
