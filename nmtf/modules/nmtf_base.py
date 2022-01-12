@@ -55,35 +55,32 @@ def NMFInit(M, Mmis, Mt0, Mw0, nc, tolerance, LogIter, myStatusBox):
             Mmis = (np.isnan(M) == False)
             Mmis = Mmis.astype(np.int)
             M[Mmis == 0] = 0
+    else:
+        M[Mmis == 0] = 0
 
     nc = int(nc)
     Mt = np.copy(Mt0)
     Mw = np.copy(Mw0)
     if (Mt.shape[0] == 0) or (Mw.shape[0] == 0):
-        if n_Mmis == 0:
-            if nc >= min(n,p):
-                # arpack does not accept to factorize at full rank -> need to duplicate in both dimensions to force it work
-                t, d, w = svds(np.concatenate((np.concatenate((M, M), axis=1),np.concatenate((M, M), axis=1)), axis=0), k=nc)
-                t *= np.sqrt(2)
-                w *= np.sqrt(2)
-                d /= 2
-                # svd causes mem allocation problem with large matrices
-                # t, d, w = np.linalg.svd(M)
-                # Mt = t
-                # Mw = w.T
-            else:
-                t, d, w = svds(M, k=nc)
-
-            Mt = t[:n,:]
-            Mw = w[:,:p].T
-            #svds returns singular vectors in reverse order
-            Mt = Mt[:,::-1]
-            Mw = Mw[:,::-1]
-            d = d[::-1]
+        #Note that if there are missing values, SVD is performed on matrix imputed with 0's
+        if nc >= min(n,p):
+            # arpack does not accept to factorize at full rank -> need to duplicate in both dimensions to force it work
+            t, d, w = svds(np.concatenate((np.concatenate((M, M), axis=1),np.concatenate((M, M), axis=1)), axis=0), k=nc)
+            t *= np.sqrt(2)
+            w *= np.sqrt(2)
+            d /= 2
+            # svd causes mem allocation problem with large matrices
+            # t, d, w = np.linalg.svd(M)
+            # Mt = t
+            # Mw = w.T
         else:
-            Mt, d, Mw, Mmis, Mmsr, Mmsr2, AddMessage, ErrMessage, cancel_pressed = rSVDSolve(
-                M, Mmis, nc, tolerance, LogIter, 0, "", 200,
-                1, 1, 1, myStatusBox)
+            t, d, w = svds(M, k=nc)
+
+        Mt = t[:n, :]
+        Mw = w[:, :p].T
+        #svds returns singular vectors in reverse order
+        Mt = Mt[:, ::-1]
+        Mw = Mw[:, ::-1]
 
     for k in range(0, nc):
         U1 = Mt[:, k]
@@ -345,7 +342,9 @@ def NTFInit(M, Mmis, Mt_nmf, Mw_nmf, nc, tolerance, precision, LogIter, NTFUnimo
             Mmis = (np.isnan(M) == False)
             Mmis = Mmis.astype(np.int)
             M[Mmis == 0] = 0
-  
+    else:
+        M[Mmis == 0] = 0
+
     nc = int(nc)
     NBlocks = int(NBlocks)
     init_type = int(init_type)
@@ -362,9 +361,11 @@ def NTFInit(M, Mmis, Mt_nmf, Mw_nmf, nc, tolerance, precision, LogIter, NTFUnimo
             Mt_nmf, Mw_nmf = NMFInit(Mstacked, Mmis_stacked, Mt_nmf, Mw_nmf, nc2, tolerance, LogIter, myStatusBox)
 
         # Quick NMF
-        Mt_nmf, Mw_nmf, diff, Mh, dummy1, dummy2, AddMessage, ErrMessage, cancel_pressed = NMFSolve(
-            Mstacked, Mmis_stacked, Mt_nmf, Mw_nmf, nc2, tolerance, precision, LogIter, Status0,
-            10, 2, 0, 0, 1, 1, 0, 0, 0, 1, 0, np.array([]), 0, AddMessage, myStatusBox)
+        dummy, Mt_nmf, Mw_nmf, Mb, diff, cancel_pressed = NTFSolve(
+            Mstacked, Mmis_stacked, Mt_nmf, Mw_nmf, np.array([]), nc2, tolerance, LogIter, Status0,
+            10, 0, 0, 1, 0, 0, 0,
+            0, 0, 0, 1, 0, np.array([]), myStatusBox)
+        ErrMessage = ''
     
         # Factorize Left vectors and distribute multiple factors if nc2 < nc
         Mt = np.zeros((n, nc))
@@ -412,10 +413,12 @@ def NTFInit(M, Mmis, Mt_nmf, Mw_nmf, nc, tolerance, precision, LogIter, NTFUnimo
             Mt_nmf, Mw_nmf = NMFInit(M, Mmis, Mt_nmf, Mw_nmf, nc, tolerance, LogIter, myStatusBox)
 
         # Quick NMF
-        Mt_nmf, Mw_nmf, diff, Mh, dummy1, dummy2, AddMessage, ErrMessage, cancel_pressed = NMFSolve(
-            M, Mmis, Mt_nmf, Mw_nmf, nc, tolerance, precision, LogIter, Status0,
-            10, 2, 0, 0, 1, 1, 0, 0, 0, 1, 0, np.array([]), 0, AddMessage, myStatusBox)
-    
+        dummy, Mt_nmf, Mw_nmf, Mb, diff, cancel_pressed = NTFSolve(
+            M, Mmis, Mt_nmf, Mw_nmf, np.array([]), nc, tolerance, LogIter, Status0,
+            10, 0, 0, 1, 0, 0, 0,
+            0, 0, 0, 1, 0, np.array([]), myStatusBox)
+        ErrMessage = ''
+
         #Factorize Left vectors 
         Mt = np.zeros((n, nc))
         Mw = np.zeros((int(p / NBlocks), nc))
@@ -953,8 +956,8 @@ def rSVDSolve(M, Mmis, nc, tolerance, LogIter, LogTrials, Status0, MaxIterations
     if nc > 1:
         RMev = np.argsort(-Mev)
         Mev = Mev[RMev]
-        Mw0 = Mw
-        Mt0 = Mt
+        Mw0 = Mw.copy()
+        Mt0 = Mt.copy()
         for k in range(0, nc):
             Mw[:, k] = Mw0[:, RMev[k]]
             Mt[:, k] = Mt0[:, RMev[k]]
@@ -1111,6 +1114,7 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
     
     M = X
     n, p = M.shape
+    #Identify missing values
     Mmis = np.array([])
     Mmis = Mmis.astype(np.int)
     ID = np.where(np.isnan(M) == True)
@@ -1118,6 +1122,8 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
     if n_Mmis > 0:
         Mmis = (np.isnan(M) == False)
         Mmis = Mmis.astype(np.int)
+        M[Mmis == 0] = 0
+    else:
         M[Mmis == 0] = 0
 
     if n_components is None:
@@ -1244,7 +1250,7 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
         else:
             NTFAlgo = 6
         
-        Mt_conv, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed = rNTFSolve(
+        dummy, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed = rNTFSolve(
             M, Mmis, Mt, Mw, np.array([]), nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
             1, NTFAlgo, NMFRobustNRuns, NMFCalculateLeverage, NMFUseRobustLeverage,
             0, 0, NMFSparseLevel, 0, 0, 0, 0, 0, 1, 0, np.array([]), myStatusBox)
@@ -1656,6 +1662,8 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
 
     M = X
     n, p = M.shape
+
+    #Identify missing values
     Mmis = np.array([])
     Mmis = Mmis.astype(np.int)
     ID = np.where(np.isnan(M) == True)
@@ -1663,6 +1671,9 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
     if n_Mmis > 0:
         Mmis = (np.isnan(M) == False)
         Mmis = Mmis.astype(np.int)
+        M[Mmis == 0] = 0
+    else:
+        M[Mmis == 0] = 0
 
     if n_components is None:
         nc = min(n, p)
