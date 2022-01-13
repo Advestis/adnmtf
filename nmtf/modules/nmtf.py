@@ -18,14 +18,6 @@ class NMF:
     n_components : integer
         Number of components, if n_components is not set : n_components = min(n_samples, n_features)
 
-    n_update_W : integer
-        Estimate last n_update_W components from initial guesses.
-        If n_update_W is not set : n_update_W = n_components.
-
-    n_update_H : integer
-        Estimate last n_update_H components from initial guesses.
-        If n_update_H is not set : n_update_H = n_components.
-
     beta_loss : string, default 'frobenius'
         String must be in {'frobenius', 'kullback-leibler'}.
         Beta divergence to be minimized, measuring the distance between X
@@ -132,11 +124,9 @@ class NMF:
 
         W : array-like, shape (n_samples, n_components)
             prior W
-            If n_update_W == 0 , it is used as a constant, to solve for H only.
 
         H : array-like, shape (n_features, n_components)
             prior H
-            If n_update_H = 0 , it is used as a constant, to solve for W only.
 
         update_W : boolean, default: True
             Update or keep W fixed
