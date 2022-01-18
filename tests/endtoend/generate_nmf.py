@@ -50,7 +50,7 @@ def compute_test_nmf(test_name, json_file, input_file=None, row_header=0, w=None
         else:
             m0 = df.values
 
-    my_nmfmodel = NMF(n_components=n_components, random_state=123, use_hals=True)
+    my_nmfmodel = NMF(n_components=n_components, random_state=123)
     estimator_ = my_nmfmodel.fit_transform(m0, sparsity=sparsity, n_bootstrap=n_bootstrap)
     return estimator_, expected_estimator_, test_name
 

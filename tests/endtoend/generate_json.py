@@ -64,7 +64,7 @@ def compute_test_nmf1():
     h = np.array([[0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
                   [0.9, 0.8, 0.7, 0.6, 0.5, 0.4]])
     m0 = w.dot(h)
-    my_nmfmodel = NMF(n_components=2, random_state=123, use_hals=True)
+    my_nmfmodel = NMF(n_components=2, random_state=123)
     estimator_ = my_nmfmodel.fit_transform(m0, sparsity=0.8, n_bootstrap=10)
     estimator_ = my_nmfmodel.predict(estimator_)
     for item in estimator_:
@@ -78,7 +78,7 @@ def compute_test_nmf1():
 def compute_test_nmf2():
     df = pd.read_csv(DATA_PATH / "data_nmf_nc1_corrmin0.9_corrmax0.1_noise0_RandNorms.csv", header=0)
     m0 = df.iloc[:, 1:].values
-    my_nmfmodel = NMF(n_components=1, random_state=123, use_hals=True)
+    my_nmfmodel = NMF(n_components=1, random_state=123)
     estimator_ = my_nmfmodel.fit_transform(m0, n_bootstrap=0)
     for item in estimator_:
         if isinstance(estimator_[item], np.ndarray):
@@ -89,7 +89,7 @@ def compute_test_nmf2():
 def compute_test_nmf3():
     df = pd.read_csv(DATA_PATH / "data_nmf_nc1_corrmin0.9_corrmax0.1_noise0_RandNorms_miss.csv", header=0)
     m0 = df.iloc[:, 1:].values
-    my_nmfmodel = NMF(n_components=1, random_state=123, use_hals=True)
+    my_nmfmodel = NMF(n_components=1, random_state=123)
     estimator_ = my_nmfmodel.fit_transform(m0, n_bootstrap=0)
     for item in estimator_:
         if isinstance(estimator_[item], np.ndarray):
@@ -100,7 +100,7 @@ def compute_test_nmf3():
 def compute_test_nmf4():
     df = pd.read_csv(DATA_PATH / "data_nmf_brunet.csv", header=0)
     m0 = df.iloc[:, 2:].values
-    my_nmfmodel = NMF(n_components=4, random_state=123, use_hals=True)
+    my_nmfmodel = NMF(n_components=4, random_state=123)
     estimator_ = my_nmfmodel.fit_transform(m0, n_bootstrap=10)
     for item in estimator_:
         if isinstance(estimator_[item], np.ndarray):

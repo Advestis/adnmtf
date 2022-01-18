@@ -18,37 +18,16 @@ class NMF:
     n_components : integer
         Number of components, if n_components is not set : n_components = min(n_samples, n_features)
 
-    beta_loss : string, default 'frobenius'
-        String must be in {'frobenius', 'kullback-leibler'}.
-        Beta divergence to be minimized, measuring the distance between X
-        and the dot product WH. Note that values different from 'frobenius'
-        (or 2) and 'kullback-leibler' (or 1) lead to significantly slower
-        fits. Note that for beta_loss == 'kullback-leibler', the input
-        matrix X cannot contain zeros.
-    
-    use_hals : boolean
-        True -> HALS algorithm (note that convex & kullback-leibler loss options are not supported)
-        False-> Projected gradiant
-
     tol : float, default: 1e-6
         Tolerance of the stopping condition.
 
     max_iter : integer, default: 200
         Maximum number of iterations.
 
-    max_iter_mult : integer, default: 20
-        Maximum number of iterations in multiplicative warm-up to projected gradient (beta_loss = 'frobenius' only).
-
     leverage :  None | 'standard' | 'robust', default 'standard'
         Calculate leverage of W and H rows on each component.
 
-    convex :  None | 'components' | 'transformation', default None
-        Apply convex constraint on W or H.
-
-    kernel :  'linear', 'quadratic', 'radial', default 'linear'
-        Can be set if convex = 'transformation'.
-
-    random_state : int, RandomState instance or None, optional, default: None
+     random_state : int, RandomState instance or None, optional, default: None
         If int, random_state is the seed used by the random number generator;
         If RandomState instance, random_state is the random number generator;
         If None, the random number generator is the RandomState instance used
@@ -79,23 +58,15 @@ class NMF:
     """
 
     def __init__(self, n_components=None,
-                       beta_loss='frobenius',
-                       use_hals = False,
                        tol=1e-6,
-                       max_iter=150, max_iter_mult=20,
+                       max_iter=150,
                        leverage='standard',
-                       convex=None, kernel='linear',
                        random_state=None,
                        verbose=0):
         self.n_components = n_components
-        self.beta_loss = beta_loss
-        self.use_hals = use_hals
         self.tol = tol
         self.max_iter = max_iter
-        self.max_iter_mult = max_iter_mult
         self.leverage = leverage
-        self.convex = convex
-        self.kernel = kernel
         self.random_state = random_state
         self.verbose = verbose
 
@@ -103,9 +74,8 @@ class NMF:
                                update_W=True,
                                update_H=True,
                                n_bootstrap=None,
-                               regularization=None, sparsity=0,
-                               skewness=False,
-                               null_priors=False):
+                               regularization=None,
+                               sparsity=0):
 
         """Compute Non-negative Matrix Factorization (NMF)
 
@@ -146,17 +116,6 @@ class NMF:
             - the % rows in W or H set to 0 (when use_hals = False)
             - the mean % rows per column in W or H set to 0 (when use_hals = True)
             sparsity == 1: adaptive sparsity through hard thresholding and hhi
-
-        skewness : boolean, default False
-            When solving mixture problems, columns of X at the extremities of the convex hull will be given largest weights.
-            The column weight is a function of the skewness and its sign.
-            The expected sign of the skewness is based on the skewness of W components, as returned by the first pass
-            of a 2-steps convex NMF. Thus, during the first pass, skewness must be set to False.
-            Can be set only if convex = 'transformation' and prior W and H have been defined.
-
-        null_priors : boolean, default False
-            Cells of H with prior cells = 0 will not be updated.
-            Can be set only if prior H has been defined.
 
         Returns
         -------
@@ -209,16 +168,11 @@ class NMF:
         return non_negative_factorization(X, W=W, H=H, n_components=self.n_components,
                                             update_W=update_W,
                                             update_H=update_H,
-                                            beta_loss=self.beta_loss,
-                                            use_hals=self.use_hals,
                                             n_bootstrap=n_bootstrap,
                                             tol=self.tol,
-                                            max_iter=self.max_iter, max_iter_mult=self.max_iter_mult,
+                                            max_iter=self.max_iter,
                                             regularization=regularization, sparsity=sparsity,
                                             leverage = self.leverage,
-                                            convex=self.convex, kernel=self.kernel,
-                                            skewness=skewness,
-                                            null_priors=null_priors,
                                             random_state=self.random_state,
                                             verbose=self.verbose)
 
