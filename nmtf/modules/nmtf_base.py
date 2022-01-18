@@ -702,6 +702,16 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
         MtPct = MtPct[:, RMev]
         MwPct = MwPct[:, RMev]
 
+    # Scale by max com p
+    for k in range(0, nc):
+        MaxCol = np.max(Mt[:, k])
+        if MaxCol > 0:
+            Mt[:, k] /= MaxCol
+            Mw[:, k] *= Mev[k] * MaxCol
+            Mev[k] = 1
+        else:
+            Mev[k] = 0
+
     estimator = {}
     if NMFRobustNRuns <= 1:
         estimator.update([('W', Mt), ('H', Mw), ('volume', volume), ('diff', diff)])

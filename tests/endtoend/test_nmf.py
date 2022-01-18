@@ -21,7 +21,6 @@ def test_nmf(inputs_):
             if test_name == "test_nmf3":
                 np.savetxt(DATA_PATH / "test_nmf3_W.csv", estimator['W'])
                 np.savetxt(DATA_PATH / "test_nmf3_H.csv", estimator['H'])
-                print(estimator['diff'])
 
             param_exp = param
             if param not in expected_estimator:
