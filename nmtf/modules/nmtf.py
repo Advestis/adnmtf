@@ -302,15 +302,6 @@ class NTF:
     n_components : integer
         Number of components, if n_components is not set : n_components = min(n_samples, n_features)
 
-    fast_hals : boolean, default: False
-        Use fast implementation of HALS
-
-    n_iter_hals : integer, default: 2
-        Number of HALS iterations prior to fast HALS
-
-    n_shift : integer, default: 0
-        max shifting in convolutional NTF
-
     unimodal : Boolean, default: False
 
     smooth : Boolean, default: False
@@ -361,7 +352,6 @@ class NTF:
     """
 
     def __init__(self, n_components=None,
-                       fast_hals=False, n_iter_hals=2, n_shift=0,
                        unimodal=False, smooth=False,
                        apply_left=False, apply_right=False, apply_block=False,
                        tol=1e-6,
@@ -371,9 +361,6 @@ class NTF:
                        init_type=1,
                        verbose=0):
         self.n_components = n_components
-        self.fast_hals = fast_hals
-        self.n_iter_hals = n_iter_hals
-        self.n_shift = n_shift
         self.unimodal = unimodal
         self.smooth = smooth
         self.apply_left = apply_left
@@ -407,9 +394,11 @@ class NTF:
             Constant matrix.
             X is a tensor with shape (n_samples, n_features, n_blocks), however unfolded along 2nd and 3rd dimensions.
 
-        n_blocks : integer, number of blocks defining the 3rd dimension of the tensor
+        n_blocks : integer
+            Number of blocks defining the 3rd dimension of the tensor
 
-        n_bootstrap : Number of bootstrap runs
+        n_bootstrap : integer
+            Number of bootstrap runs
 
         regularization :  None | 'components' | 'transformation'
             Select whether the regularization affects the components (H), the
@@ -422,13 +411,13 @@ class NTF:
             sparsity == 1: adaptive sparsity through hard thresholding and hhi
 .
         W : array-like, shape (n_samples, n_components)
-            prior W
+            Prior W
 
         H : array-like, shape (n_features, n_components)
-            prior H
+            Prior H
 
         Q : array-like, shape (n_blocks, n_components)
-            prior Q
+            Prior Q
 
         update_W : boolean, default: True
             Update or keep W fixed
@@ -484,7 +473,6 @@ class NTF:
                                                 update_W=update_W,
                                                 update_H=update_H,
                                                 update_Q=update_Q,
-                                                fast_hals=self.fast_hals, n_iter_hals=self.n_iter_hals, n_shift=self.n_shift, 
                                                 regularization=regularization, sparsity=sparsity, unimodal=self.unimodal, smooth=self.smooth,
                                                 apply_left=self.apply_left,
                                                 apply_right=self.apply_right,

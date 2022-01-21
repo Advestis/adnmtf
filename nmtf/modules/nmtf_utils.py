@@ -152,66 +152,6 @@ def NMFDet(Mt, Mw, NMFExactDet):
     detXcells = np.linalg.det(Xcells.T @ Xcells)
     return detXcells
 
-def NMFGetConvexScores(Mt, Mw, Mh, flag, AddMessage):
-    """Rescale scores to sum up to 1 (used with deconvolution)
-    Input:
-        Mt: Left factoring matrix
-        Mw: Right factoring matrix
-        flag:  Current value
-    Output:
-
-       Mt: Left factoring matrix
-        Mw: Right factoring matrix
-        flag: += 1: Negative weights found
-    """
-    ErrMessage = ''
-    cancel_pressed = 0
-
-    n, nc = Mt.shape
-    n_Mh = Mh.shape[0]
-    try:
-        Malpha = np.linalg.inv(Mt.T @ Mt) @ (Mt.T @ np.ones(n))
-    except:
-        Malpha = np.linalg.pinv(Mt.T @ Mt) @ (Mt.T @ np.ones(n))
-
-    if np.where(Malpha < 0)[0].size > 0:
-        flag += 1
-        Malpha = nnls(Mt, np.ones(n))[0]
-
-    n_zeroed = 0
-    for k in range(0, nc):
-        Mt[:, k] *= Malpha[k]
-        if n_Mh > 0:
-            Mh[:, k] *= Malpha[k]
-        if Malpha[k] > 0:
-            Mw[:, k] /= Malpha[k]
-        else:
-            n_zeroed += 1
-        
-    if n_zeroed > 0:
-        AddMessage.insert(len(AddMessage), 'Ncomp=' + str(nc) + ': ' + str(n_zeroed) + ' components were zeroed')
-
-    # Goodness of fit
-    R2 = 1 - np.linalg.norm(np.sum(Mt.T, axis=0).T - np.ones(n)) ** 2 / n
-    AddMessage.insert(len(AddMessage), 'Ncomp=' + str(nc) + ': Goodness of mixture fit = ' + str(round(R2, 2)))
-    # AddMessage.insert(len(AddMessage), 'Ncomp=' + str(nc) + ': Goodness of mixture fit before adjustement = ' + str(round(R2, 2)))
-
-    # for i in range(0, n):
-    #     Mt[i, :] /= np.sum(Mt[i, :])
-
-    return [Mt, Mw, Mh, flag, AddMessage, ErrMessage, cancel_pressed]
-
-def percentile_exc(a, q):
-    """Percentile, exclusive
-
-    Input:
-        a: Matrix
-        q: Percentile
-    Output:
-        Percentile
-    """
-    return np.percentile(np.concatenate((np.array([np.min(a)]), a.flatten(), np.array([np.max(a)]))), q)
-
 def RobustMax(V0, AddMessage, myStatusBox):
     """Robust max of column vectors
 
@@ -604,44 +544,6 @@ def GlobalSign(Nrun, nbGroups, Mt, RCt, NCt, RowGroups, ListGroups, Ngroup, mySt
         ClusterNgroup = np.array([])
 
     return [ClusterSize, Pglob, prun, ClusterProb, ClusterGroup, ClusterNgroup, cancel_pressed]
-
-def shift(arr, num, fill_value=EPSILON):
-    """Shift a vector
-
-    Parameters
-    ----------
-        arr: Input column vector
-        num: number of indexes to shift ( < 0: To the left )
-        
-    Returns
-    -------
-        result: shifted column vector
-    
-    Examples
-    --------
-    >>> import pytest
-    >>> import numpy as np
-    >>> from nmtf.modules.nmtf_utils import shift
-    >>> arr = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-    >>> b = arr
-    >>> num = -2
-    >>> fill_value = 0
-    >>> shift(b, num, fill_value)
-    array([ 3,  4,  5,  6,  7,  8,  9, 10,  0,  0])
-    >>> num = 2
-    array([0, 0, 1, 2, 3, 4, 5, 6, 7, 8])
-    """
-
-    result = np.empty_like(arr)
-    if num > 0:
-        result[:num] = fill_value
-        result[num:] = arr[:-num]
-    elif num < 0:
-        result[num:] = fill_value
-        result[:num] = arr[-num:]
-    else:
-        result[:] = arr
-    return result
 
 def sparse_opt(b, alpha, two_sided):
     """Return the L2-closest vector with sparsity alpha 
