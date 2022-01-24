@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ 3.7, 3.8 ]
+        python-version: [ 3.9 ]
     steps:
       - name: Checkout repo
         uses: actions/checkout@master
@@ -28,7 +28,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: [ 3.7, 3.8 ]
+        python-version: [ 3.9 ]
     steps:
       - name: Checkout repo
         uses: actions/checkout@master
@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ 3.7, 3.8 ]
+        python-version: [ 3.9 ]
     steps:
       - name: Checkout repo
         uses: actions/checkout@master
@@ -64,13 +64,13 @@ jobs:
           pip install -r requirements.txt
       - name: Test with pytest
         run: |
-          pytest -s
+          pytest -s -v
 
   pytest-windows:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: [ 3.7, 3.8 ]
+        python-version: [ 3.9 ]
     steps:
       - uses: actions/checkout@master
         with:
@@ -87,4 +87,4 @@ jobs:
           pip install -r requirements.txt
       - name: Test with pytest
         run: |
-          pytest -s
+          pytest -s -v
