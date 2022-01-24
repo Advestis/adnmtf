@@ -10,7 +10,7 @@ DATA_PATH = Path(__file__).parent.parent / "data"
 
 def make_json(path, row_header, n_blocks, n_components, sparsity, n_bootstrap, expected):
     if isinstance(path, str):
-        df = pd.read_csv(DATA_PATH / "data_ntf.csv")
+        df = pd.read_csv(DATA_PATH / path)
         if row_header > 0:
             df = df.iloc[:, row_header:]
         m0 = df.values
