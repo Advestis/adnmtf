@@ -13,6 +13,7 @@ def test_nmf(inputs_):
     estimator = inputs_[0]
     expected_estimator = inputs_[1]
     test_name = inputs_[2]
+    print(f"testing {test_name}")
     for param in estimator:
         print(f"Testing {param}...")
         if param.lower() == "wb" or param.lower() == "hb":
