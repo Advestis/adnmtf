@@ -1,5 +1,4 @@
 """Non-negative matrix and tensor factorization basic functions
-
 """
 
 # Author: Paul Fogel
@@ -7,65 +6,62 @@
 # License: MIT
 # Jan 4, '20
 # Initialize progressbar
-import pandas as pd
-import math
+
+from typing import List
 import numpy as np
 from scipy.sparse.linalg import svds
-from tqdm import tqdm
-from scipy.stats import hypergeom
-from scipy.optimize import nnls
 
-from .nmtf_core import *
-from .nmtf_utils import *
-
-import sys
-if not hasattr(sys, 'argv'):
-    sys.argv  = ['']
+from .nmtf_core import NTFStack, ntf_solve
+from .nmtf_utils import Leverage, StatusBoxTqdm, NMFDet, BuildClusters, GlobalSign
 
 EPSILON = np.finfo(np.float32).eps
 
-def NMFInit(M, Mmis, Mt0, Mw0, nc, tolerance, LogIter, myStatusBox):
+
+def nmf_init(m, mmis, mt0, mw0, nc) -> List[np.ndarray]:
     """Initialize NMF components using NNSVD
 
-    Input:
-        M: Input matrix
-        Mmis: Define missing values (0 = missing cell, 1 = real cell)
-        Mt0: Initial left hand matrix (may be empty)
-        Mw0: Initial right hand matrix (may be empty)
+    Parameters
+    ----------
+        m: Input matrix
+        mmis: Define missing values (0 = missing cell, 1 = real cell)
+        mt0: Initial left hand matrix (may be empty)
+        mw0: Initial right hand matrix (may be empty)
         nc: NMF rank
-    Output:
-        Mt: Left hand matrix
-        Mw: Right hand matrix
-    
+
+    Returns
+    -------
+        List[np.ndarray]: Left hand matrix and: Right hand matrix
+
     Reference
     ---------
-
     C. Boutsidis, E. Gallopoulos (2008) SVD based initialization: A head start for nonnegative matrix factorization
     Pattern Recognition Pattern Recognition Volume 41, Issue 4, April 2008, Pages 1350-1362
-
     """
 
-    n, p = M.shape
-    Mmis = Mmis.astype(np.int)
-    n_Mmis = Mmis.shape[0]
+    n, p = m.shape
+    mmis = mmis.astype(np.int)
+    n_Mmis = mmis.shape[0]
     if n_Mmis == 0:
-        ID = np.where(np.isnan(M) == True)
+        ID = np.where(np.isnan(m) is True)
         n_Mmis = ID[0].size
         if n_Mmis > 0:
-            Mmis = (np.isnan(M) == False)
-            Mmis = Mmis.astype(np.int)
-            M[Mmis == 0] = 0
+            mmis = np.isnan(m) is False
+            mmis = mmis.astype(np.int)
+            m[mmis == 0] = 0
     else:
-        M[Mmis == 0] = 0
+        m[mmis == 0] = 0
 
     nc = int(nc)
-    Mt = np.copy(Mt0)
-    Mw = np.copy(Mw0)
+    Mt = np.copy(mt0)
+    Mw = np.copy(mw0)
     if (Mt.shape[0] == 0) or (Mw.shape[0] == 0):
-        #Note that if there are missing values, SVD is performed on matrix imputed with 0's
-        if nc >= min(n,p):
+        # Note that if there are missing values, SVD is performed on matrix imputed with 0's
+        if nc >= min(n, p):
             # arpack does not accept to factorize at full rank -> need to duplicate in both dimensions to force it work
-            t, d, w = svds(np.concatenate((np.concatenate((M, M), axis=1),np.concatenate((M, M), axis=1)), axis=0), k=nc)
+            # noinspection PyTypeChecker
+            t, d, w = svds(
+                np.concatenate((np.concatenate((m, m), axis=1), np.concatenate((m, m), axis=1)), axis=0), k=nc
+            )
             t *= np.sqrt(2)
             w *= np.sqrt(2)
             d /= 2
@@ -74,11 +70,11 @@ def NMFInit(M, Mmis, Mt0, Mw0, nc, tolerance, LogIter, myStatusBox):
             # Mt = t
             # Mw = w.T
         else:
-            t, d, w = svds(M, k=nc)
+            t, d, w = svds(m, k=nc)
 
         Mt = t[:n, :]
         Mw = w[:, :p].T
-        #svds returns singular vectors in reverse order
+        # svds returns singular vectors in reverse order
         Mt = Mt[:, ::-1]
         Mw = Mw[:, ::-1]
 
@@ -104,86 +100,127 @@ def NMFInit(M, Mmis, Mt0, Mw0, nc, tolerance, LogIter, myStatusBox):
 
     return [Mt, Mw]
 
-def NTFInit(M, Mmis, Mt_nmf, Mw_nmf, nc, tolerance, precision, LogIter, NTFUnimodal,
-            NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, init_type, myStatusBox):
+
+def ntf_init(
+    m,
+    mmis,
+    mt_nmf,
+    mw_nmf,
+    nc,
+    tolerance,
+    log_iter,
+    ntf_unimodal,
+    ntf_left_components,
+    ntf_right_components,
+    ntf_block_components,
+    n_blocks,
+    init_type,
+    my_status_box,
+) -> List[np.ndarray]:
     """Initialize NTF components for HALS
 
-     Input:
-         M: Input tensor
-         Mmis: Define missing values (0 = missing cell, 1 = real cell)
-         Mt_nmf: initialization of LHM in NMF(unstacked tensor), may be empty
-         Mw_nmf: initialization of RHM of NMF(unstacked tensor), may be empty
-         nc: NTF rank
-         tolerance: Convergence threshold
-         precision: Replace 0-values in multiplication rules
-         LogIter: Log results through iterations
-         NTFUnimodal: Apply Unimodal constraint on factoring vectors
-         NTFLeftComponents: Apply Unimodal/Smooth constraint on left hand matrix
-         NTFRightComponents: Apply Unimodal/Smooth constraint on right hand matrix
-         NTFBlockComponents: Apply Unimodal/Smooth constraint on block hand matrix
-         NBlocks: Number of NTF blocks
-         init_type : integer, default 0
-             init_type = 0 : NMF initialization applied on the reshaped matrix [1st dim x vectorized (2nd & 3rd dim)] 
-             init_type = 1 : NMF initialization applied on the reshaped matrix [vectorized (1st & 2nd dim) x 3rd dim] 
-     Output:
-         Mt: Left hand matrix
-         Mw: Right hand matrix
-         Mb: Block hand matrix
-     """
+    Parameters
+    ----------
+    m: Input tensor
+    mmis: Define missing values (0 = missing cell, 1 = real cell)
+    mt_nmf: initialization of LHM in NMF(unstacked tensor), may be empty
+    mw_nmf: initialization of RHM of NMF(unstacked tensor), may be empty
+    nc: NTF rank
+    tolerance: Convergence threshold
+    log_iter: Log results through iterations
+    ntf_unimodal: Apply Unimodal constraint on factoring vectors
+    ntf_left_components: Apply Unimodal/Smooth constraint on left hand matrix
+    ntf_right_components: Apply Unimodal/Smooth constraint on right hand matrix
+    ntf_block_components: Apply Unimodal/Smooth constraint on block hand matrix
+    n_blocks: Number of NTF blocks
+    init_type : integer, default 0
+        * init_type = 0 : NMF initialization applied on the reshaped matrix [1st dim x vectorized (2nd & 3rd dim)]
+        * init_type = 1 : NMF initialization applied on the reshaped matrix [vectorized (1st & 2nd dim) x 3rd dim]
+    my_status_box
+            
+    Returns
+    -------
+    List[np.ndarray]
+        Mt: Left hand matrix
+        Mw: Right hand matrix
+        Mb: Block hand matrix
+    """
     AddMessage = []
 
-    n, p = M.shape
-    Mmis = Mmis.astype(np.int)
-    n_Mmis = Mmis.shape[0]
+    n, p = m.shape
+    mmis = mmis.astype(np.int)
+    n_Mmis = mmis.shape[0]
     if n_Mmis == 0:
-        ID = np.where(np.isnan(M) == True)
+        ID = np.where(np.isnan(m) is True)
         n_Mmis = ID[0].size
         if n_Mmis > 0:
-            Mmis = (np.isnan(M) == False)
-            Mmis = Mmis.astype(np.int)
-            M[Mmis == 0] = 0
+            mmis = np.isnan(m) is False
+            mmis = mmis.astype(np.int)
+            m[mmis == 0] = 0
     else:
-        M[Mmis == 0] = 0
+        m[mmis == 0] = 0
 
     nc = int(nc)
-    NBlocks = int(NBlocks)
+    n_blocks = int(n_blocks)
     init_type = int(init_type)
 
     Status0 = "Step 1 - Quick NMF Ncomp=" + str(nc) + ": "
-    
+
     if init_type == 1:
-        #Init legacy
-        Mstacked, Mmis_stacked = NTFStack(M, Mmis, NBlocks)
-        nc2 = min(nc, NBlocks)  # factorization rank can't be > number of blocks
-        if (Mt_nmf.shape[0] == 0) or (Mw_nmf.shape[0] == 0):
-            Mt_nmf, Mw_nmf = NMFInit(Mstacked, Mmis_stacked, np.array([]),  np.array([]), nc2, tolerance, LogIter, myStatusBox)
+        # Init legacy
+        Mstacked, Mmis_stacked = NTFStack(m, mmis, n_blocks)
+        nc2 = min(nc, n_blocks)  # factorization rank can't be > number of blocks
+        if (mt_nmf.shape[0] == 0) or (mw_nmf.shape[0] == 0):
+            mt_nmf, mw_nmf = nmf_init(
+                Mstacked, Mmis_stacked, np.array([]), np.array([]), nc2
+            )
         else:
-            Mt_nmf, Mw_nmf = NMFInit(Mstacked, Mmis_stacked, Mt_nmf, Mw_nmf, nc2, tolerance, LogIter, myStatusBox)
+            mt_nmf, mw_nmf = nmf_init(Mstacked, Mmis_stacked, mt_nmf, mw_nmf, nc2)
 
         # Quick NMF
-        dummy, Mt_nmf, Mw_nmf, Mb, diff, cancel_pressed = NTFSolve(
-            Mstacked, Mmis_stacked, Mt_nmf, Mw_nmf, np.array([]), nc2, tolerance, LogIter, Status0,
-            10, 0, 0, 1, 0, 0, 0,
-            0, 0, 0, 1, np.array([]), myStatusBox)
-        ErrMessage = ''
-    
+        dummy, mt_nmf, mw_nmf, Mb, diff, cancel_pressed = ntf_solve(
+            Mstacked,
+            Mmis_stacked,
+            mt_nmf,
+            mw_nmf,
+            np.array([]),
+            nc2,
+            tolerance,
+            log_iter,
+            Status0,
+            10,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            np.array([]),
+            my_status_box,
+        )
+        ErrMessage = ""
+
         # Factorize Left vectors and distribute multiple factors if nc2 < nc
         Mt = np.zeros((n, nc))
-        Mw = np.zeros((int(p / NBlocks), nc))
-        Mb = np.zeros((NBlocks, nc))
-        NFact = int(np.ceil(nc / NBlocks))
+        Mw = np.zeros((int(p / n_blocks), nc))
+        Mb = np.zeros((n_blocks, nc))
+        NFact = int(np.ceil(nc / n_blocks))
         for k in range(0, nc2):
-            myStatusBox.update_status(delay=1, status="Start SVD...")
-            U, d, V = svds(np.reshape(Mt_nmf[:, k], (int(p / NBlocks), n)).T, k=NFact)
+            my_status_box.update_status(delay=1, status="Start SVD...")
+            U, d, V = svds(np.reshape(mt_nmf[:, k], (int(p / n_blocks), n)).T, k=NFact)
             V = V.T
-            #svds returns singular vectors in reverse order
-            U = U[:,::-1]
-            V = V[:,::-1]
+            # svds returns singular vectors in reverse order
+            U = U[:, ::-1]
+            V = V[:, ::-1]
             d = d[::-1]
 
-            myStatusBox.update_status(delay=1, status="SVD completed")
+            my_status_box.update_status(delay=1, status="SVD completed")
             for iFact in range(0, NFact):
-                ind = iFact * NBlocks + k
+                ind = iFact * n_blocks + k
                 if ind < nc:
                     U1 = U[:, iFact]
                     U2 = -U[:, iFact]
@@ -194,49 +231,70 @@ def NTFInit(M, Mmis, Mt_nmf, Mw_nmf, nc, tolerance, precision, LogIter, NTFUnimo
                     V1[V1 < 0] = 0
                     V2[V2 < 0] = 0
                     U1 = np.reshape(U1, (n, 1))
-                    V1 = np.reshape(V1, (1, int(p / NBlocks)))
+                    V1 = np.reshape(V1, (1, int(p / n_blocks)))
                     U2 = np.reshape(U2, (n, 1))
-                    V2 = np.reshape(V2, ((1, int(p / NBlocks))))
+                    V2 = np.reshape(V2, (1, int(p / n_blocks)))
                     if np.linalg.norm(U1 @ V1) > np.linalg.norm(U2 @ V2):
                         Mt[:, ind] = np.reshape(U1, n)
-                        Mw[:, ind] = d[iFact] * np.reshape(V1, int(p / NBlocks))
+                        Mw[:, ind] = d[iFact] * np.reshape(V1, int(p / n_blocks))
                     else:
                         Mt[:, ind] = np.reshape(U2, n)
-                        Mw[:, ind] = d[iFact] * np.reshape(V2, int(p / NBlocks))
+                        Mw[:, ind] = d[iFact] * np.reshape(V2, int(p / n_blocks))
 
-                    Mb[:, ind] = Mw_nmf[:, k]
+                    Mb[:, ind] = mw_nmf[:, k]
     else:
-        #Init default
-        if (Mt_nmf.shape[0] == 0) or (Mw_nmf.shape[0] == 0):
-            Mt_nmf, Mw_nmf = NMFInit(M, Mmis, np.array([]),  np.array([]), nc, tolerance, LogIter, myStatusBox)
+        # Init default
+        if (mt_nmf.shape[0] == 0) or (mw_nmf.shape[0] == 0):
+            mt_nmf, mw_nmf = nmf_init(m, mmis, np.array([]), np.array([]), nc)
         else:
-            Mt_nmf, Mw_nmf = NMFInit(M, Mmis, Mt_nmf, Mw_nmf, nc, tolerance, LogIter, myStatusBox)
+            mt_nmf, mw_nmf = nmf_init(m, mmis, mt_nmf, mw_nmf, nc)
 
         # Quick NMF
-        dummy, Mt_nmf, Mw_nmf, Mb, diff, cancel_pressed = NTFSolve(
-            M, Mmis, Mt_nmf, Mw_nmf, np.array([]), nc, tolerance, LogIter, Status0,
-            10, 0, 0, 1, 0, 0, 0,
-            0, 0, 0, 1, np.array([]), myStatusBox)
-        ErrMessage = ''
+        dummy, mt_nmf, mw_nmf, Mb, diff, cancel_pressed = ntf_solve(
+            m,
+            mmis,
+            mt_nmf,
+            mw_nmf,
+            np.array([]),
+            nc,
+            tolerance,
+            log_iter,
+            Status0,
+            10,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            np.array([]),
+            my_status_box,
+        )
+        ErrMessage = ""
 
-        #Factorize Left vectors 
+        # Factorize Left vectors
         Mt = np.zeros((n, nc))
-        Mw = np.zeros((int(p / NBlocks), nc))
-        Mb = np.zeros((NBlocks, nc))
+        Mw = np.zeros((int(p / n_blocks), nc))
+        Mb = np.zeros((n_blocks, nc))
 
         for k in range(0, nc):
-            myStatusBox.update_status(delay=1, status="Start SVD...")
-            U, d, V = svds(np.reshape(Mw_nmf[:, k], (int(p / NBlocks), NBlocks)), k=1)
+            my_status_box.update_status(delay=1, status="Start SVD...")
+            # noinspection PyTypeChecker
+            U, d, V = svds(np.reshape(mw_nmf[:, k], (int(p / n_blocks), n_blocks)), k=1)
             V = V.T
-            U = np.abs(U) 
+            U = np.abs(U)
             V = np.abs(V)
-            myStatusBox.update_status(delay=1, status="SVD completed")
-            Mt[:, k] = Mt_nmf[:, k]
-            Mw[:, k] = d[0] * np.reshape(U, int(p / NBlocks))
-            Mb[:, k] = np.reshape(V, NBlocks)
+            my_status_box.update_status(delay=1, status="SVD completed")
+            Mt[:, k] = mt_nmf[:, k]
+            Mw[:, k] = d[0] * np.reshape(U, int(p / n_blocks))
+            Mb[:, k] = np.reshape(V, n_blocks)
 
         for k in range(0, nc):
-            if (NTFUnimodal > 0) & (NTFLeftComponents > 0):
+            if (ntf_unimodal > 0) & (ntf_left_components > 0):
                 #                 Enforce unimodal distribution
                 tmax = np.argmax(Mt[:, k])
                 for i in range(tmax + 1, n):
@@ -245,87 +303,122 @@ def NTFInit(M, Mmis, Mt_nmf, Mw_nmf, nc, tolerance, precision, LogIter, NTFUnimo
                 for i in range(tmax - 1, -1, -1):
                     Mt[i, k] = min(Mt[i + 1, k], Mt[i, k])
 
-    if (NTFUnimodal > 0) & (NTFRightComponents > 0):
+    if (ntf_unimodal > 0) & (ntf_right_components > 0):
         #                 Enforce unimodal distribution
+        # TODO (pcotte) : k seems to be defined as a for loop iterator. VERY bad practice !
         wmax = np.argmax(Mw[:, k])
-        for j in range(wmax + 1, int(p / NBlocks)):
+        for j in range(wmax + 1, int(p / n_blocks)):
             Mw[j, k] = min(Mw[j - 1, k], Mw[j, k])
 
         for j in range(wmax - 1, -1, -1):
             Mw[j, k] = min(Mw[j + 1, k], Mw[j, k])
 
-    if (NTFUnimodal > 0) & (NTFBlockComponents > 0):
+    if (ntf_unimodal > 0) & (ntf_block_components > 0):
         #                 Enforce unimodal distribution
         bmax = np.argmax(Mb[:, k])
-        for iBlock in range(bmax + 1, NBlocks):
+        for iBlock in range(bmax + 1, n_blocks):
             Mb[iBlock, k] = min(Mb[iBlock - 1, k], Mb[iBlock, k])
 
         for iBlock in range(bmax - 1, -1, -1):
             Mb[iBlock, k] = min(Mb[iBlock + 1, k], Mb[iBlock, k])
 
     return [Mt, Mw, Mb, AddMessage, ErrMessage, cancel_pressed]
-  
-def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
-              NMFFixUserBHE, NMFAlgo, NMFRobustNRuns, NMFCalculateLeverage, NMFUseRobustLeverage,
-              NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks,
-              NMFPriors, myStatusBox):
+
+
+def r_ntf_solve(
+        M,
+        Mmis,
+        Mt0,
+        Mw0,
+        Mb0,
+        nc,
+        tolerance,
+        LogIter,
+        MaxIterations,
+        NMFFixUserLHE,
+        NMFFixUserRHE,
+        NMFFixUserBHE,
+        NMFAlgo,
+        NMFRobustNRuns,
+        NMFCalculateLeverage,
+        NMFUseRobustLeverage,
+        NMFSparseLevel,
+        NTFUnimodal,
+        NTFSmooth,
+        NTFLeftComponents,
+        NTFRightComponents,
+        NTFBlockComponents,
+        NBlocks,
+        NMFPriors,
+        myStatusBox,
+):
     """Estimate NTF matrices (robust version)
 
-     Input:
-         M: Input matrix
-         Mmis: Define missing values (0 = missing cell, 1 = real cell)
-         Mt0: Initial left hand matrix
-         Mw0: Initial right hand matrix
-         Mb0: Initial block hand matrix
-         nc: NTF rank
-         tolerance: Convergence threshold
-         precision: Replace 0-values in multiplication rules
-         LogIter: Log results through iterations
-         MaxIterations: Max iterations
-         NMFFixUserLHE: fix left hand matrix columns: = 1, else = 0
-         NMFFixUserRHE: fix  right hand matrix columns: = 1, else = 0
-         NMFFixUserBHE: fix  block hand matrix columns: = 1, else = 0
-         NMFAlgo: =5: Non-robust version, =6: Robust version
-         NMFRobustNRuns: Number of bootstrap runs
-         NMFCalculateLeverage: Calculate leverages
-         NMFUseRobustLeverage: Calculate leverages based on robust max across factoring columns
-         NMFSparseLevel : sparsity level (as defined by Hoyer); +/- = make RHE/LHe sparse
-         NTFUnimodal: Apply Unimodal constraint on factoring vectors
-         NTFSmooth: Apply Smooth constraint on factoring vectors
-         NTFLeftComponents: Apply Unimodal/Smooth constraint on left hand matrix
-         NTFRightComponents: Apply Unimodal/Smooth constraint on right hand matrix
-         NTFBlockComponents: Apply Unimodal/Smooth constraint on block hand matrix
-         NBlocks: Number of NTF blocks
-         NMFPriors: Elements in Mw that should be updated (others remain 0)
+    Input:
+        M: Input matrix
+        Mmis: Define missing values (0 = missing cell, 1 = real cell)
+        Mt0: Initial left hand matrix
+        Mw0: Initial right hand matrix
+        Mb0: Initial block hand matrix
+        nc: NTF rank
+        tolerance: Convergence threshold
+        LogIter: Log results through iterations
+        MaxIterations: Max iterations
+        NMFFixUserLHE: fix left hand matrix columns: = 1, else = 0
+        NMFFixUserRHE: fix  right hand matrix columns: = 1, else = 0
+        NMFFixUserBHE: fix  block hand matrix columns: = 1, else = 0
+        NMFAlgo: =5: Non-robust version, =6: Robust version
+        NMFRobustNRuns: Number of bootstrap runs
+        NMFCalculateLeverage: Calculate leverages
+        NMFUseRobustLeverage: Calculate leverages based on robust max across factoring columns
+        NMFSparseLevel : sparsity level (as defined by Hoyer); +/- = make RHE/LHe sparse
+        NTFUnimodal: Apply Unimodal constraint on factoring vectors
+        NTFSmooth: Apply Smooth constraint on factoring vectors
+        NTFLeftComponents: Apply Unimodal/Smooth constraint on left hand matrix
+        NTFRightComponents: Apply Unimodal/Smooth constraint on right hand matrix
+        NTFBlockComponents: Apply Unimodal/Smooth constraint on block hand matrix
+        NBlocks: Number of NTF blocks
+        NMFPriors: Elements in Mw that should be updated (others remain 0)
 
-         
-     Output:
-         Mt_conv: Convolutional Left hand matrix
-         Mt: Left hand matrix
-         Mw: Right hand matrix
-         Mb: Block hand matrix
-         MtPct: Percent robust clustered rows
-         MwPct: Percent robust clustered columns
-         diff : Objective minimum achieved
-     """
+
+    Output:
+        Mt_conv: Convolutional Left hand matrix
+        Mt: Left hand matrix
+        Mw: Right hand matrix
+        Mb: Block hand matrix
+        MtPct: Percent robust clustered rows
+        MwPct: Percent robust clustered columns
+        diff : Objective minimum achieved
+    """
 
     AddMessage = []
-    ErrMessage = ''
+    ErrMessage = ""
     cancel_pressed = 0
     n, p0 = M.shape
     nc = int(nc)
     NBlocks = int(NBlocks)
     p = int(p0 / NBlocks)
-    if NMFFixUserLHE*NMFFixUserRHE*NMFFixUserBHE == 1:
-        return np.zeros((n, nc)), Mt0, Mw0, Mb0, np.zeros((n, p0)), np.ones((n, nc)), np.ones((p, nc)), AddMessage, ErrMessage, cancel_pressed
+    if NMFFixUserLHE * NMFFixUserRHE * NMFFixUserBHE == 1:
+        return (
+            np.zeros((n, nc)),
+            Mt0,
+            Mw0,
+            Mb0,
+            np.zeros((n, p0)),
+            np.ones((n, nc)),
+            np.ones((p, nc)),
+            AddMessage,
+            ErrMessage,
+            cancel_pressed,
+        )
 
     Mmis = Mmis.astype(np.int)
     n_Mmis = Mmis.shape[0]
     if n_Mmis == 0:
-        ID = np.where(np.isnan(M) == True)
+        ID = np.where(np.isnan(M) is True)
         n_Mmis = ID[0].size
         if n_Mmis > 0:
-            Mmis = (np.isnan(M) == False)
+            Mmis = np.isnan(M) is False
             Mmis = Mmis.astype(np.int)
             M[Mmis == 0] = 0
     else:
@@ -335,7 +428,6 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
     Mt = np.copy(Mt0)
     Mw = np.copy(Mw0)
     Mb = np.copy(Mb0)
-    Mt_conv = np.array([])
 
     # Check parameter consistency (and correct if needed)
     if (nc == 1) | (NMFAlgo == 5):
@@ -347,10 +439,30 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
 
     # Step 1: NTF
     Status0 = "Step 1 - NTF Ncomp=" + str(nc) + ": "
-    Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = NTFSolve(
-        M, Mmis, Mt, Mw, Mb, nc, tolerance, LogIter, Status0,
-        MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE, NMFSparseLevel, NTFUnimodal, NTFSmooth,
-        NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NMFPriors, myStatusBox)
+    Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = ntf_solve(
+        M,
+        Mmis,
+        Mt,
+        Mw,
+        Mb,
+        nc,
+        tolerance,
+        LogIter,
+        Status0,
+        MaxIterations,
+        NMFFixUserLHE,
+        NMFFixUserRHE,
+        NMFFixUserBHE,
+        NMFSparseLevel,
+        NTFUnimodal,
+        NTFSmooth,
+        NTFLeftComponents,
+        NTFRightComponents,
+        NTFBlockComponents,
+        NBlocks,
+        NMFPriors,
+        myStatusBox,
+    )
 
     Mtsup = np.copy(Mt)
     Mwsup = np.copy(Mw)
@@ -363,18 +475,57 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
         MwBlk = np.zeros((p, NMFRobustNRuns * nc))
         for iBootstrap in range(0, NMFRobustNRuns):
             Boot = np.random.randint(n, size=n)
-            Status0 = "Step 2 - " + \
-                      "Boot " + str(iBootstrap + 1) + "/" + str(NMFRobustNRuns) + " NTF Ncomp=" + str(nc) + ": "
+            Status0 = f"Step 2 - Boot {iBootstrap + 1}/{NMFRobustNRuns} NTF Ncomp={nc}"
             if n_Mmis > 0:
-                Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = NTFSolve(
-                    M[Boot, :], Mmis[Boot, :], Mtsup[Boot, :], Mwsup, Mb, nc, 1.e-3, LogIter, Status0,
-                    MaxIterations, 1, 0, NMFFixUserBHE, NMFSparseLevel, NTFUnimodal, NTFSmooth,
-                    NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NMFPriors, myStatusBox)
+                Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = ntf_solve(
+                    M[Boot, :],
+                    Mmis[Boot, :],
+                    Mtsup[Boot, :],
+                    Mwsup,
+                    Mb,
+                    nc,
+                    1.0e-3,
+                    LogIter,
+                    Status0,
+                    MaxIterations,
+                    1,
+                    0,
+                    NMFFixUserBHE,
+                    NMFSparseLevel,
+                    NTFUnimodal,
+                    NTFSmooth,
+                    NTFLeftComponents,
+                    NTFRightComponents,
+                    NTFBlockComponents,
+                    NBlocks,
+                    NMFPriors,
+                    myStatusBox,
+                )
             else:
-                Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = NTFSolve(
-                    M[Boot, :], np.array([]), Mtsup[Boot, :], Mwsup, Mb, nc, 1.e-3, LogIter, Status0,
-                    MaxIterations, 1, 0, NMFFixUserBHE, NMFSparseLevel, NTFUnimodal, NTFSmooth,
-                    NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NMFPriors, myStatusBox)
+                Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = ntf_solve(
+                    M[Boot, :],
+                    np.array([]),
+                    Mtsup[Boot, :],
+                    Mwsup,
+                    Mb,
+                    nc,
+                    1.0e-3,
+                    LogIter,
+                    Status0,
+                    MaxIterations,
+                    1,
+                    0,
+                    NMFFixUserBHE,
+                    NMFSparseLevel,
+                    NTFUnimodal,
+                    NTFSmooth,
+                    NTFLeftComponents,
+                    NTFRightComponents,
+                    NTFBlockComponents,
+                    NBlocks,
+                    NMFPriors,
+                    myStatusBox,
+                )
 
             for k in range(0, nc):
                 MwBlk[:, k * NMFRobustNRuns + iBootstrap] = Mw[:, k]
@@ -383,15 +534,15 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
             for k in range(0, nc):
                 ScaleMw = np.linalg.norm(MwBlk[:, k * NMFRobustNRuns + iBootstrap])
                 if ScaleMw > 0:
-                    MwBlk[:, k * NMFRobustNRuns + iBootstrap] = \
-                        MwBlk[:, k * NMFRobustNRuns + iBootstrap] / ScaleMw
+                    MwBlk[:, k * NMFRobustNRuns + iBootstrap] = MwBlk[:, k * NMFRobustNRuns + iBootstrap] / ScaleMw
 
                 Mwn[:, k] = MwBlk[:, k * NMFRobustNRuns + iBootstrap]
 
             ColClust = np.zeros(p, dtype=int)
             if NMFCalculateLeverage > 0:
-                Mwn, AddMessage, ErrMessage, cancel_pressed = Leverage(Mwn, NMFUseRobustLeverage, AddMessage,
-                                                                       myStatusBox)
+                Mwn, AddMessage, ErrMessage, cancel_pressed = Leverage(
+                    Mwn, NMFUseRobustLeverage, AddMessage, myStatusBox
+                )
 
             for j in range(0, p):
                 ColClust[j] = np.argmax(np.array(Mwn[j, :]))
@@ -402,21 +553,41 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
         #     Update Mtsup
         MtPct = np.zeros((n, nc))
         for iBootstrap in range(0, NMFRobustNRuns):
-            Status0 = "Step 3 - " + \
-                      "Boot " + str(iBootstrap + 1) + "/" + str(NMFRobustNRuns) + " NTF Ncomp=" + str(nc) + ": "
+            Status0 = f"Step 3 - Boot {iBootstrap + 1}/{NMFRobustNRuns} NTF Ncomp={nc}"
             Mw = np.zeros((p, nc))
             for k in range(0, nc):
                 Mw[:, k] = MwBlk[:, k * NMFRobustNRuns + iBootstrap]
 
-            Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = NTFSolve(
-                M, Mmis, Mtsup, Mw, Mb, nc, 1.e-3, LogIter, Status0, MaxIterations, 0, 1, NMFFixUserBHE,
-                NMFSparseLevel, NTFUnimodal, NTFSmooth,
-                NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NMFPriors, myStatusBox)
+            Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = ntf_solve(
+                M,
+                Mmis,
+                Mtsup,
+                Mw,
+                Mb,
+                nc,
+                1.0e-3,
+                LogIter,
+                Status0,
+                MaxIterations,
+                0,
+                1,
+                NMFFixUserBHE,
+                NMFSparseLevel,
+                NTFUnimodal,
+                NTFSmooth,
+                NTFLeftComponents,
+                NTFRightComponents,
+                NTFBlockComponents,
+                NBlocks,
+                NMFPriors,
+                myStatusBox,
+            )
 
             RowClust = np.zeros(n, dtype=int)
             if NMFCalculateLeverage > 0:
-                Mtn, AddMessage, ErrMessage, cancel_pressed = Leverage(Mt, NMFUseRobustLeverage, AddMessage,
-                                                                       myStatusBox)
+                Mtn, AddMessage, ErrMessage, cancel_pressed = Leverage(
+                    Mt, NMFUseRobustLeverage, AddMessage, myStatusBox
+                )
             else:
                 Mtn = Mt
 
@@ -431,18 +602,26 @@ def rNTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIter
     Mb = Mbsup
     diff = diff_sup
 
+    # TODO (pcotte) : MtPct and MwPct can be not yet referenced : fix that
     return Mt_conv, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed
 
-def non_negative_factorization(X, W=None, H=None, n_components=None,
-                               update_W=True,
-                               update_H=True,
-                               n_bootstrap=None,
-                               tol=1e-6,
-                               max_iter=150,
-                               regularization=None, sparsity=0,
-                               leverage='standard',
-                               random_state=None,
-                               verbose=0):
+
+def non_negative_factorization(
+        X,
+        W=None,
+        H=None,
+        n_components=None,
+        update_W=True,
+        update_H=True,
+        n_bootstrap=None,
+        tol=1e-6,
+        max_iter=150,
+        regularization=None,
+        sparsity=0,
+        leverage="standard",
+        random_state=None,
+        verbose=0,
+):
     """Compute Non-negative Matrix Factorization (NMF)
 
     Find two non-negative matrices (W, H) such as x = W @ H.T + Error.
@@ -530,20 +709,20 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
 
     B : array-like, shape (n_observations, n_components) or (n_features, n_components)
         only if active convex variant, H = B.T @ X or W = X @ B
-    
+
     diff : Objective minimum achieved
 
-        """
+    """
 
     M = X
     n, p = M.shape
-    #Identify missing values
+    # Identify missing values
     Mmis = np.array([])
     Mmis = Mmis.astype(np.int)
-    ID = np.where(np.isnan(M) == True)
+    ID = np.where(np.isnan(M) is True)
     n_Mmis = ID[0].size
     if n_Mmis > 0:
-        Mmis = (np.isnan(M) == False)
+        Mmis = np.isnan(M) is False
         Mmis = Mmis.astype(np.int)
         M[Mmis == 0] = 0
     else:
@@ -558,21 +737,16 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
     LogIter = verbose
     myStatusBox = StatusBoxTqdm(verbose=LogIter)
     tolerance = tol
-    precision = EPSILON
     if (W is None) & (H is None):
-        Mt, Mw = NMFInit(M, Mmis, np.array([]), np.array([]), nc, tolerance, LogIter, myStatusBox)
-        init = 'nndsvd'
+        Mt, Mw = nmf_init(M, Mmis, np.array([]), np.array([]), nc)
     else:
         if H is None:
             Mw = np.ones((p, nc))
-            init = 'custom_W'
         elif W is None:
             Mt = np.ones((n, nc))
-            init = 'custom_H'
-        else:
-            init = 'custom'
 
         for k in range(0, nc):
+            # TODO (pcotte) : Mt and Mw can be not yet referenced : fix that
             Mt[:, k] = Mt[:, k] / np.linalg.norm(Mt[:, k])
             Mw[:, k] = Mw[:, k] / np.linalg.norm(Mw[:, k])
 
@@ -598,40 +772,59 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
     if regularization is None:
         NMFSparseLevel = 0
     else:
-        if regularization == 'components':
+        if regularization == "components":
             NMFSparseLevel = sparsity
-        elif regularization == 'transformation':
+        elif regularization == "transformation":
             NMFSparseLevel = -sparsity
         else:
             NMFSparseLevel = 0
 
-    NMFRobustResampleColumns = 0
-
-    if leverage == 'standard':
+    if leverage == "standard":
         NMFCalculateLeverage = 1
         NMFUseRobustLeverage = 0
-    elif leverage == 'robust':
+    elif leverage == "robust":
         NMFCalculateLeverage = 1
         NMFUseRobustLeverage = 1
     else:
         NMFCalculateLeverage = 0
         NMFUseRobustLeverage = 0
 
-    NMFReweighColumns = 0
-
     if random_state is not None:
         RandomSeed = random_state
         np.random.seed(RandomSeed)
 
-    if NMFAlgo <=2:
+    if NMFAlgo <= 2:
         NTFAlgo = 5
     else:
         NTFAlgo = 6
 
-    dummy, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed = rNTFSolve(
-        M, Mmis, Mt, Mw, np.array([]), nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
-        1, NTFAlgo, NMFRobustNRuns, NMFCalculateLeverage, NMFUseRobustLeverage,
-        NMFSparseLevel, 0, 0, 0, 0, 0, 1, np.array([]), myStatusBox)
+    dummy, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed = r_ntf_solve(
+        M,
+        Mmis,
+        Mt,
+        Mw,
+        np.array([]),
+        nc,
+        tolerance,
+        LogIter,
+        MaxIterations,
+        NMFFixUserLHE,
+        NMFFixUserRHE,
+        1,
+        NTFAlgo,
+        NMFRobustNRuns,
+        NMFCalculateLeverage,
+        NMFUseRobustLeverage,
+        NMFSparseLevel,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        np.array([]),
+        myStatusBox,
+    )
     Mev = np.ones(nc)
     if (NMFFixUserLHE == 0) & (NMFFixUserRHE == 0):
         # Scale
@@ -671,13 +864,14 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
 
     estimator = {}
     if NMFRobustNRuns <= 1:
-        estimator.update([('W', Mt), ('H', Mw), ('volume', volume), ('diff', diff)])
+        estimator.update([("W", Mt), ("H", Mw), ("volume", volume), ("diff", diff)])
     else:
-        estimator.update([('W', Mt), ('H', Mw), ('volume', volume), ('WB', MtPct), ('HB', MwPct), ('diff', diff)])
+        estimator.update([("W", Mt), ("H", Mw), ("volume", volume), ("WB", MtPct), ("HB", MwPct), ("diff", diff)])
 
     return estimator
 
-def nmf_predict(estimator, leverage='robust', blocks=None, cluster_by_stability=False, custom_order=False, verbose=0):
+
+def nmf_predict(estimator, leverage="robust", blocks=None, cluster_by_stability=False, custom_order=False, verbose=0):
     """Derives ordered sample and feature indexes for future use in ordered heatmaps
 
     Parameters
@@ -740,12 +934,12 @@ def nmf_predict(estimator, leverage='robust', blocks=None, cluster_by_stability=
 
     """
 
-    Mt = estimator['W']
-    Mw = estimator['H']
-    if 'Q' in estimator:
+    Mt = estimator["W"]
+    Mw = estimator["H"]
+    if "Q" in estimator:
         # X is a 3D tensor, in unfolded form of a 2D array
         # horizontal concatenation of blocks of equal size.
-        Mb = estimator['Q']
+        Mb = estimator["Q"]
         NMFAlgo = 5
         NBlocks = Mb.shape[0]
         BlkSize = Mw.shape[0] * np.ones(NBlocks)
@@ -759,20 +953,20 @@ def nmf_predict(estimator, leverage='robust', blocks=None, cluster_by_stability=
             NBlocks = blocks.shape[0]
             BlkSize = blocks
 
-    if 'WB' in estimator:
-        MtPct = estimator['WB']
+    if "WB" in estimator:
+        MtPct = estimator["WB"]
     else:
         MtPct = None
 
-    if 'HB' in estimator:
-        MwPct = estimator['HB']
+    if "HB" in estimator:
+        MwPct = estimator["HB"]
     else:
         MwPct = None
 
-    if leverage == 'standard':
+    if leverage == "standard":
         NMFCalculateLeverage = 1
         NMFUseRobustLeverage = 0
-    elif leverage == 'robust':
+    elif leverage == "robust":
         NMFCalculateLeverage = 1
         NMFUseRobustLeverage = 1
     else:
@@ -791,23 +985,75 @@ def nmf_predict(estimator, leverage='robust', blocks=None, cluster_by_stability=
 
     AddMessage = []
     myStatusBox = StatusBoxTqdm(verbose=verbose)
-    
-    Mtn, Mwn, Mbn, RCt, RCw, NCt, NCw, RowClust, ColClust, BlockClust, AddMessage, ErrMessage, cancel_pressed = \
-        BuildClusters(Mt, Mw, Mb, MtPct, MwPct, NBlocks, BlkSize, NMFCalculateLeverage, NMFUseRobustLeverage, NMFAlgo,
-                      NMFRobustClusterByStability, CellPlotOrderedClusters, AddMessage, myStatusBox)
+
+    (
+        Mtn,
+        Mwn,
+        Mbn,
+        RCt,
+        RCw,
+        NCt,
+        NCw,
+        RowClust,
+        ColClust,
+        BlockClust,
+        AddMessage,
+        ErrMessage,
+        cancel_pressed,
+    ) = BuildClusters(
+        Mt,
+        Mw,
+        Mb,
+        MtPct,
+        MwPct,
+        NBlocks,
+        BlkSize,
+        NMFCalculateLeverage,
+        NMFUseRobustLeverage,
+        NMFAlgo,
+        NMFRobustClusterByStability,
+        CellPlotOrderedClusters,
+        AddMessage,
+        myStatusBox,
+    )
     for message in AddMessage:
         print(message)
 
     myStatusBox.close()
-    if 'Q' in estimator:
-        estimator.update([('WL', Mtn), ('HL', Mwn), ('WR', RCt), ('HR', RCw), ('WN', NCt), ('HN', NCw),
-                          ('WC', RowClust), ('HC', ColClust), ('QL', Mbn), ('QC', BlockClust)])
+    if "Q" in estimator:
+        estimator.update(
+            [
+                ("WL", Mtn),
+                ("HL", Mwn),
+                ("WR", RCt),
+                ("HR", RCw),
+                ("WN", NCt),
+                ("HN", NCw),
+                ("WC", RowClust),
+                ("HC", ColClust),
+                ("QL", Mbn),
+                ("QC", BlockClust),
+            ]
+        )
     else:
-        estimator.update([('WL', Mtn), ('HL', Mwn), ('WR', RCt), ('HR', RCw), ('WN', NCt), ('HN', NCw),
-                          ('WC', RowClust), ('HC', ColClust), ('QL', None), ('QC', None)])
+        estimator.update(
+            [
+                ("WL", Mtn),
+                ("HL", Mwn),
+                ("WR", RCt),
+                ("HR", RCw),
+                ("WN", NCt),
+                ("HN", NCw),
+                ("WC", RowClust),
+                ("HC", ColClust),
+                ("QL", None),
+                ("QC", None),
+            ]
+        )
     return estimator
 
-def nmf_permutation_test_score(estimator, y, n_permutations=100, verbose=0):
+
+def nmf_permutation_test_score(estimator, y, n_permutations=100, verbose=0) -> dict:
     """Do a permutation test to assess association between ordered samples and some covariate
 
     Parameters
@@ -848,9 +1094,9 @@ def nmf_permutation_test_score(estimator, y, n_permutations=100, verbose=0):
 
 
     """
-    Mt = estimator['W']
-    RCt = estimator['WR']
-    NCt = estimator['WN']
+    Mt = estimator["W"]
+    RCt = estimator["WR"]
+    NCt = estimator["WN"]
     RowGroups = y
     uniques, index = np.unique([row for row in RowGroups], return_index=True)
     ListGroups = RowGroups[index]
@@ -861,28 +1107,48 @@ def nmf_permutation_test_score(estimator, y, n_permutations=100, verbose=0):
 
     Nrun = n_permutations
     myStatusBox = StatusBoxTqdm(verbose=verbose)
-    ClusterSize, Pglob, prun, ClusterProb, ClusterGroup, ClusterNgroup, cancel_pressed = \
-        GlobalSign(Nrun, nbGroups, Mt, RCt, NCt, RowGroups, ListGroups, Ngroup, myStatusBox)
+    ClusterSize, Pglob, prun, ClusterProb, ClusterGroup, ClusterNgroup, cancel_pressed = GlobalSign(
+        Nrun, nbGroups, Mt, RCt, NCt, RowGroups, ListGroups, Ngroup, myStatusBox
+    )
 
     estimator.update(
-        [('score', prun), ('pvalue', Pglob), ('CS', ClusterSize), ('CP', ClusterProb), ('CG', ClusterGroup),
-         ('CN', ClusterNgroup)])
+        [
+            ("score", prun),
+            ("pvalue", Pglob),
+            ("CS", ClusterSize),
+            ("CP", ClusterProb),
+            ("CG", ClusterGroup),
+            ("CN", ClusterNgroup),
+        ]
+    )
     return estimator
 
-def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_components=None,
-                                      update_W=True,
-                                      update_H=True,
-                                      update_Q=True,
-                                      regularization=None, sparsity=0,
-                                      unimodal=False, smooth=False,
-                                      apply_left=False, apply_right=False, apply_block=False,
-                                      n_bootstrap=None,
-                                      tol=1e-6,
-                                      max_iter=150,
-                                      leverage='standard',
-                                      random_state=None,
-                                      init_type=0,
-                                      verbose=0):
+
+def non_negative_tensor_factorization(
+        X,
+        n_blocks,
+        W=None,
+        H=None,
+        Q=None,
+        n_components=None,
+        update_W=True,
+        update_H=True,
+        update_Q=True,
+        regularization=None,
+        sparsity=0,
+        unimodal=False,
+        smooth=False,
+        apply_left=False,
+        apply_right=False,
+        apply_block=False,
+        n_bootstrap=None,
+        tol=1e-6,
+        max_iter=150,
+        leverage="standard",
+        random_state=None,
+        init_type=0,
+        verbose=0,
+):
     """Compute Non-negative Tensor Factorization (NTF)
 
     Find three non-negative matrices (W, H, F) such as x = W @@ H @@ F + Error (@@ = tensor product).
@@ -928,7 +1194,7 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
 
     sparsity : float, default: 0
         Sparsity target with 0 <= sparsity <= 1 representing the mean % rows per column in W or H set to 0
-  
+
     unimodal : Boolean, default: False
 
     smooth : Boolean, default: False
@@ -958,8 +1224,8 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
         by `np.random`.
 
     init_type : integer, default 0
-        init_type = 0 : NMF initialization applied on the reshaped matrix [1st dim x vectorized (2nd & 3rd dim)] 
-        init_type = 1 : NMF initialization applied on the reshaped matrix [vectorized (1st & 2nd dim) x 3rd dim] 
+        init_type = 0 : NMF initialization applied on the reshaped matrix [1st dim x vectorized (2nd & 3rd dim)]
+        init_type = 1 : NMF initialization applied on the reshaped matrix [vectorized (1st & 2nd dim) x 3rd dim]
 
     verbose : integer, default: 0
         The verbosity level (0/1).
@@ -978,9 +1244,9 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
 
         Q : array-like, shape (n_blocks, n_components)
             Solution to the non-negative least squares problem.
-               
+
         volume : scalar, volume occupied by W and H
-        
+
         WB : array-like, shape (n_samples, n_components)
             Percent consistently clustered rows for each component.
             only if n_bootstrap > 0.
@@ -1000,13 +1266,13 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
     M = X
     n, p = M.shape
 
-    #Identify missing values
+    # Identify missing values
     Mmis = np.array([])
     Mmis = Mmis.astype(np.int)
-    ID = np.where(np.isnan(M) == True)
+    ID = np.where(np.isnan(M) is True)
     n_Mmis = ID[0].size
     if n_Mmis > 0:
-        Mmis = (np.isnan(M) == False)
+        Mmis = np.isnan(M) is False
         Mmis = Mmis.astype(np.int)
         M[Mmis == 0] = 0
     else:
@@ -1020,14 +1286,13 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
     NBlocks = n_blocks
     p_block = int(p / NBlocks)
     tolerance = tol
-    precision = EPSILON
     LogIter = verbose
     if regularization is None:
         NMFSparseLevel = 0
     else:
-        if regularization == 'components':
+        if regularization == "components":
             NMFSparseLevel = sparsity
-        elif regularization == 'transformation':
+        elif regularization == "transformation":
             NMFSparseLevel = -sparsity
         else:
             NMFSparseLevel = 0
@@ -1043,21 +1308,33 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
     myStatusBox = StatusBoxTqdm(verbose=LogIter)
 
     if (W is None) & (H is None) & (Q is None):
-        Mt0, Mw0, Mb0, AddMessage, ErrMessage, cancel_pressed = NTFInit(M, Mmis, np.array([]), np.array([]), nc,
-                                                                        tolerance, precision, LogIter, NTFUnimodal,
-                                                                        NTFLeftComponents, NTFRightComponents,
-                                                                        NTFBlockComponents, NBlocks, init_type, myStatusBox)
+        Mt0, Mw0, Mb0, AddMessage, ErrMessage, cancel_pressed = ntf_init(
+            M,
+            Mmis,
+            np.array([]),
+            np.array([]),
+            nc,
+            tolerance,
+            LogIter,
+            NTFUnimodal,
+            NTFLeftComponents,
+            NTFRightComponents,
+            NTFBlockComponents,
+            NBlocks,
+            init_type,
+            myStatusBox
+        )
     else:
         if W is None:
             Mt0 = np.ones((n, nc))
         else:
             Mt0 = np.copy(W)
-            
+
         if H is None:
-            Mw0= np.ones((p_block, nc))
+            Mw0 = np.ones((p_block, nc))
         else:
             Mw0 = np.copy(H)
-        
+
         if Q is None:
             Mb0 = np.ones((NBlocks, nc))
         else:
@@ -1066,10 +1343,11 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
         Mfit = np.zeros((n, p))
         for k in range(0, nc):
             for iBlock in range(0, NBlocks):
-                Mfit[:, iBlock*p_block:(iBlock+1)*p_block] += Mb0[iBlock, k] * \
-                    np.reshape(Mt0[:, k], (n, 1)) @ np.reshape(Mw0[:, k], (1, p_block))
+                Mfit[:, iBlock * p_block: (iBlock + 1) * p_block] += (
+                        Mb0[iBlock, k] * np.reshape(Mt0[:, k], (n, 1)) @ np.reshape(Mw0[:, k], (1, p_block))
+                )
 
-        ScaleRatio = (np.linalg.norm(Mfit) / np.linalg.norm(M))**(1/3)
+        ScaleRatio = (np.linalg.norm(Mfit) / np.linalg.norm(M)) ** (1 / 3)
         for k in range(0, nc):
             Mt0[:, k] /= ScaleRatio
             Mw0[:, k] /= ScaleRatio
@@ -1078,9 +1356,10 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
         Mfit = np.zeros((n, p))
         for k in range(0, nc):
             for iBlock in range(0, NBlocks):
-                Mfit[:, iBlock*p_block:(iBlock+1)*p_block] += Mb0[iBlock, k] * \
-                    np.reshape(Mt0[:, k], (n, 1)) @ np.reshape(Mw0[:, k], (1, p_block))
-        
+                Mfit[:, iBlock * p_block: (iBlock + 1) * p_block] += (
+                        Mb0[iBlock, k] * np.reshape(Mt0[:, k], (n, 1)) @ np.reshape(Mw0[:, k], (1, p_block))
+                )
+
     MaxIterations = max_iter
 
     if n_bootstrap is None:
@@ -1093,10 +1372,10 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
     else:
         NMFAlgo = 6
 
-    if leverage == 'standard':
+    if leverage == "standard":
         NMFCalculateLeverage = 1
         NMFUseRobustLeverage = 0
-    elif leverage == 'robust':
+    elif leverage == "robust":
         NMFCalculateLeverage = 1
         NMFUseRobustLeverage = 1
     else:
@@ -1122,11 +1401,33 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
     else:
         NMFFixUserBHE = 1
 
-    Mt_conv, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed = rNTFSolve(
-        M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, precision, LogIter, MaxIterations, NMFFixUserLHE, NMFFixUserRHE,
-        NMFFixUserBHE, NMFAlgo, NMFRobustNRuns,
-        NMFCalculateLeverage, NMFUseRobustLeverage, NMFSparseLevel, NTFUnimodal, NTFSmooth,
-        NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, np.array([]), myStatusBox)
+    Mt_conv, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed = r_ntf_solve(
+        M,
+        Mmis,
+        Mt0,
+        Mw0,
+        Mb0,
+        nc,
+        tolerance,
+        LogIter,
+        MaxIterations,
+        NMFFixUserLHE,
+        NMFFixUserRHE,
+        NMFFixUserBHE,
+        NMFAlgo,
+        NMFRobustNRuns,
+        NMFCalculateLeverage,
+        NMFUseRobustLeverage,
+        NMFSparseLevel,
+        NTFUnimodal,
+        NTFSmooth,
+        NTFLeftComponents,
+        NTFRightComponents,
+        NTFBlockComponents,
+        NBlocks,
+        np.array([]),
+        myStatusBox,
+    )
 
     volume = NMFDet(Mt, Mw, 1)
 
@@ -1137,8 +1438,10 @@ def non_negative_tensor_factorization(X, n_blocks, W=None, H=None, Q=None, n_com
 
     estimator = {}
     if NMFRobustNRuns <= 1:
-        estimator.update([('W', Mt), ('H', Mw), ('Q', Mb), ('volume', volume), ('diff', diff)])
+        estimator.update([("W", Mt), ("H", Mw), ("Q", Mb), ("volume", volume), ("diff", diff)])
     else:
-        estimator.update([('W', Mt), ('H', Mw), ('Q', Mb), ('volume', volume), ('WB', MtPct), ('HB', MwPct), ('diff', diff)])
+        estimator.update(
+            [("W", Mt), ("H", Mw), ("Q", Mb), ("volume", volume), ("WB", MtPct), ("HB", MwPct), ("diff", diff)]
+        )
 
     return estimator

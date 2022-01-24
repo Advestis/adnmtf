@@ -41,8 +41,8 @@ def NTFStack(M, Mmis, NBlocks):
 
     return [Mstacked, Mmis_stacked]
 
-def NTFSolve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
-             NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NMFPriors, myStatusBox):
+def ntf_solve(M, Mmis, Mt0, Mw0, Mb0, nc, tolerance, LogIter, Status0, MaxIterations, NMFFixUserLHE, NMFFixUserRHE, NMFFixUserBHE,
+              NMFSparseLevel, NTFUnimodal, NTFSmooth, NTFLeftComponents, NTFRightComponents, NTFBlockComponents, NBlocks, NMFPriors, myStatusBox):
     """Interface to:
             - NTFSolve_simple
     """
