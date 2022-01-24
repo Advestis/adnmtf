@@ -68,7 +68,6 @@ def test_nmf(path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected
             if isinstance(estimator[param], np.ndarray):
                 np.testing.assert_array_almost_equal(estimator[param], expected_estimator[param_exp])
             elif isinstance(estimator[param], float):
-                print(estimator[param], expected_estimator[param_exp])
                 assert pytest.approx(estimator[param], rel=1e-10) == expected_estimator[param_exp]
             else:
                 assert estimator[param] == expected_estimator[param_exp]
