@@ -25,5 +25,3 @@ arr = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 )
 def test_sparse_opt(b, alpha, two_sided, expected):
     np.testing.assert_equal(np.round(expected, decimals=6), np.round(sparse_opt(b, alpha, two_sided), decimals=6))
-
-
