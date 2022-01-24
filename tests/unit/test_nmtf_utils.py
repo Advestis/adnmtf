@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from nmtf.modules.nmtf_utils import sparse_opt
+from nmtf.nmtf_utils import sparse_opt
 
 arr = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
