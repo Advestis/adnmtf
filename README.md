@@ -62,7 +62,6 @@ feature indexes for future use in ordered heatmaps.
 ```python
 from nmtf import NTF
 import pandas as pd
-from pathlib import Path
 
 DATA_PATH = ...
 
