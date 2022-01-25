@@ -227,18 +227,22 @@ def RobustMax(V0, AddMessage, myStatusBox):
     return [RobMax * Scale, AddMessage, ErrMessage, cancel_pressed]
 
 
-def Leverage(V, NMFUseRobustLeverage, AddMessage, myStatusBox):
+def leverage(v, nmf_use_robust_leverage, add_message, my_status_box):
     """Calculate leverages
 
-    Input:
-        V: Input column vectors
-        NMFUseRobustLeverage: Estimate robust through columns of V
-    Output:
-        Vn: Leveraged column vectors
+    Parameter
+    ---------
+    v: Input column vectors
+    nmf_use_robust_leverage: Estimate robust through columns of V
+    add_message
+    my_status_box
+
+    Returns
+    -------
+    vn: Leveraged column vectors
 
     Reference
     ---------
-
     P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to Environmental
         Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509; doi:10.3390/ijerph13050509
 
@@ -247,36 +251,36 @@ def Leverage(V, NMFUseRobustLeverage, AddMessage, myStatusBox):
     ErrMessage = ""
     cancel_pressed = 0
 
-    n, nc = V.shape
+    n, nc = v.shape
     Vn = np.zeros((n, nc))
     Vr = np.zeros((n, nc))
-    if NMFUseRobustLeverage > 0:
-        MaxV, AddMessage, ErrMessage, cancel_pressed = RobustMax(V, AddMessage, myStatusBox)
+    if nmf_use_robust_leverage > 0:
+        MaxV, add_message, ErrMessage, cancel_pressed = RobustMax(v, add_message, my_status_box)
         if cancel_pressed == 1:
-            return Vn, AddMessage, ErrMessage, cancel_pressed
+            return Vn, add_message, ErrMessage, cancel_pressed
     else:
-        MaxV = np.max(V, axis=0)
+        MaxV = np.max(v, axis=0)
 
     pbar_step = 100 / nc
-    myStatusBox.init_bar(delay=1)
+    my_status_box.init_bar(delay=1)
     for k in range(0, nc):
-        Vr[V[:, k] > 0, k] = 1
-        Vn[:, k] = MaxV[k] - V[:, k]
+        Vr[v[:, k] > 0, k] = 1
+        Vn[:, k] = MaxV[k] - v[:, k]
         Vn[Vn[:, k] < 0, k] = 0
         Vn[:, k] = Vn[:, k] ** 2
         for k2 in range(0, nc):
             if k2 != k:
-                Vn[:, k] = Vn[:, k] + V[:, k2] ** 2
+                Vn[:, k] = Vn[:, k] + v[:, k2] ** 2
 
         Status = "Leverage: Comp " + str(k + 1)
-        myStatusBox.update_status(delay=1, status=Status)
-        myStatusBox.update_bar(delay=1, step=pbar_step)
-        if myStatusBox.cancel_pressed:
+        my_status_box.update_status(delay=1, status=Status)
+        my_status_box.update_bar(delay=1, step=pbar_step)
+        if my_status_box.cancel_pressed:
             cancel_pressed = 1
-            return Vn, AddMessage, ErrMessage, cancel_pressed
+            return Vn, add_message, ErrMessage, cancel_pressed
 
     Vn = 10 ** (-Vn / (2 * np.mean(Vn))) * Vr
-    return [Vn, AddMessage, ErrMessage, cancel_pressed]
+    return [Vn, add_message, ErrMessage, cancel_pressed]
 
 
 def build_clusters(
@@ -319,12 +323,14 @@ def build_clusters(
 
     if nmf_calculate_leverage == 1:
         my_status_box.update_status(delay=1, status="Leverages - Left components...")
-        Mtn, add_message, ErrMessage, cancel_pressed = Leverage(mt, nmf_use_robust_leverage, add_message, my_status_box)
+        Mtn, add_message, ErrMessage, cancel_pressed = leverage(mt, nmf_use_robust_leverage, add_message, my_status_box)
         my_status_box.update_status(delay=1, status="Leverages - Right components...")
-        Mwn, add_message, ErrMessage, cancel_pressed = Leverage(mw, nmf_use_robust_leverage, add_message, my_status_box)
+        Mwn, add_message, ErrMessage, cancel_pressed = leverage(mw, nmf_use_robust_leverage, add_message, my_status_box)
         if nmf_algo >= 5:
             my_status_box.update_status(delay=1, status="Leverages - Block components...")
-            Mbn, add_message, ErrMessage, cancel_pressed = Leverage(mb, nmf_use_robust_leverage, add_message, my_status_box)
+            Mbn, add_message, ErrMessage, cancel_pressed = leverage(
+                mb, nmf_use_robust_leverage, add_message, my_status_box
+            )
     else:
         Mtn = mt
         Mwn = mw

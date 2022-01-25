@@ -7,14 +7,18 @@
 # Jan 4, '20
 # Initialize progressbar
 
-from typing import List
+from typing import List, Union, Tuple
 import numpy as np
 from scipy.sparse.linalg import svds
 
 from .nmtf_core import NTFStack, ntf_solve
-from .nmtf_utils import Leverage, StatusBoxTqdm, nmf_det, build_clusters, GlobalSign
+from .nmtf_utils import leverage, StatusBoxTqdm, nmf_det, build_clusters, GlobalSign
 
 EPSILON = np.finfo(np.float32).eps
+
+
+# TODO (pcotte): Typing
+# TODO (pcotte): logger
 
 
 def nmf_init(m, mmis, mt0, mw0, nc) -> List[np.ndarray]:
@@ -349,48 +353,74 @@ def r_ntf_solve(
     n_blocks,
     nmf_priors,
     my_status_box,
-):
+) -> Tuple[
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    np.ndarray,
+    Union[np.ndarray, float],
+    Union[np.ndarray, float],
+    Union[np.ndarray, float],
+    List[str],
+    str,
+    int,
+]:
     """Estimate NTF matrices (robust version)
 
-    Input:
-        M: Input matrix
-        Mmis: Define missing values (0 = missing cell, 1 = real cell)
-        Mt0: Initial left hand matrix
-        Mw0: Initial right hand matrix
-        Mb0: Initial block hand matrix
-        nc: NTF rank
-        tolerance: Convergence threshold
-        LogIter: Log results through iterations
-        MaxIterations: Max iterations
-        NMFFixUserLHE: fix left hand matrix columns: = 1, else = 0
-        NMFFixUserRHE: fix  right hand matrix columns: = 1, else = 0
-        NMFFixUserBHE: fix  block hand matrix columns: = 1, else = 0
-        NMFAlgo: =5: Non-robust version, =6: Robust version
-        NMFRobustNRuns: Number of bootstrap runs
-        NMFCalculateLeverage: Calculate leverages
-        NMFUseRobustLeverage: Calculate leverages based on robust max across factoring columns
-        NMFSparseLevel : sparsity level (as defined by Hoyer); +/- = make RHE/LHe sparse
-        NTFUnimodal: Apply Unimodal constraint on factoring vectors
-        NTFSmooth: Apply Smooth constraint on factoring vectors
-        NTFLeftComponents: Apply Unimodal/Smooth constraint on left hand matrix
-        NTFRightComponents: Apply Unimodal/Smooth constraint on right hand matrix
-        NTFBlockComponents: Apply Unimodal/Smooth constraint on block hand matrix
-        NBlocks: Number of NTF blocks
-        NMFPriors: Elements in Mw that should be updated (others remain 0)
+    Parameters
+    ----------
+    m: Input matrix
+    mmis: Define missing values (0 = missing cell, 1 = real cell)
+    mt0: Initial left hand matrix
+    mw0: Initial right hand matrix
+    mb0: Initial block hand matrix
+    nc: NTF rank
+    tolerance: Convergence threshold
+    log_iter: Log results through iterations
+    max_iterations: Max iterations
+    nmf_fix_user_lhe: fix left hand matrix columns: = 1, else = 0
+    nmf_fix_user_rhe: fix  right hand matrix columns: = 1, else = 0
+    nmf_fix_user_bhe: fix  block hand matrix columns: = 1, else = 0
+    nmf_algo: =5: Non-robust version, =6: Robust version
+    nmf_robust_n_runs: Number of bootstrap runs
+    nmf_calculate_leverage: Calculate leverages
+    nmf_use_robust_leverage: Calculate leverages based on robust max across factoring columns
+    nmf_sparse_level : sparsity level (as defined by Hoyer); +/- = make RHE/LHe sparse
+    ntf_unimodal: Apply Unimodal constraint on factoring vectors
+    ntf_smooth: Apply Smooth constraint on factoring vectors
+    ntf_left_components: Apply Unimodal/Smooth constraint on left hand matrix
+    ntf_right_components: Apply Unimodal/Smooth constraint on right hand matrix
+    ntf_block_components: Apply Unimodal/Smooth constraint on block hand matrix
+    n_blocks: Number of NTF blocks
+    nmf_priors: Elements in mw that should be updated (others remain 0)
+    my_status_box
 
 
-    Output:
-        Mt_conv: Convolutional Left hand matrix
-        Mt: Left hand matrix
-        Mw: Right hand matrix
-        Mb: Block hand matrix
-        MtPct: Percent robust clustered rows
-        MwPct: Percent robust clustered columns
-        diff : Objective minimum achieved
+    Returns
+    -------
+    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, Union[np.ndarray, float], Union[np.ndarray, float],
+          Union[np.ndarray, float], List[str], str, int]
+        mt_conv: np.ndarray
+            Convolutional Left hand matrix
+        mt: np.ndarray
+            Left hand matrix
+        mw: np.ndarray
+            Right hand matrix
+        mb: np.ndarray
+            Block hand matrix
+        mt_pct: Union[np.ndarray, float]
+            Percent robust clustered rows
+        mw_pct: Union[np.ndarray, float]
+            Percent robust clustered columns
+        diff : float
+            Objective minimum achieved
+        add_message: List[str]
+        err_message: str
+        cancel_pressed: int
     """
 
-    AddMessage = []
-    ErrMessage = ""
+    add_message = []
+    err_message = ""
     cancel_pressed = 0
     n, p0 = m.shape
     nc = int(nc)
@@ -405,17 +435,17 @@ def r_ntf_solve(
             np.zeros((n, p0)),
             np.ones((n, nc)),
             np.ones((p, nc)),
-            AddMessage,
-            ErrMessage,
+            add_message,
+            err_message,
             cancel_pressed,
         )
 
     mmis = mmis.astype(np.int)
-    n_Mmis = mmis.shape[0]
-    if n_Mmis == 0:
-        ID = np.where(np.isnan(m) == 1)
-        n_Mmis = ID[0].size
-        if n_Mmis > 0:
+    n_mmis = mmis.shape[0]
+    if n_mmis == 0:
+        missing_values_indexes = np.where(np.isnan(m) == 1)
+        n_mmis = missing_values_indexes[0].size
+        if n_mmis > 0:
             mmis = np.isnan(m) == 0
             mmis = mmis.astype(np.int)
             m[mmis == 0] = 0
@@ -423,187 +453,190 @@ def r_ntf_solve(
         m[mmis == 0] = 0
 
     nmf_robust_n_runs = int(nmf_robust_n_runs)
-    Mt = np.copy(mt0)
-    Mw = np.copy(mw0)
-    Mb = np.copy(mb0)
+    mt = np.copy(mt0)
+    mw = np.copy(mw0)
+    mb = np.copy(mb0)
 
     # Check parameter consistency (and correct if needed)
     if (nc == 1) | (nmf_algo == 5):
         nmf_robust_n_runs = 0
 
     if nmf_robust_n_runs == 0:
-        MtPct = np.nan
-        MwPct = np.nan
+        mt_pct = np.nan
+        mw_pct = np.nan
 
     # Step 1: NTF
-    Status0 = "Step 1 - NTF Ncomp=" + str(nc) + ": "
-    Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = ntf_solve(
-        m,
-        mmis,
-        Mt,
-        Mw,
-        Mb,
-        nc,
-        tolerance,
-        log_iter,
-        Status0,
-        max_iterations,
-        nmf_fix_user_lhe,
-        nmf_fix_user_rhe,
-        nmf_fix_user_bhe,
-        nmf_sparse_level,
-        ntf_unimodal,
-        ntf_smooth,
-        ntf_left_components,
-        ntf_right_components,
-        ntf_block_components,
-        n_blocks,
-        nmf_priors,
-        my_status_box,
+    status0 = f"Step 1 - NTF Ncomp={nc}:"
+    mt_conv, mt, mw, mb, diff, cancel_pressed = ntf_solve(
+        m=m,
+        mmis=mmis,
+        mt0=mt,
+        mw0=mw,
+        mb0=mb,
+        nc=nc,
+        tolerance=tolerance,
+        log_iter=log_iter,
+        status0=status0,
+        max_iterations=max_iterations,
+        nmf_fix_user_lhe=nmf_fix_user_lhe,
+        nmf_fix_user_rhe=nmf_fix_user_rhe,
+        nmf_fix_user_bhe=nmf_fix_user_bhe,
+        nmf_sparse_level=nmf_sparse_level,
+        ntf_unimodal=ntf_unimodal,
+        ntf_smooth=ntf_smooth,
+        ntf_left_components=ntf_left_components,
+        ntf_right_components=ntf_right_components,
+        ntf_block_components=ntf_block_components,
+        n_blocks=n_blocks,
+        nmf_priors=nmf_priors,
+        my_status_box=my_status_box,
     )
 
-    Mtsup = np.copy(Mt)
-    Mwsup = np.copy(Mw)
-    Mbsup = np.copy(Mb)
+    mtsup = np.copy(mt)
+    mwsup = np.copy(mw)
+    mbsup = np.copy(mb)
     diff_sup = diff
     # Bootstrap to assess robust clustering
     if nmf_robust_n_runs > 1:
-        #     Update Mwsup
-        MwPct = np.zeros((p, nc))
-        MwBlk = np.zeros((p, nmf_robust_n_runs * nc))
-        for iBootstrap in range(0, nmf_robust_n_runs):
-            Boot = np.random.randint(n, size=n)
-            Status0 = f"Step 2 - Boot {iBootstrap + 1}/{nmf_robust_n_runs} NTF Ncomp={nc}"
-            if n_Mmis > 0:
-                Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = ntf_solve(
-                    m[Boot, :],
-                    mmis[Boot, :],
-                    Mtsup[Boot, :],
-                    Mwsup,
-                    Mb,
-                    nc,
-                    1.0e-3,
-                    log_iter,
-                    Status0,
-                    max_iterations,
-                    1,
-                    0,
-                    nmf_fix_user_bhe,
-                    nmf_sparse_level,
-                    ntf_unimodal,
-                    ntf_smooth,
-                    ntf_left_components,
-                    ntf_right_components,
-                    ntf_block_components,
-                    n_blocks,
-                    nmf_priors,
-                    my_status_box,
+        #     Update mwsup
+        mw_pct = np.zeros((p, nc))
+        mw_blk = np.zeros((p, nmf_robust_n_runs * nc))
+        for i_bootstrap in range(0, nmf_robust_n_runs):
+            boot = np.random.randint(n, size=n)
+            status0 = f"Step 2 - boot {i_bootstrap + 1}/{nmf_robust_n_runs} NTF Ncomp={nc}"
+            if n_mmis > 0:
+                mt_conv, mt, mw, mb, diff, cancel_pressed = ntf_solve(
+                    m=m[boot, :],
+                    mmis=mmis[boot, :],
+                    mt0=mtsup[boot, :],
+                    mw0=mwsup,
+                    mb0=mb,
+                    nc=nc,
+                    tolerance=1.0e-3,
+                    log_iter=log_iter,
+                    status0=status0,
+                    max_iterations=max_iterations,
+                    nmf_fix_user_lhe=1,
+                    nmf_fix_user_rhe=0,
+                    nmf_fix_user_bhe=nmf_fix_user_bhe,
+                    nmf_sparse_level=nmf_sparse_level,
+                    ntf_unimodal=ntf_unimodal,
+                    ntf_smooth=ntf_smooth,
+                    ntf_left_components=ntf_left_components,
+                    ntf_right_components=ntf_right_components,
+                    ntf_block_components=ntf_block_components,
+                    n_blocks=n_blocks,
+                    nmf_priors=nmf_priors,
+                    my_status_box=my_status_box,
                 )
             else:
-                Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = ntf_solve(
-                    m[Boot, :],
-                    np.array([]),
-                    Mtsup[Boot, :],
-                    Mwsup,
-                    Mb,
-                    nc,
-                    1.0e-3,
-                    log_iter,
-                    Status0,
-                    max_iterations,
-                    1,
-                    0,
-                    nmf_fix_user_bhe,
-                    nmf_sparse_level,
-                    ntf_unimodal,
-                    ntf_smooth,
-                    ntf_left_components,
-                    ntf_right_components,
-                    ntf_block_components,
-                    n_blocks,
-                    nmf_priors,
-                    my_status_box,
+                mt_conv, mt, mw, mb, diff, cancel_pressed = ntf_solve(
+                    m=m[boot, :],
+                    mmis=np.array([]),
+                    mt0=mtsup[boot, :],
+                    mw0=mwsup,
+                    mb0=mb,
+                    nc=nc,
+                    tolerance=1.0e-3,
+                    log_iter=log_iter,
+                    status0=status0,
+                    max_iterations=max_iterations,
+                    nmf_fix_user_lhe=1,
+                    nmf_fix_user_rhe=0,
+                    nmf_fix_user_bhe=nmf_fix_user_bhe,
+                    nmf_sparse_level=nmf_sparse_level,
+                    ntf_unimodal=ntf_unimodal,
+                    ntf_smooth=ntf_smooth,
+                    ntf_left_components=ntf_left_components,
+                    ntf_right_components=ntf_right_components,
+                    ntf_block_components=ntf_block_components,
+                    n_blocks=n_blocks,
+                    nmf_priors=nmf_priors,
+                    my_status_box=my_status_box,
                 )
 
             for k in range(0, nc):
-                MwBlk[:, k * nmf_robust_n_runs + iBootstrap] = Mw[:, k]
+                mw_blk[:, k * nmf_robust_n_runs + i_bootstrap] = mw[:, k]
 
-            Mwn = np.zeros((p, nc))
+            mwn = np.zeros((p, nc))
             for k in range(0, nc):
-                ScaleMw = np.linalg.norm(MwBlk[:, k * nmf_robust_n_runs + iBootstrap])
-                if ScaleMw > 0:
-                    MwBlk[:, k * nmf_robust_n_runs + iBootstrap] = (
-                        MwBlk[:, k * nmf_robust_n_runs + iBootstrap] / ScaleMw
+                scale_mw = np.linalg.norm(mw_blk[:, k * nmf_robust_n_runs + i_bootstrap])
+                if scale_mw > 0:
+                    mw_blk[:, k * nmf_robust_n_runs + i_bootstrap] = (
+                        mw_blk[:, k * nmf_robust_n_runs + i_bootstrap] / scale_mw
                     )
 
-                Mwn[:, k] = MwBlk[:, k * nmf_robust_n_runs + iBootstrap]
+                mwn[:, k] = mw_blk[:, k * nmf_robust_n_runs + i_bootstrap]
 
-            ColClust = np.zeros(p, dtype=int)
+            col_clust = np.zeros(p, dtype=int)
             if nmf_calculate_leverage > 0:
-                Mwn, AddMessage, ErrMessage, cancel_pressed = Leverage(
-                    Mwn, nmf_use_robust_leverage, AddMessage, my_status_box
+                mwn, add_message, err_message, cancel_pressed = leverage(
+                    mwn, nmf_use_robust_leverage, add_message, my_status_box
                 )
 
             for j in range(0, p):
-                ColClust[j] = np.argmax(np.array(Mwn[j, :]))
-                MwPct[j, ColClust[j]] = MwPct[j, ColClust[j]] + 1
+                col_clust[j] = np.argmax(np.array(mwn[j, :]))
+                mw_pct[j, col_clust[j]] = mw_pct[j, col_clust[j]] + 1
 
-        MwPct = MwPct / nmf_robust_n_runs
+        mw_pct = mw_pct / nmf_robust_n_runs
 
         #     Update Mtsup
-        MtPct = np.zeros((n, nc))
-        for iBootstrap in range(0, nmf_robust_n_runs):
-            Status0 = f"Step 3 - Boot {iBootstrap + 1}/{nmf_robust_n_runs} NTF Ncomp={nc}"
-            Mw = np.zeros((p, nc))
+        mt_pct = np.zeros((n, nc))
+        for i_bootstrap in range(0, nmf_robust_n_runs):
+            status0 = f"Step 3 - boot {i_bootstrap + 1}/{nmf_robust_n_runs} NTF Ncomp={nc}"
+            mw = np.zeros((p, nc))
             for k in range(0, nc):
-                Mw[:, k] = MwBlk[:, k * nmf_robust_n_runs + iBootstrap]
+                mw[:, k] = mw_blk[:, k * nmf_robust_n_runs + i_bootstrap]
 
-            Mt_conv, Mt, Mw, Mb, diff, cancel_pressed = ntf_solve(
-                m,
-                mmis,
-                Mtsup,
-                Mw,
-                Mb,
-                nc,
-                1.0e-3,
-                log_iter,
-                Status0,
-                max_iterations,
-                0,
-                1,
-                nmf_fix_user_bhe,
-                nmf_sparse_level,
-                ntf_unimodal,
-                ntf_smooth,
-                ntf_left_components,
-                ntf_right_components,
-                ntf_block_components,
-                n_blocks,
-                nmf_priors,
-                my_status_box,
+            mt_conv, mt, mw, mb, diff, cancel_pressed = ntf_solve(
+                m=m,
+                mmis=mmis,
+                mt0=mtsup,
+                mw0=mw,
+                mb0=mb,
+                nc=nc,
+                tolerance=1.0e-3,
+                log_iter=log_iter,
+                status0=status0,
+                max_iterations=max_iterations,
+                nmf_fix_user_lhe=0,
+                nmf_fix_user_rhe=1,
+                nmf_fix_user_bhe=nmf_fix_user_bhe,
+                nmf_sparse_level=nmf_sparse_level,
+                ntf_unimodal=ntf_unimodal,
+                ntf_smooth=ntf_smooth,
+                ntf_left_components=ntf_left_components,
+                ntf_right_components=ntf_right_components,
+                ntf_block_components=ntf_block_components,
+                n_blocks=n_blocks,
+                nmf_priors=nmf_priors,
+                my_status_box=my_status_box,
             )
 
-            RowClust = np.zeros(n, dtype=int)
+            row_clust = np.zeros(n, dtype=int)
             if nmf_calculate_leverage > 0:
-                Mtn, AddMessage, ErrMessage, cancel_pressed = Leverage(
-                    Mt, nmf_use_robust_leverage, AddMessage, my_status_box
+                mtn, add_message, err_message, cancel_pressed = leverage(
+                    v=mt,
+                    nmf_use_robust_leverage=nmf_use_robust_leverage,
+                    add_message=add_message,
+                    my_status_box=my_status_box,
                 )
             else:
-                Mtn = Mt
+                mtn = mt
 
             for i in range(0, n):
-                RowClust[i] = np.argmax(Mtn[i, :])
-                MtPct[i, RowClust[i]] = MtPct[i, RowClust[i]] + 1
+                row_clust[i] = np.argmax(mtn[i, :])
+                mt_pct[i, row_clust[i]] = mt_pct[i, row_clust[i]] + 1
 
-        MtPct = MtPct / nmf_robust_n_runs
+        mt_pct = mt_pct / nmf_robust_n_runs
 
-    Mt = Mtsup
-    Mw = Mwsup
-    Mb = Mbsup
+    mt = mtsup
+    mw = mwsup
+    mb = mbsup
     diff = diff_sup
 
-    # TODO (pcotte) : MtPct and MwPct can be not yet referenced : fix that
-    return Mt_conv, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed
+    # TODO (pcotte) : mt_pct and mw_pct can be not yet referenced : fix that
+    return mt_conv, mt, mw, mb, mt_pct, mw_pct, diff, add_message, err_message, cancel_pressed
 
 
 def non_negative_factorization(
