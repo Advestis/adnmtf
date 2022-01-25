@@ -3,7 +3,7 @@ permalink: /docs/index.html
 ---
 
 # Docs
-https://paulfogel.github.io/NMTF/
+https://advestis.github.io/nmtf_private/
 
 # NMTF
 
