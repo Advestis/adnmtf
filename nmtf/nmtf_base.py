@@ -22,7 +22,7 @@ EPSILON = np.finfo(np.float32).eps
 # TODO (pcotte): group similar methods
 
 
-def nmf_init(m, mmis, mt0, mw0, nc) -> List[np.ndarray]:
+def nmf_init(m, mmis, mt0, mw0, nc) -> Tuple[np.ndarray, np.ndarray]:
     """Initialize NMF components using NNSVD
 
     Parameters
@@ -35,7 +35,7 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> List[np.ndarray]:
 
     Returns
     -------
-    List[np.ndarray]: Left hand matrix and right hand matrix
+    Tuple[np.ndarray, np.ndarray]: Left hand matrix and right hand matrix
 
     Reference
     ---------
@@ -103,7 +103,7 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> List[np.ndarray]:
             mt[:, k] = np.reshape(u2, n)
             mw[:, k] = np.reshape(v2, p)
 
-    return [mt, mw]
+    return mt, mw
 
 
 def ntf_init(
@@ -121,7 +121,7 @@ def ntf_init(
     n_blocks,
     init_type,
     my_status_box,
-) -> List[np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List[str], str, int]:
     """Initialize NTF components for HALS
 
     Parameters
@@ -145,7 +145,7 @@ def ntf_init(
 
     Returns
     -------
-    List[np.ndarray]
+    Tuple[np.ndarray, np.ndarray, np.ndarray, List[str], str, int]
         mt: Left hand matrix
         mw: Right hand matrix
         mb: Block hand matrix
@@ -325,7 +325,7 @@ def ntf_init(
         for i_block in range(bmax - 1, -1, -1):
             mb[i_block, k] = min(mb[i_block + 1, k], mb[i_block, k])
 
-    return [mt, mw, mb, add_message, err_message, cancel_pressed]
+    return mt, mw, mb, add_message, err_message, cancel_pressed
 
 
 def r_ntf_solve(
