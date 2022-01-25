@@ -311,7 +311,7 @@ def NTFSolve_simple(
                 cont = 0
             else:
                 if diff > diff0:
-                    myStatusBox.myPrint(Status0 + " Iter: " + str(iIter) + " MSR does not improve")
+                    myStatusBox.my_print(Status0 + " Iter: " + str(iIter) + " MSR does not improve")
 
                 diff0 = diff
 
@@ -326,7 +326,7 @@ def NTFSolve_simple(
                     + str(round(alpha[0], 2))
                 )
                 if LogIter == 1:
-                    myStatusBox.myPrint(Status)
+                    myStatusBox.my_print(Status)
 
             myStatusBox.update_status(delay=1, status=Status)
             myStatusBox.update_bar(delay=1, step=pbar_step)
@@ -335,7 +335,7 @@ def NTFSolve_simple(
                 return [np.array([]), Mt, Mw, Mb, Mres, cancel_pressed]
 
             if LogIter == 1:
-                myStatusBox.myPrint(Status0 + " Iter: " + str(iIter) + " MSR: " + str(diff))
+                myStatusBox.my_print(Status0 + " Iter: " + str(iIter) + " MSR: " + str(diff))
 
         iIter += 1
 

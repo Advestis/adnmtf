@@ -13,18 +13,44 @@ try:
     from tkinter import ttk
 except ImportError:
     tkinter_ok = False
+    ttk = None
+
 from tqdm import tqdm
 import math
 from scipy.stats import hypergeom
-from scipy.optimize import nnls
+import logging
 import numpy as np
 
 EPSILON = np.finfo(np.float32).eps
+logger = logging.getLogger(__name__)
+
+
+class AbstractStatusBox:
+    def __init__(self, **kwargs):
+        pass
+
+    def update_bar(self, delay=1, step=1):
+        pass
+
+    def init_bar(self, delay=1):
+        pass
+
+    def update_status(self, delay=1, status=""):
+        pass
+
+    def close(self):
+        pass
+
+    @staticmethod
+    def my_print(status=""):
+        logger.info(status)
+
 
 if tkinter_ok:
 
-    class StatusBox:
+    class StatusBox(AbstractStatusBox):
         def __init__(self):
+            super().__init__()
             self.root = Tk()
             self.root.title("irMF status - Python kernel")
             self.root.minsize(width=230, height=60)
@@ -39,9 +65,6 @@ if tkinter_ok:
             self.cancel_pressed = False
             self.n_steps = 0
 
-        def close_dialog(self):
-            self.cancel_pressed = True
-
         def update_bar(self, delay=1, step=1):
             self.n_steps += step
             self.pbar.step(step)
@@ -49,7 +72,7 @@ if tkinter_ok:
             self.root.mainloop()
 
         def init_bar(self, delay=1):
-            self.update_bar(delay=1, step=100 - self.n_steps)
+            self.update_bar(delay=delay, step=100 - self.n_steps)
             self.n_steps = 0
 
         def update_status(self, delay=1, status=""):
@@ -60,67 +83,76 @@ if tkinter_ok:
         def close(self):
             self.root.destroy()
 
-        def myPrint(self, status=""):
-            print(status)
+        def close_dialog(self):
+            self.cancel_pressed = True
 
 
-class StatusBoxTqdm:
+class StatusBoxTqdm(AbstractStatusBox):
     def __init__(self, verbose=0):
-        self.LogIter = verbose
-        if self.LogIter == 0:
+        super().__init__()
+        self.log_iter = verbose
+        if self.log_iter == 0:
             self.pbar = tqdm(total=100)
 
         self.cancel_pressed = False
 
-    def update_bar(self, delay=0, step=1):
-        if self.LogIter == 0:
+    def update_bar(self, delay=1, step=1):
+        if self.log_iter == 0:
             self.pbar.update(n=step)
 
-    def init_bar(self, delay=0):
-        if self.LogIter == 0:
+    def init_bar(self, delay=1):
+        if self.log_iter == 0:
             self.pbar.n = 0
 
-    def update_status(self, delay=0, status=""):
-        if self.LogIter == 0:
+    def update_status(self, delay=1, status=""):
+        if self.log_iter == 0:
             self.pbar.set_description(status, refresh=False)
             self.pbar.refresh()
 
     def close(self):
-        if self.LogIter == 0:
+        if self.log_iter == 0:
             self.pbar.clear()
             self.pbar.close()
 
-    def myPrint(self, status=""):
-        if self.LogIter == 1:
-            print(status, end="\n")
+    def my_print(self, status=""):
+        if self.log_iter == 1:
+            super().my_print(status)
 
 
-def nmf_det(Mt, Mw, NMFExactDet):
+def nmf_det(mt, mw, nmf_exact_det):
     """Volume occupied by Left and Right factoring vectors
 
-    Input:
-        Mt: Left hand matrix
-        Mw: Right hand matrix
-        NMFExactDet if = 0 compute an approximate determinant in reduced space n x n or p x p
-        through random sampling in the largest dimension
-    Output:
-        detXcells: determinant
+    Parameters
+    ----------
+    mt:
+       Left hand matrix
+    mw:
+       Right hand matrix
+    nmf_exact_det:
+       if = 0 compute an approximate determinant in reduced space n x n or p x p through random sampling in the largest
+       dimension
+
+
+    Returns
+    -------
+    detXcells: determinant
 
     Reference
     ---------
 
-    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to Environmental
-        Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509; doi:10.3390/ijerph13050509
+    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to 
+    Environmental Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509
+    doi:10.3390/ijerph13050509
 
     """
 
-    n, nc = Mt.shape
-    p, nc = Mw.shape
+    n, nc = mt.shape
+    p, nc = mw.shape
     nxp = n * p
-    if (NMFExactDet > 0) | (n == p):
+    if (nmf_exact_det > 0) | (n == p):
         Xcells = np.zeros((nxp, nc))
         for k in range(0, nc):
-            Xcells[:, k] = np.reshape(np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[:, k], (1, p)), nxp)
+            Xcells[:, k] = np.reshape(np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p)), nxp)
             norm_k = np.linalg.norm(Xcells[:, k])
             if norm_k > 0:
                 Xcells[:, k] = Xcells[:, k] / norm_k
@@ -133,7 +165,7 @@ def nmf_det(Mt, Mw, NMFExactDet):
             np.random.shuffle(ID)
             ID = ID[0:p]
             for k in range(0, nc):
-                Xcells[:, k] = np.reshape(np.reshape(Mt[ID, k], (p, 1)) @ np.reshape(Mw[:, k], (1, p)), p ** 2)
+                Xcells[:, k] = np.reshape(np.reshape(mt[ID, k], (p, 1)) @ np.reshape(mw[:, k], (1, p)), p ** 2)
                 norm_k = np.linalg.norm(Xcells[:, k])
                 if norm_k > 0:
                     Xcells[:, k] = Xcells[:, k] / norm_k
@@ -145,7 +177,7 @@ def nmf_det(Mt, Mw, NMFExactDet):
             np.random.shuffle(ID)
             ID = ID[0:n]
             for k in range(0, nc):
-                Xcells[:, k] = np.reshape(np.reshape(Mt[:, k], (n, 1)) @ np.reshape(Mw[ID, k], (1, n)), n ** 2)
+                Xcells[:, k] = np.reshape(np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[ID, k], (1, n)), n ** 2)
                 norm_k = np.linalg.norm(Xcells[:, k])
                 if norm_k > 0:
                     Xcells[:, k] = Xcells[:, k] / norm_k
@@ -162,9 +194,9 @@ def RobustMax(V0, AddMessage, myStatusBox):
     For each column:
          = weighted mean of column elements larger than 95% percentile
         for each row, weight = specificity of the column value wrt other columns
-    Input:
+    Parameter
         V0: column vectors
-    Output: Robust max by column
+    Returns Robust max by column
 
     Reference
     ---------
@@ -577,9 +609,9 @@ def GlobalSign(Nrun, nbGroups, Mt, RCt, NCt, RowGroups, ListGroups, Ngroup, mySt
 def sparse_opt(b, alpha, two_sided):
     """Return the L2-closest vector with sparsity alpha
 
-    Input:
+    Parameter
         b: original vector
-    Output:
+    Returns
         x: sparse vector
 
     Reference
