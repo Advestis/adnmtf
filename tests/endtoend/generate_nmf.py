@@ -49,8 +49,11 @@ def compute_test_nmf(test_name, json_file, input_file=None, row_header=0, w=None
             m0 = df.iloc[:, row_header:].values
         else:
             m0 = df.values
-
+    n = m0.shape[0]
     my_nmfmodel = NMF(n_components=n_components, random_state=123, use_hals=True)
+    #W = np.random.randint(low=1, high=10, size=(n, n_components)).astype(float)
+    #W = np.ones((n, n_components)).astype(float)
+    #estimator_ = my_nmfmodel.fit_transform(m0, W=W, sparsity=sparsity, n_bootstrap=n_bootstrap)
     estimator_ = my_nmfmodel.fit_transform(m0, sparsity=sparsity, n_bootstrap=n_bootstrap)
     return estimator_, expected_estimator_, test_name
 

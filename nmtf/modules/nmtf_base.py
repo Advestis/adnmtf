@@ -1146,9 +1146,11 @@ def non_negative_factorization(X, W=None, H=None, n_components=None,
     else:
         if H is None:
             Mw = np.ones((p, nc))
+            Mt = W.copy
             init = 'custom_W'
         elif W is None:
             Mt = np.ones((n, nc))
+            Mw = H.copy
             init = 'custom_H'
         else:
             init = 'custom'
