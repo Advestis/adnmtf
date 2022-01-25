@@ -64,9 +64,9 @@ from nmtf import NTF
 import pandas as pd
 from pathlib import Path
 
-DATA_PATH = Path(__file__).parent.parent / "data"
+DATA_PATH = ...
 
-df = pd.read_csv(DATA_PATH / "data_ntf.csv")
+df = pd.read_csv(DATA_PATH)
 m0 = df.values
 n_blocks = 5
 my_ntfmodel = NTF(n_components=5)
