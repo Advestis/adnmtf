@@ -139,17 +139,17 @@ def ntf_init(
     ntf_right_components: Apply Unimodal/Smooth constraint on right hand matrix
     ntf_block_components: Apply Unimodal/Smooth constraint on block hand matrix
     n_blocks: Number of NTF blocks
-    init_type : integer, default 0
-        * init_type = 0 : NMF initialization applied on the reshaped matrix [1st dim x vectorized (2nd & 3rd dim)]
-        * init_type = 1 : NMF initialization applied on the reshaped matrix [vectorized (1st & 2nd dim) x 3rd dim]
+    init_type : integer, default 0\n
+        * init_type = 0 : NMF initialization applied on the reshaped matrix [1st dim x vectorized (2nd & 3rd dim)]\n
+        * init_type = 1 : NMF initialization applied on the reshaped matrix [vectorized (1st & 2nd dim) x 3rd dim]\n
     my_status_box
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray, np.ndarray, List[str], str, int]
-        mt: Left hand matrix
-        mw: Right hand matrix
-        mb: Block hand matrix
+    Tuple[np.ndarray, np.ndarray, np.ndarray, List[str], str, int]\n
+      * mt: Left hand matrix\n
+      * mw: Right hand matrix\n
+      * mb: Block hand matrix\n
     """
     add_message = []
 
@@ -402,23 +402,23 @@ def r_ntf_solve(
     -------
     Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, Union[np.ndarray, float], Union[np.ndarray, float],
           Union[np.ndarray, float], List[str], str, int]
-        mt_conv: np.ndarray
-            Convolutional Left hand matrix
-        mt: np.ndarray
-            Left hand matrix
-        mw: np.ndarray
-            Right hand matrix
-        mb: np.ndarray
-            Block hand matrix
-        mt_pct: Union[np.ndarray, float]
-            Percent robust clustered rows
-        mw_pct: Union[np.ndarray, float]
-            Percent robust clustered columns
-        diff : float
-            Objective minimum achieved
-        add_message: List[str]
-        err_message: str
-        cancel_pressed: int
+      * mt_conv: np.ndarray\n
+          Convolutional Left hand matrix\n
+      * mt: np.ndarray\n
+          Left hand matrix\n
+      * mw: np.ndarray\n
+          Right hand matrix\n
+      * mb: np.ndarray\n
+          Block hand matrix\n
+      * mt_pct: Union[np.ndarray, float]\n
+          Percent robust clustered rows\n
+      * mw_pct: Union[np.ndarray, float]\n
+          Percent robust clustered columns\n
+      * diff : float\n
+          Objective minimum achieved\n
+      * add_message: List[str]\n
+      * err_message: str\n
+      * cancel_pressed: int\n
     """
 
     add_message = []
@@ -671,11 +671,9 @@ def non_negative_factorization(
     x : array-like, shape (n_samples, n_features)
         Constant matrix.
     w : array-like, shape (n_samples, n_components)
-        prior W
-        If n_update_W == 0 , it is used as a constant, to solve for H only.
+        prior W. If n_update_W == 0 , it is used as a constant, to solve for H only.
     h : array-like, shape (n_features, n_components)
-        prior H
-        If n_update_H = 0 , it is used as a constant, to solve for W only.
+        prior H. If n_update_H = 0 , it is used as a constant, to solve for W only.
     n_components : integer
         Number of components, if n_components is not set : n_components = min(n_samples, n_features)
     update_w : boolean, default: True
@@ -691,18 +689,17 @@ def non_negative_factorization(
     regularization :  None | 'components' | 'transformation'
         Select whether the regularization affects the components (H), the
         transformation (W) or none of them.
-    sparsity : float, default: 0
-        Sparsity target with 0 <= sparsity < 1 representing either:
-        - the % rows in W or H set to 0 (when use_hals = False)
-        - the mean % rows per column in W or H set to 0 (when use_hals = True)
-        sparsity == 1: adaptive sparsity through hard thresholding and hhi
+    sparsity : float, default: 0\n
+        Sparsity target with 0 <= sparsity < 1 representing either:\n
+        - the % rows in W or H set to 0 (when use_hals = False)\n
+        - the mean % rows per column in W or H set to 0 (when use_hals = True)\n
+        sparsity == 1: adaptive sparsity through hard thresholding and hhi\n
     leverage :  None | 'standard' | 'robust', default 'standard'
         Calculate leverage of W and H rows on each component.
     random_state : int, RandomState instance or None, optional, default: None
-        If int, random_state is the seed used by the random number generator;
-        If RandomState instance, random_state is the random number generator;
-        If None, the random number generator is the RandomState instance used
-        by `np.random`.
+        If int, random_state is the seed used by the random number generator.
+        If RandomState instance, random_state is the random number generator.
+        If None, the random number generator is the RandomState instance used by `np.random`.
     verbose : integer, default: 0
         The verbosity level (0/1).
 
@@ -710,20 +707,20 @@ def non_negative_factorization(
     Returns
     -------
     dict: Estimator with following entries
-        W : array-like, shape (n_samples, n_components)
-            Solution to the non-negative least squares problem.
-        H : array-like, shape (n_features, n_components)
-            Solution to the non-negative least squares problem.
-        volume : scalar, volume occupied by W and H
-        WB : array-like, shape (n_samples, n_components)
-            Percent consistently clustered rows for each component.
-            only if n_bootstrap > 0.
-        HB : array-like, shape (n_features, n_components)
-            Percent consistently clustered columns for each component.
-            only if n_bootstrap > 0.
-        B : array-like, shape (n_observations, n_components) or (n_features, n_components)
-            only if active convex variant, H = B.T @ X or W = X @ B
-        diff : Objective minimum achieved
+      * W : array-like, shape (n_samples, n_components)\n
+          Solution to the non-negative least squares problem.\n
+      * H : array-like, shape (n_features, n_components)\n
+          Solution to the non-negative least squares problem.\n
+      * volume : scalar, volume occupied by W and H\n
+      * WB : array-like, shape (n_samples, n_components)\n
+          Percent consistently clustered rows for each component.
+          only if n_bootstrap > 0.\n
+      * HB : array-like, shape (n_features, n_components)\n
+          Percent consistently clustered columns for each component.
+          only if n_bootstrap > 0.\n
+      * B : array-like, shape (n_observations, n_components) or (n_features, n_components)\n
+          only if active convex variant, H = B.T @ X or W = X @ B\n
+      * diff : Objective minimum achieved\n
     """
 
     m = x
@@ -901,36 +898,36 @@ def nmf_predict(
     cluster_by_stability : boolean, default False
          Use stability instead of leverage to assign samples/features to clusters
     custom_order :  boolean, default False
-         if False samples/features with highest leverage or stability appear on top of each cluster
-         if True within cluster ordering is modified to suggest a continuum  between adjacent clusters
+         If False samples/features with highest leverage or stability appear on top of each cluster.
+         If True within cluster ordering is modified to suggest a continuum  between adjacent clusters
     verbose : integer, default: 0
         The verbosity level (0/1).
 
     Returns
     -------
     dict: Completed estimator with following entries:
-        WL : array-like, shape (n_samples, n_components)
-             Sample leverage on each component
-        HL : array-like, shape (n_features, n_components)
-             Feature leverage on each component
-        QL : array-like, shape (n_blocks, n_components)
-             Block leverage on each component (NTF only)
-        WR : vector-like, shape (n_samples)
-             Ranked sample indexes (by cluster and leverage or stability)
-             Used to produce ordered heatmaps
-        HR : vector-like, shape (n_features)
-             Ranked feature indexes (by cluster and leverage or stability)
-             Used to produce ordered heatmaps
-        WN : vector-like, shape (n_components)
-             Sample cluster bounds in ordered heatmap
-        HN : vector-like, shape (n_components)
-             Feature cluster bounds in ordered heatmap
-        WC : vector-like, shape (n_samples)
-             Sample assigned cluster
-        HC : vector-like, shape (n_features)
-             Feature assigned cluster
-        QC : vector-like, shape (size(blocks))
-             Block assigned cluster (NTF only)
+      * WL : array-like, shape (n_samples, n_components)\n
+           Sample leverage on each component\n
+      * HL : array-like, shape (n_features, n_components)\n
+           Feature leverage on each component\n
+      * QL : array-like, shape (n_blocks, n_components)\n
+           Block leverage on each component (NTF only)\n
+      * WR : vector-like, shape (n_samples)\n
+           Ranked sample indexes (by cluster and leverage or stability)\n
+           Used to produce ordered heatmaps\n
+      * HR : vector-like, shape (n_features)\n
+           Ranked feature indexes (by cluster and leverage or stability)
+           Used to produce ordered heatmaps\n
+      * WN : vector-like, shape (n_components)\n
+           Sample cluster bounds in ordered heatmap\n
+      * HN : vector-like, shape (n_components)\n
+           Feature cluster bounds in ordered heatmap\n
+      * WC : vector-like, shape (n_samples)\n
+           Sample assigned cluster\n
+      * HC : vector-like, shape (n_features)\n
+           Feature assigned cluster\n
+      * QC : vector-like, shape (size(blocks))\n
+           Block assigned cluster (NTF only)\n
     """
     mt = estimator["W"]
     mw = estimator["H"]
@@ -1066,18 +1063,18 @@ def nmf_permutation_test_score(estimator, y, n_permutations=100, verbose=0) -> d
     Returns
     -------
     dict: Completed estimator with following entries:
-        score : float
-             The true score without permuting targets.
-        pvalue : float
-             The p-value, which approximates the probability that the score would be obtained by chance.
-        CS : array-like, shape(n_components)
-             The size of each cluster
-        CP : array-like, shape(n_components)
-             The pvalue of the most significant group within each cluster
-        CG : array-like, shape(n_components)
-             The index of the most significant group within each cluster
-        CN : array-like, shape(n_components, n_groups)
-             The size of each group within each cluster
+      * score : float\n
+           The true score without permuting targets.\n
+      * pvalue : float\n
+           The p-value, which approximates the probability that the score would be obtained by chance.\n
+      * CS : array-like, shape(n_components)\n
+           The size of each cluster\n
+      * CP : array-like, shape(n_components)\n
+           The pvalue of the most significant group within each cluster\n
+      * CG : array-like, shape(n_components)\n
+           The index of the most significant group within each cluster\n
+      * CN : array-like, shape(n_components, n_groups)\n
+           The size of each group within each cluster\n
     """
     mt = estimator["W"]
     r_ct = estimator["WR"]
@@ -1196,24 +1193,24 @@ def non_negative_tensor_factorization(
     Returns
     -------
     dict: Estimator with following entries
-        W : array-like, shape (n_samples, n_components)
-            Solution to the non-negative least squares problem.
-        H : array-like, shape (n_features, n_components)
-            Solution to the non-negative least squares problem.
-        Q : array-like, shape (n_blocks, n_components)
-            Solution to the non-negative least squares problem.
-        volume : scalar, volume occupied by W and H
-        WB : array-like, shape (n_samples, n_components)
-            Percent consistently clustered rows for each component.
-            only if n_bootstrap > 0.
-        HB : array-like, shape (n_features, n_components)
-            Percent consistently clustered columns for each component.
-            only if n_bootstrap > 0.
+      * W : array-like, shape (n_samples, n_components)\n
+          Solution to the non-negative least squares problem.\n
+      * H : array-like, shape (n_features, n_components)\n
+          Solution to the non-negative least squares problem.\n
+      * Q : array-like, shape (n_blocks, n_components)\n
+          Solution to the non-negative least squares problem.\n
+      * volume : scalar, volume occupied by W and H\n
+      * WB : array-like, shape (n_samples, n_components)\n
+          Percent consistently clustered rows for each component.\n
+          only if n_bootstrap > 0.\n
+      * HB : array-like, shape (n_features, n_components)\n
+          Percent consistently clustered columns for each component.\n
+          only if n_bootstrap > 0.\n
 
     Reference
     ---------
     A. Cichocki, P.H.A.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor factorizations,
-        IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
+    IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
 
     """
 
