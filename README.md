@@ -100,4 +100,4 @@ feature indexes for future use in ordered heatmaps.
 
 * [(Medium) Using Non-negative matrix factorization to classify companies](https://medium.com/@chtill.g/using-nmf-to-classify-companies-a77e176f276f)
 
-* [(offconvex)Tensor Methods in Machine Learning](https://www.offconvex.org/2015/12/17/tensor-decompositions/?source=post_page---------------------------)
+* [(offconvex) Tensor Methods in Machine Learning](https://www.offconvex.org/2015/12/17/tensor-decompositions/?source=post_page---------------------------)
