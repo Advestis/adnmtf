@@ -51,11 +51,11 @@ and
 
 - *NMF* instantiates a NMF class with 2 components.
 - *fit_transform* calls the functions below in the given order:
-  - *nmtf_base* module: *non_negative_factorization*, *NMFinit*, *rNTFSolve*
-  - *nmtf_core* module: *NTFSolve*, *NTFSolve_simple*, *NTFUpdate*
+  - *nmtf_base* module: *non_negative_factorization*, *nmf_init*, *r_ntf_solve*
+  - *nmtf_core* module: *ntf_solve*, *ntf_solve_simple*, *ntf_update*
 - *predict* derives from *fit_transform* outputs ordered sample and
 feature indexes for future use in ordered heatmaps. 
-*predict* calls *nmf_predict* and *BuildClusters* in the *nmtf_base* module
+*predict* calls *nmf_predict* and *build_clusters* in the *nmtf_base* module
 
 ## NTF Example
 
@@ -82,11 +82,11 @@ with 5 blocks concatenated horizontally.
 
 - *NTF* instantiates a NTF class with 5 components.
 - *fit_transform* calls the functions below in the given order:
-  - *nmtf_base* module: *non_negative_tensor_factorization*, *NTFinit*, *rNTFSolve*
-  - *nmtf_core* module: *NTFSolve*, *NTFSolve_simple*, *NTFUpdate*
+  - *nmtf_base* module: *non_negative_tensor_factorization*, *ntf_init*, *r_ntf_solve*
+  - *nmtf_core* module: *ntf_solve*, *ntf_solve_simple*, *ntf_update*
 - *predict* derives from *fit_transform* outputs ordered sample and
 feature indexes for future use in ordered heatmaps. 
-*predict* calls *nmf_predict* and *BuildClusters* in the *nmtf_base* module
+*predict* calls *nmf_predict* and *build_clusters* in the *nmtf_base* module
 
 ## Articles
 
