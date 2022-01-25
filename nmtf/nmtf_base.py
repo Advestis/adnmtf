@@ -13,7 +13,7 @@ from scipy.sparse.linalg import svds
 import logging
 
 from .nmtf_core import ntf_stack, ntf_solve
-from .nmtf_utils import calc_leverage, StatusBoxTqdm, nmf_det, build_clusters, GlobalSign
+from .nmtf_utils import calc_leverage, StatusBoxTqdm, nmf_det, build_clusters, global_sign
 
 logger = logging.getLogger(__name__)
 EPSILON = np.finfo(np.float32).eps
@@ -1090,7 +1090,7 @@ def nmf_permutation_test_score(estimator, y, n_permutations=100, verbose=0) -> d
 
     nrun = n_permutations
     my_status_box = StatusBoxTqdm(verbose=verbose)
-    cluster_size, pglob, prun, cluster_prob, cluster_group, cluster_ngroup, cancel_pressed = GlobalSign(
+    cluster_size, pglob, prun, cluster_prob, cluster_group, cluster_ngroup, cancel_pressed = global_sign(
         nrun, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup, my_status_box
     )
 

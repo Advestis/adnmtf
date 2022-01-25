@@ -24,6 +24,8 @@ import numpy as np
 EPSILON = np.finfo(np.float32).eps
 logger = logging.getLogger(__name__)
 
+# TODO (pcotte) typing
+
 
 class AbstractStatusBox:
     def __init__(self, **kwargs):
@@ -59,6 +61,7 @@ if tkinter_ok:
             self.var = StringVar()
             self.status = Label(self.frame, textvariable=self.var, width=60, height=1)
             self.status.pack(fill=NONE, padx=6, pady=6)
+            # noinspection PyArgumentList
             self.pbar = ttk.Progressbar(self.frame, orient=HORIZONTAL, max=100, mode="determinate")
             self.pbar.pack(fill=NONE, padx=6, pady=6)
             Button(self.frame, text="Cancel", command=self.close_dialog).pack(fill=NONE, padx=6, pady=6)
@@ -135,7 +138,7 @@ def nmf_det(mt, mw, nmf_exact_det):
 
     Returns
     -------
-    detXcells: determinant
+    determinant
 
     Reference
     ---------
@@ -150,113 +153,120 @@ def nmf_det(mt, mw, nmf_exact_det):
     p, nc = mw.shape
     nxp = n * p
     if (nmf_exact_det > 0) | (n == p):
-        Xcells = np.zeros((nxp, nc))
+        xcells = np.zeros((nxp, nc))
         for k in range(0, nc):
-            Xcells[:, k] = np.reshape(np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p)), nxp)
-            norm_k = np.linalg.norm(Xcells[:, k])
+            xcells[:, k] = np.reshape(np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p)), nxp)
+            norm_k = np.linalg.norm(xcells[:, k])
             if norm_k > 0:
-                Xcells[:, k] = Xcells[:, k] / norm_k
+                xcells[:, k] = xcells[:, k] / norm_k
             else:
-                Xcells[:, k] = 0
+                xcells[:, k] = 0
     else:
         if n > p:
-            Xcells = np.zeros((p ** 2, nc))
-            ID = np.arange(n)
-            np.random.shuffle(ID)
-            ID = ID[0:p]
+            xcells = np.zeros((p ** 2, nc))
+            theid = np.arange(n)
+            np.random.shuffle(theid)
+            theid = theid[0:p]
             for k in range(0, nc):
-                Xcells[:, k] = np.reshape(np.reshape(mt[ID, k], (p, 1)) @ np.reshape(mw[:, k], (1, p)), p ** 2)
-                norm_k = np.linalg.norm(Xcells[:, k])
+                xcells[:, k] = np.reshape(np.reshape(mt[theid, k], (p, 1)) @ np.reshape(mw[:, k], (1, p)), p ** 2)
+                norm_k = np.linalg.norm(xcells[:, k])
                 if norm_k > 0:
-                    Xcells[:, k] = Xcells[:, k] / norm_k
+                    xcells[:, k] = xcells[:, k] / norm_k
                 else:
-                    Xcells[:, k] = 0
+                    xcells[:, k] = 0
         else:
-            Xcells = np.zeros((n ** 2, nc))
-            ID = np.arange(p)
-            np.random.shuffle(ID)
-            ID = ID[0:n]
+            xcells = np.zeros((n ** 2, nc))
+            theid = np.arange(p)
+            np.random.shuffle(theid)
+            theid = theid[0:n]
             for k in range(0, nc):
-                Xcells[:, k] = np.reshape(np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[ID, k], (1, n)), n ** 2)
-                norm_k = np.linalg.norm(Xcells[:, k])
+                xcells[:, k] = np.reshape(np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[theid, k], (1, n)), n ** 2)
+                norm_k = np.linalg.norm(xcells[:, k])
                 if norm_k > 0:
-                    Xcells[:, k] = Xcells[:, k] / norm_k
+                    xcells[:, k] = xcells[:, k] / norm_k
                 else:
-                    Xcells[:, k] = 0
+                    xcells[:, k] = 0
 
-    detXcells = np.linalg.det(Xcells.T @ Xcells)
-    return detXcells
+    det_xcells = np.linalg.det(xcells.T @ xcells)
+    return det_xcells
 
 
-def RobustMax(V0, AddMessage, myStatusBox):
+def robust_max(v0, add_message, my_status_box):
     """Robust max of column vectors
 
     For each column:
          = weighted mean of column elements larger than 95% percentile
         for each row, weight = specificity of the column value wrt other columns
-    Parameter
-        V0: column vectors
-    Returns Robust max by column
+
+    Parameters
+    ----------
+    v0: column vectors
+    add_message: List[str]
+    my_status_box
+
+    Returns
+    -------
+    Robust max by column
 
     Reference
     ---------
-
-    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to Environmental
-        Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509; doi:10.3390/ijerph13050509
+    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to
+    Environmental Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509 doi:10.3390/ijerph13050509
 
     """
-    ErrMessage = ""
+    err_message = ""
     cancel_pressed = 0
 
-    V = V0.copy()
-    n, nc = V.shape
+    v = v0.copy()
+    n, nc = v.shape
     if nc > 1:
-        ncI = 1 / nc
-        lnncI = 1 / math.log(nc)
+        nc_i = 1 / nc
+        lnnc_i = 1 / math.log(nc)
 
     ind = max(math.ceil(n * 0.05) - 1, min(n - 1, 2))
-    Scale = np.max(V, axis=0)
+    scale = np.max(v, axis=0)
     for k in range(0, nc):
-        V[:, k] = V[:, k] / Scale[k]
+        v[:, k] = v[:, k] / scale[k]
 
-    RobMax = np.max(V, axis=0)
-    RobMax0 = 1e99 * np.ones(nc)
-    iIter = 0
-    maxIterations = 100
-    pbar_step = 100 / maxIterations
-    myStatusBox.init_bar(delay=1)
+    rob_max = np.max(v, axis=0)
+    rob_max0 = 1e99 * np.ones(nc)
+    i_iter = 0
+    max_iterations = 100
+    pbar_step = 100 / max_iterations
+    my_status_box.init_bar(delay=1)
 
-    while ((np.linalg.norm(RobMax - RobMax0) / np.linalg.norm(RobMax)) ** 2 > 1e-6) & (iIter < maxIterations):
+    while ((np.linalg.norm(rob_max - rob_max0) / np.linalg.norm(rob_max)) ** 2 > 1e-6) & (i_iter < max_iterations):
         for k in range(0, nc):
-            V = V[np.argsort(-V[:, k]), :]
+            v = v[np.argsort(-v[:, k]), :]
             if nc > 1:
-                den = np.repeat(np.sum(V, axis=1), nc).reshape((n, nc))
+                den = np.repeat(np.sum(v, axis=1), nc).reshape((n, nc))
                 den[den == 0] = 1.0e-10
-                Prob = V / den
-                Prob[Prob == 0] = 1.0e-10
-                Specificity = np.ones(n) + np.sum(Prob * np.log(Prob), axis=1) * lnncI
-                Specificity[Prob[:, k] < ncI] = 0
+                prob = v / den
+                prob[prob == 0] = 1.0e-10
+                # TODO (pcotte) lnnc_i and nc_i could have not been assigned yet. Fix that.
+                specificity = np.ones(n) + np.sum(prob * np.log(prob), axis=1) * lnnc_i
+                specificity[prob[:, k] < nc_i] = 0
             else:
-                Specificity = np.ones(n)
+                specificity = np.ones(n)
 
-            Specificity[ind:n] = 0
-            RobMax0[k] = RobMax[k]
-            RobMax[k] = np.sum(V[:, k] * Specificity) / np.sum(Specificity)
-            V[V[:, k] > RobMax[k], k] = RobMax[k]
+            specificity[ind:n] = 0
+            rob_max0[k] = rob_max[k]
+            rob_max[k] = np.sum(v[:, k] * specificity) / np.sum(specificity)
+            v[v[:, k] > rob_max[k], k] = rob_max[k]
 
-        myStatusBox.update_bar(delay=1, step=pbar_step)
-        if myStatusBox.cancel_pressed:
+        my_status_box.update_bar(delay=1, step=pbar_step)
+        if my_status_box.cancel_pressed:
             cancel_pressed = 1
-            return RobMax * Scale, AddMessage, ErrMessage, cancel_pressed
+            return rob_max * scale, add_message, err_message, cancel_pressed
 
-        iIter += 1
+        i_iter += 1
 
-    if iIter == maxIterations:
-        AddMessage.insert(
-            len(AddMessage), "Warning: Max iterations reached while calculating robust max (N = " + str(n) + ")."
+    if i_iter == max_iterations:
+        add_message.insert(
+            len(add_message), f"Warning: Max iterations reached while calculating robust max (N = {n})"
         )
 
-    return [RobMax * Scale, AddMessage, ErrMessage, cancel_pressed]
+    return rob_max * scale, add_message, err_message, cancel_pressed
 
 
 def calc_leverage(v, nmf_use_robust_leverage, add_message, my_status_box):
@@ -275,44 +285,44 @@ def calc_leverage(v, nmf_use_robust_leverage, add_message, my_status_box):
 
     Reference
     ---------
-    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to Environmental
-        Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509; doi:10.3390/ijerph13050509
+    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to
+    Environmental Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509 doi:10.3390/ijerph13050509
 
     """
 
-    ErrMessage = ""
+    err_message = ""
     cancel_pressed = 0
 
     n, nc = v.shape
-    Vn = np.zeros((n, nc))
-    Vr = np.zeros((n, nc))
+    vn = np.zeros((n, nc))
+    vr = np.zeros((n, nc))
     if nmf_use_robust_leverage > 0:
-        MaxV, add_message, ErrMessage, cancel_pressed = RobustMax(v, add_message, my_status_box)
+        max_v, add_message, err_message, cancel_pressed = robust_max(v, add_message, my_status_box)
         if cancel_pressed == 1:
-            return Vn, add_message, ErrMessage, cancel_pressed
+            return vn, add_message, err_message, cancel_pressed
     else:
-        MaxV = np.max(v, axis=0)
+        max_v = np.max(v, axis=0)
 
     pbar_step = 100 / nc
     my_status_box.init_bar(delay=1)
     for k in range(0, nc):
-        Vr[v[:, k] > 0, k] = 1
-        Vn[:, k] = MaxV[k] - v[:, k]
-        Vn[Vn[:, k] < 0, k] = 0
-        Vn[:, k] = Vn[:, k] ** 2
+        vr[v[:, k] > 0, k] = 1
+        vn[:, k] = max_v[k] - v[:, k]
+        vn[vn[:, k] < 0, k] = 0
+        vn[:, k] = vn[:, k] ** 2
         for k2 in range(0, nc):
             if k2 != k:
-                Vn[:, k] = Vn[:, k] + v[:, k2] ** 2
+                vn[:, k] = vn[:, k] + v[:, k2] ** 2
 
-        Status = "Leverage: Comp " + str(k + 1)
-        my_status_box.update_status(delay=1, status=Status)
+        status = f"Leverage: Comp {k + 1}"
+        my_status_box.update_status(delay=1, status=status)
         my_status_box.update_bar(delay=1, step=pbar_step)
         if my_status_box.cancel_pressed:
             cancel_pressed = 1
-            return Vn, add_message, ErrMessage, cancel_pressed
+            return vn, add_message, err_message, cancel_pressed
 
-    Vn = 10 ** (-Vn / (2 * np.mean(Vn))) * Vr
-    return [Vn, add_message, ErrMessage, cancel_pressed]
+    vn = 10 ** (-vn / (2 * np.mean(vn))) * vr
+    return vn, add_message, err_message, cancel_pressed
 
 
 def build_clusters(
@@ -334,289 +344,321 @@ def build_clusters(
     """Builder clusters from leverages"""
     n_blocks = int(n_blocks)
     my_status_box.update_status(delay=1, status="Build clusters...")
-    ErrMessage = ""
+    err_message = ""
     cancel_pressed = 0
     n, nc = np.shape(mt)
     p = np.shape(mw)[0]
     if nmf_algo >= 5:
-        BlockClust = np.zeros(n_blocks)
+        block_clust = np.zeros(n_blocks)
     else:
-        BlockClust = np.array([])
-        Mbn = np.array([])
+        block_clust = np.array([])
+        mbn = np.array([])
 
-    RCt = np.zeros(n)
-    RCw = np.zeros(p)
-    NCt = np.zeros(nc)
-    NCw = np.zeros(n_blocks * nc)
-    RowClust = np.zeros(n)
-    ColClust = np.zeros(p)
+    r_ct = np.zeros(n)
+    r_cw = np.zeros(p)
+    n_ct = np.zeros(nc)
+    n_cw = np.zeros(n_blocks * nc)
+    row_clust = np.zeros(n)
+    col_clust = np.zeros(p)
     ilast = 0
     jlast = 0
 
     if nmf_calculate_leverage == 1:
         my_status_box.update_status(delay=1, status="Leverages - Left components...")
-        Mtn, add_message, ErrMessage, cancel_pressed = calc_leverage(mt, nmf_use_robust_leverage, add_message, my_status_box)
+        mtn, add_message, err_message, cancel_pressed = calc_leverage(
+            mt, nmf_use_robust_leverage, add_message, my_status_box
+        )
         my_status_box.update_status(delay=1, status="Leverages - Right components...")
-        Mwn, add_message, ErrMessage, cancel_pressed = calc_leverage(mw, nmf_use_robust_leverage, add_message, my_status_box)
+        mwn, add_message, err_message, cancel_pressed = calc_leverage(
+            mw, nmf_use_robust_leverage, add_message, my_status_box
+        )
         if nmf_algo >= 5:
             my_status_box.update_status(delay=1, status="Leverages - Block components...")
-            Mbn, add_message, ErrMessage, cancel_pressed = calc_leverage(
+            mbn, add_message, err_message, cancel_pressed = calc_leverage(
                 mb, nmf_use_robust_leverage, add_message, my_status_box
             )
     else:
-        Mtn = mt
-        Mwn = mw
+        mtn = mt
+        mwn = mw
         if nmf_algo >= 5:
-            Mbn = mb
+            mbn = mb
 
     if nmf_algo >= 5:
-        for iBlock in range(0, n_blocks):
+        for i_block in range(0, n_blocks):
             if nc > 1:
-                BlockClust[iBlock] = np.argmax(Mbn[iBlock, :]) + 1
+                # TODO (pcotte): mbn could have not been assigned yet. Fix that.
+                block_clust[i_block] = np.argmax(mbn[i_block, :]) + 1
             else:
-                BlockClust[iBlock] = 1
+                block_clust[i_block] = 1
 
     for i in range(0, n):
         if nc > 1:
             if (isinstance(mt_pct, np.ndarray)) & (nmf_robust_cluster_by_stability > 0):
-                RowClust[i] = np.argmax(mt_pct[i, :]) + 1
+                row_clust[i] = np.argmax(mt_pct[i, :]) + 1
             else:
-                RowClust[i] = np.argmax(Mtn[i, :]) + 1
+                row_clust[i] = np.argmax(mtn[i, :]) + 1
         else:
-            RowClust[i] = 1
+            row_clust[i] = 1
 
     for j in range(0, p):
         if nc > 1:
             if (isinstance(mw_pct, np.ndarray)) & (nmf_robust_cluster_by_stability > 0):
-                ColClust[j] = np.argmax(mw_pct[j, :]) + 1
+                col_clust[j] = np.argmax(mw_pct[j, :]) + 1
             else:
-                ColClust[j] = np.argmax(Mwn[j, :]) + 1
+                col_clust[j] = np.argmax(mwn[j, :]) + 1
         else:
-            ColClust[j] = 1
+            col_clust[j] = 1
 
     if (cell_plot_ordered_clusters == 1) & (nc >= 3):
-        MtS = np.zeros(n)
-        MwS = np.zeros(p)
+        mt_s = np.zeros(n)
+        mw_s = np.zeros(p)
         for i in range(0, n):
-            if RowClust[i] == 1:
-                MtS[i] = sum(k * Mtn[i, k] for k in range(0, 2)) / max(sum(Mtn[i, k] for k in range(0, 2)), 1.0e-10)
-            elif RowClust[i] == nc:
-                MtS[i] = sum(k * Mtn[i, k] for k in range(nc - 2, nc)) / max(
-                    sum(Mtn[i, k] for k in range(nc - 2, nc)), 1.0e-10
+            if row_clust[i] == 1:
+                mt_s[i] = sum(k * mtn[i, k] for k in range(0, 2)) / max(sum(mtn[i, k] for k in range(0, 2)), 1.0e-10)
+            elif row_clust[i] == nc:
+                mt_s[i] = sum(k * mtn[i, k] for k in range(nc - 2, nc)) / max(
+                    sum(mtn[i, k] for k in range(nc - 2, nc)), 1.0e-10
                 )
             else:
-                MtS[i] = sum(k * Mtn[i, k] for k in range(int(RowClust[i] - 2), int(RowClust[i] + 1))) / max(
-                    sum(Mtn[i, k] for k in range(int(RowClust[i] - 2), int(RowClust[i] + 1))), 1.0e-10
+                mt_s[i] = sum(k * mtn[i, k] for k in range(int(row_clust[i] - 2), int(row_clust[i] + 1))) / max(
+                    sum(mtn[i, k] for k in range(int(row_clust[i] - 2), int(row_clust[i] + 1))), 1.0e-10
                 )
 
         for j in range(0, p):
-            if ColClust[j] == 1:
-                MwS[j] = sum(k * Mwn[j, k] for k in range(0, 2)) / max(sum(Mwn[j, k] for k in range(0, 2)), 1.0e-10)
-            elif ColClust[j] == nc:
-                MwS[j] = sum(k * Mwn[j, k] for k in range(nc - 2, nc)) / max(
-                    sum(Mwn[j, k] for k in range(nc - 2, nc)), 1.0e-10
+            if col_clust[j] == 1:
+                mw_s[j] = sum(k * mwn[j, k] for k in range(0, 2)) / max(sum(mwn[j, k] for k in range(0, 2)), 1.0e-10)
+            elif col_clust[j] == nc:
+                mw_s[j] = sum(k * mwn[j, k] for k in range(nc - 2, nc)) / max(
+                    sum(mwn[j, k] for k in range(nc - 2, nc)), 1.0e-10
                 )
             else:
-                MwS[j] = sum(k * Mwn[j, k] for k in range(int(ColClust[j] - 2), int(ColClust[j] + 1))) / max(
-                    sum(Mwn[j, k] for k in range(int(ColClust[j] - 2), int(ColClust[j] + 1))), 1.0e-10
+                mw_s[j] = sum(k * mwn[j, k] for k in range(int(col_clust[j] - 2), int(col_clust[j] + 1))) / max(
+                    sum(mwn[j, k] for k in range(int(col_clust[j] - 2), int(col_clust[j] + 1))), 1.0e-10
                 )
 
     for k in range(0, nc):
-        Mindex1 = np.where(RowClust == k + 1)[0]
-        if len(Mindex1) > 0:
-            if len(Mindex1) == 1:
-                Mindex = (Mindex1,)
+        mindex1 = np.where(row_clust == k + 1)[0]
+        if len(mindex1) > 0:
+            if len(mindex1) == 1:
+                mindex = (mindex1,)
             elif (nc == 2) & (k == 1):
-                Mindex = Mindex1[np.argsort(Mtn[Mindex1, k])]
+                mindex = mindex1[np.argsort(mtn[mindex1, k])]
             elif (cell_plot_ordered_clusters == 1) & (nc >= 3):
-                Mindex = Mindex1[np.argsort(MtS[Mindex1])]
+                # TODO (pcotte): mt_s could have not been assigned yet. Fix that.
+                mindex = mindex1[np.argsort(mt_s[mindex1])]
             else:
-                Mindex = Mindex1[np.argsort(-Mtn[Mindex1, k])]
+                mindex = mindex1[np.argsort(-mtn[mindex1, k])]
 
-            RCt[ilast : len(Mindex) + ilast] = Mindex
-            ilast += len(Mindex)
+            r_ct[ilast: len(mindex) + ilast] = mindex
+            ilast += len(mindex)
 
-        NCt[k] = ilast
+        n_ct[k] = ilast
 
-    for iBlock in range(0, n_blocks):
-        if iBlock == 0:
+    for i_block in range(0, n_blocks):
+        if i_block == 0:
             j1 = 0
-            j2 = int(abs(blk_size[iBlock]))
+            j2 = int(abs(blk_size[i_block]))
         else:
+            # TODO (pcotte): j2 could have not been assigned yet. Fix that.
             j1 = j2
-            j2 += int(abs(blk_size[iBlock]))
+            j2 += int(abs(blk_size[i_block]))
 
         for k in range(0, nc):
-            Mindex2 = np.where(ColClust[j1:j2] == k + 1)[0]
-            if len(Mindex2) > 0:
-                Mindex2 = Mindex2 + j1
-                if len(Mindex2) == 1:
-                    Mindex = Mindex2
+            mindex2 = np.where(col_clust[j1:j2] == k + 1)[0]
+            if len(mindex2) > 0:
+                mindex2 = mindex2 + j1
+                if len(mindex2) == 1:
+                    mindex = mindex2
                 elif (nc == 2) & (k == 1):
-                    Mindex = Mindex2[np.argsort(Mwn[Mindex2, k])]
+                    mindex = mindex2[np.argsort(mwn[mindex2, k])]
                 elif (cell_plot_ordered_clusters == 1) & (nc >= 3):
-                    Mindex = Mindex2[np.argsort(MwS[Mindex2])]
+                    # TODO (pcotte): mw_s could have not been assigned yet. Fix that.
+                    mindex = mindex2[np.argsort(mw_s[mindex2])]
                 else:
-                    Mindex = Mindex2[np.argsort(-Mwn[Mindex2, k])]
+                    mindex = mindex2[np.argsort(-mwn[mindex2, k])]
 
-                RCw[jlast : len(Mindex) + jlast] = Mindex
-                jlast += len(Mindex)
+                r_cw[jlast : len(mindex) + jlast] = mindex
+                jlast += len(mindex)
 
-            NCw[iBlock * nc + k] = jlast
+            n_cw[i_block * nc + k] = jlast
 
-    return [Mtn, Mwn, Mbn, RCt, RCw, NCt, NCw, RowClust, ColClust, BlockClust, add_message, ErrMessage, cancel_pressed]
+    return (
+        mtn,
+        mwn,
+        mbn,
+        r_ct,
+        r_cw,
+        n_ct,
+        n_cw,
+        row_clust,
+        col_clust,
+        block_clust,
+        add_message,
+        err_message,
+        cancel_pressed
+    )
 
 
-def ClusterPvalues(ClusterSize, nbGroups, Mt, RCt, NCt, RowGroups, ListGroups, Ngroup):
+def cluster_pvalues(cluster_size, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup):
     """Calculate Pvalue of each group versus cluster"""
-    n, nc = Mt.shape
-    ClusterSize = ClusterSize.astype(np.int)
-    nbGroups = int(nbGroups)
-    RCt = RCt.astype(np.int)
-    NCt = NCt.astype(np.int)
-    ClusterSize = np.reshape(ClusterSize, nc)
-    RCt = np.reshape(RCt, (n,))
-    NCt = np.reshape(NCt, (nc,))
-    RowGroups = np.reshape(RowGroups, (n,))
+    n, nc = mt.shape
+    cluster_size = cluster_size.astype(np.int)
+    nb_groups = int(nb_groups)
+    r_ct = r_ct.astype(np.int)
+    n_ct = n_ct.astype(np.int)
+    cluster_size = np.reshape(cluster_size, nc)
+    r_ct = np.reshape(r_ct, (n,))
+    n_ct = np.reshape(n_ct, (nc,))
+    row_groups = np.reshape(row_groups, (n,))
 
-    ClusterGroup = np.zeros(nc)
-    ClusterProb = np.zeros(nc)
-    ClusterNgroup = np.zeros((nc, nbGroups))
-    ClusterNWgroup = np.zeros((nc, nbGroups))
+    cluster_group = np.zeros(nc)
+    cluster_prob = np.zeros(nc)
+    cluster_ngroup = np.zeros((nc, nb_groups))
+    cluster_n_wgroup = np.zeros((nc, nb_groups))
     prun = 0
 
     for k in range(0, nc):
-        if ClusterSize[k] > 0:
+        if cluster_size[k] > 0:
             # Find main group (only if clustersize>2)
             kfound0 = 0
-            for iGroup in range(0, nbGroups):
+            for i_group in range(0, nb_groups):
                 if k == 0:
-                    MX = np.where(RowGroups[RCt[0 : NCt[0]]] == ListGroups[iGroup])[0]
-                    if len(MX) >= 1:
-                        ClusterNWgroup[k, iGroup] = np.sum(Mt[RCt[0 : NCt[0]][MX], k])
-                        ClusterNgroup[k, iGroup] = len(MX)
+                    mx = np.where(row_groups[r_ct[0: n_ct[0]]] == list_groups[i_group])[0]
+                    if len(mx) >= 1:
+                        cluster_n_wgroup[k, i_group] = np.sum(mt[r_ct[0: n_ct[0]][mx], k])
+                        cluster_ngroup[k, i_group] = len(mx)
                 else:
-                    MX = np.where(RowGroups[RCt[NCt[k - 1] : NCt[k]]] == ListGroups[iGroup])[0]
-                    if len(MX) >= 1:
-                        ClusterNWgroup[k, iGroup] = np.sum(Mt[RCt[NCt[k - 1] : NCt[k]][MX], k])
-                        ClusterNgroup[k, iGroup] = len(MX)
+                    mx = np.where(row_groups[r_ct[n_ct[k - 1]: n_ct[k]]] == list_groups[i_group])[0]
+                    if len(mx) >= 1:
+                        cluster_n_wgroup[k, i_group] = np.sum(mt[r_ct[n_ct[k - 1]: n_ct[k]][mx], k])
+                        cluster_ngroup[k, i_group] = len(mx)
 
-                if ClusterNgroup[k, iGroup] > kfound0:
-                    kfound0 = ClusterNgroup[k, iGroup]
-                    ClusterGroup[k] = iGroup
+                if cluster_ngroup[k, i_group] > kfound0:
+                    kfound0 = cluster_ngroup[k, i_group]
+                    cluster_group[k] = i_group
 
-            SumClusterNWgroup = sum(ClusterNWgroup[k, :])
-            for iGroup in range(0, nbGroups):
-                ClusterNWgroup[k, iGroup] = ClusterSize[k] * ClusterNWgroup[k, iGroup] / SumClusterNWgroup
+            sum_cluster_n_wgroup = sum(cluster_n_wgroup[k, :])
+            for i_group in range(0, nb_groups):
+                cluster_n_wgroup[k, i_group] = cluster_size[k] * cluster_n_wgroup[k, i_group] / sum_cluster_n_wgroup
 
         else:
-            for iGroup in range(0, nbGroups):
-                ClusterNgroup[k, iGroup] = 0
-                ClusterNWgroup[k, iGroup] = 0
+            for i_group in range(0, nb_groups):
+                cluster_ngroup[k, i_group] = 0
+                cluster_n_wgroup[k, i_group] = 0
 
-            ClusterGroup[k] = 1
+            cluster_group[k] = 1
 
     for k in range(0, nc):
-        if ClusterSize[k] > 2:
-            ClusterProb[k] = hypergeom.sf(
-                ClusterNgroup[k, int(ClusterGroup[k])], n, Ngroup[int(ClusterGroup[k])], ClusterSize[k], loc=0
+        if cluster_size[k] > 2:
+            cluster_prob[k] = hypergeom.sf(
+                cluster_ngroup[k, int(cluster_group[k])], n, ngroup[int(cluster_group[k])], cluster_size[k], loc=0
             ) + hypergeom.pmf(
-                ClusterNgroup[k, int(ClusterGroup[k])], n, Ngroup[int(ClusterGroup[k])], ClusterSize[k], loc=0
+                cluster_ngroup[k, int(cluster_group[k])], n, ngroup[int(cluster_group[k])], cluster_size[k], loc=0
             )
         else:
-            ClusterProb[k] = 1
+            cluster_prob[k] = 1
 
     for k in range(0, nc):
-        for iGroup in range(0, nbGroups):
-            if ClusterNWgroup[k, iGroup]:
-                prun += ClusterNWgroup[k, iGroup] * math.log(
-                    ClusterNWgroup[k, iGroup] / (ClusterSize[k] * Ngroup[iGroup] / n)
+        for i_group in range(0, nb_groups):
+            if cluster_n_wgroup[k, i_group]:
+                prun += cluster_n_wgroup[k, i_group] * math.log(
+                    cluster_n_wgroup[k, i_group] / (cluster_size[k] * ngroup[i_group] / n)
                 )
 
-    return [prun, ClusterGroup, ClusterProb, ClusterNgroup, ClusterNWgroup]
+    return prun, cluster_group, cluster_prob, cluster_ngroup, cluster_n_wgroup
 
 
-def GlobalSign(Nrun, nbGroups, Mt, RCt, NCt, RowGroups, ListGroups, Ngroup, myStatusBox):
+def global_sign(nrun, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup, my_status_box):
     """Calculate global significance of association with a covariate
     following multiple factorization trials
     """
 
-    n, nc = Mt.shape
-    Nrun = int(Nrun)
-    nbGroups = int(nbGroups)
-    RCt = RCt.astype(np.int)
-    NCt = NCt.astype(np.int)
-    ClusterSize = np.zeros(nc)
-    RCt = np.reshape(RCt, n)
-    NCt = np.reshape(NCt, nc)
+    n, nc = mt.shape
+    nrun = int(nrun)
+    nb_groups = int(nb_groups)
+    r_ct = r_ct.astype(np.int)
+    n_ct = n_ct.astype(np.int)
+    cluster_size = np.zeros(nc)
+    r_ct = np.reshape(r_ct, n)
+    n_ct = np.reshape(n_ct, nc)
     cancel_pressed = 0
     for k in range(0, nc):
         if k == 0:
-            ClusterSize[k] = NCt[0]
+            cluster_size[k] = n_ct[0]
         else:
-            ClusterSize[k] = NCt[k] - NCt[k - 1]
+            cluster_size[k] = n_ct[k] - n_ct[k - 1]
 
-    if nbGroups > 1:
-        RowGroups = np.reshape(RowGroups, (n,))
-        StepIter = np.round(Nrun / 10)
+    if nb_groups > 1:
+        row_groups = np.reshape(row_groups, (n,))
+        step_iter = np.round(nrun / 10)
         pbar_step = 10
-        Pglob = 1
-        for irun in range(0, Nrun):
-            if irun % StepIter == 0:
-                myStatusBox.update_status(
-                    delay=1, status="Calculating global significance: " + str(irun) + " / " + str(Nrun)
-                )
-                myStatusBox.update_bar(delay=1, step=pbar_step)
-                if myStatusBox.cancel_pressed:
+        pglob = 1
+        for irun in range(0, nrun):
+            if irun % step_iter == 0:
+                my_status_box.update_status(delay=1, status=f"Calculating global significance: {irun}/{nrun}")
+                my_status_box.update_bar(delay=1, step=pbar_step)
+                if my_status_box.cancel_pressed:
                     cancel_pressed = 1
-                    return [ClusterSize, Pglob, prun, ClusterProb, ClusterGroup, ClusterNgroup, cancel_pressed]
+                    # TODO (pcotte): prun, cluster_prob, cluster_group, cluster_ngroup could have
+                    #  not been assigned yet. Fix that.
+                    return cluster_size, pglob, prun, cluster_prob, cluster_group, cluster_ngroup, cancel_pressed
 
-            prun, ClusterGroup, ClusterProb, ClusterNgroup, ClusterNWgroup = ClusterPvalues(
-                ClusterSize, nbGroups, Mt, RCt, NCt, RowGroups, ListGroups, Ngroup
+            prun, cluster_group, cluster_prob, cluster_ngroup, ClusterNWgroup = cluster_pvalues(
+                cluster_size, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup
             )
             if irun == 0:
-                ClusterProb0 = np.copy(ClusterProb)
-                ClusterGroup0 = np.copy(ClusterGroup)
-                ClusterNgroup0 = np.copy(ClusterNgroup)
-                RowGroups0 = np.copy(RowGroups)
+                cluster_prob0 = np.copy(cluster_prob)
+                cluster_group0 = np.copy(cluster_group)
+                cluster_ngroup0 = np.copy(cluster_ngroup)
+                row_groups0 = np.copy(row_groups)
                 prun0 = prun
             else:
+                # TODO (pcotte): prun0 could have not been assigned yet. Fix that.
                 if prun >= prun0:
-                    Pglob += 1
+                    pglob += 1
 
-            if irun < Nrun - 1:
+            if irun < nrun - 1:
                 # permute row groups
                 Boot = np.random.permutation
-                RowGroups = RowGroups0[np.random.permutation(n)]
+                # TODO (pcotte): row_groups0 could have not been assigned yet. Fix that.
+                row_groups = row_groups0[np.random.permutation(n)]
             else:
                 # Restore
-                ClusterProb = ClusterProb0
-                ClusterGroup = ClusterGroup0
-                ClusterNgroup = ClusterNgroup0
-                RowGroups = RowGroups0
+                # TODO (pcotte): cluster_prob0, cluster_group0, cluster_ngroup0 could have not been assigned yet.
+                # Fix that.
+                cluster_prob = cluster_prob0
+                cluster_group = cluster_group0
+                cluster_ngroup = cluster_ngroup0
+                row_groups = row_groups0
                 prun = prun0
-                Pglob /= Nrun
+                pglob /= nrun
     else:
-        Pglob = np.NaN
+        pglob = np.NaN
         prun = np.NaN
-        ClusterProb = np.array([])
-        ClusterGroup = np.array([])
-        ClusterNgroup = np.array([])
+        cluster_prob = np.array([])
+        cluster_group = np.array([])
+        cluster_ngroup = np.array([])
 
-    return [ClusterSize, Pglob, prun, ClusterProb, ClusterGroup, ClusterNgroup, cancel_pressed]
+    # TODO (pcotte): prun, cluster_prob, cluster_group, cluster_ngroup could have
+    #  not been assigned yet. Fix that.
+    return cluster_size, pglob, prun, cluster_prob, cluster_group, cluster_ngroup, cancel_pressed
 
 
 def sparse_opt(b, alpha, two_sided):
     """Return the L2-closest vector with sparsity alpha
 
-    Parameter
-        b: original vector
+    Parameters
+    ----------
+    b: original vector
+    alpha
+    two_sided
+
     Returns
-        x: sparse vector
+    -------
+    x: sparse vector
 
     Reference
     ---------
-
     V. K. Potluru & all (2013) Block Coordinate Descent for Sparse NMF arXiv:1301.3527v2 [cs.LG]
 
     Examples
