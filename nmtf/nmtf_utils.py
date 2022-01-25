@@ -7,14 +7,6 @@
 # License: MIT
 # Jan 4, '20
 
-tkinter_ok = True
-try:
-    from tkinter import *
-    from tkinter import ttk
-except ImportError:
-    tkinter_ok = False
-    ttk = None
-
 from tqdm import tqdm
 import math
 from scipy.stats import hypergeom
@@ -27,72 +19,8 @@ logger = logging.getLogger(__name__)
 # TODO (pcotte) typing
 
 
-class AbstractStatusBox:
-    def __init__(self, **kwargs):
-        pass
-
-    def update_bar(self, delay=1, step=1):
-        pass
-
-    def init_bar(self, delay=1):
-        pass
-
-    def update_status(self, delay=1, status=""):
-        pass
-
-    def close(self):
-        pass
-
-    @staticmethod
-    def my_print(status=""):
-        logger.info(status)
-
-
-if tkinter_ok:
-
-    class StatusBox(AbstractStatusBox):
-        def __init__(self):
-            super().__init__()
-            self.root = Tk()
-            self.root.title("irMF status - Python kernel")
-            self.root.minsize(width=230, height=60)
-            self.frame = Frame(self.root, borderwidth=6)
-            self.frame.pack()
-            self.var = StringVar()
-            self.status = Label(self.frame, textvariable=self.var, width=60, height=1)
-            self.status.pack(fill=NONE, padx=6, pady=6)
-            # noinspection PyArgumentList
-            self.pbar = ttk.Progressbar(self.frame, orient=HORIZONTAL, max=100, mode="determinate")
-            self.pbar.pack(fill=NONE, padx=6, pady=6)
-            Button(self.frame, text="Cancel", command=self.close_dialog).pack(fill=NONE, padx=6, pady=6)
-            self.cancel_pressed = False
-            self.n_steps = 0
-
-        def update_bar(self, delay=1, step=1):
-            self.n_steps += step
-            self.pbar.step(step)
-            self.pbar.after(delay, lambda: self.root.quit())
-            self.root.mainloop()
-
-        def init_bar(self, delay=1):
-            self.update_bar(delay=delay, step=100 - self.n_steps)
-            self.n_steps = 0
-
-        def update_status(self, delay=1, status=""):
-            self.var.set(status)
-            self.status.after(delay, lambda: self.root.quit())
-            self.root.mainloop()
-
-        def close(self):
-            self.root.destroy()
-
-        def close_dialog(self):
-            self.cancel_pressed = True
-
-
-class StatusBoxTqdm(AbstractStatusBox):
+class StatusBoxTqdm:
     def __init__(self, verbose=0):
-        super().__init__()
         self.log_iter = verbose
         if self.log_iter == 0:
             self.pbar = tqdm(total=100)
@@ -477,7 +405,7 @@ def build_clusters(
                 else:
                     mindex = mindex2[np.argsort(-mwn[mindex2, k])]
 
-                r_cw[jlast : len(mindex) + jlast] = mindex
+                r_cw[jlast: len(mindex) + jlast] = mindex
                 jlast += len(mindex)
 
             n_cw[i_block * nc + k] = jlast

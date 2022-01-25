@@ -14,6 +14,9 @@ from .nmtf_base import (
 )
 
 
+# TODO (pcotte) : typing
+
+
 class NMF:
 
     def __init__(self, n_components=None, tol=1e-6, max_iter=150, leverage="standard", random_state=None, verbose=0):
@@ -37,7 +40,6 @@ class NMF:
         verbose : integer, default: 0
             The verbosity level (0/1).
 
-
         Returns
         -------
         NMF model
@@ -49,10 +51,8 @@ class NMF:
 
         References
         ----------
-
             P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
             The American Statistician, Vol. 67, Issue 4.
-
             C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
             IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1
         """

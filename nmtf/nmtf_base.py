@@ -1297,7 +1297,7 @@ def non_negative_tensor_factorization(
         mfit = np.zeros((n, p))
         for k in range(0, nc):
             for i_block in range(0, n_blocks):
-                mfit[:, i_block * p_block : (i_block + 1) * p_block] += (
+                mfit[:, i_block * p_block: (i_block + 1) * p_block] += (
                     mb0[i_block, k] * np.reshape(mt0[:, k], (n, 1)) @ np.reshape(mw0[:, k], (1, p_block))
                 )
 
@@ -1310,7 +1310,7 @@ def non_negative_tensor_factorization(
         mfit = np.zeros((n, p))
         for k in range(0, nc):
             for i_block in range(0, n_blocks):
-                mfit[:, i_block * p_block : (i_block + 1) * p_block] += (
+                mfit[:, i_block * p_block: (i_block + 1) * p_block] += (
                     mb0[i_block, k] * np.reshape(mt0[:, k], (n, 1)) @ np.reshape(mw0[:, k], (1, p_block))
                 )
 

@@ -71,10 +71,9 @@ def ntf_solve(
     - NTFSolve_simple
     """
 
-    # TODO (pcotte): do a proper if else instead of try except
-    try:
+    if len(nmf_priors) > 0:
         n_nmf_priors, nc = nmf_priors.shape
-    except Exception:
+    else:
         n_nmf_priors = 0
 
     if n_nmf_priors > 0:
@@ -479,10 +478,9 @@ def ntf_update(
         Same as Input
     """
 
-    # TODO (pcotte): do a proper if else instead of try except
-    try:
+    if len(nmf_priors) > 0:
         n_nmf_priors, nc = nmf_priors.shape
-    except:
+    else:
         n_nmf_priors = 0
 
     # Compute kth-part
