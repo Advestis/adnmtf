@@ -159,19 +159,17 @@ def ntf_solve_simple(
 
     Returns
     -------
-    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, float, int]
-         mt: Left hand matrix
-         mw: Right hand matrix
-         mb: Block hand matrix
-         diff: objective cost
-         cancel_pressed
+    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, float, int]\n
+       * mt: Left hand matrix\n
+       * mw: Right hand matrix\n
+       * mb: Block hand matrix\n
+       * diff: objective cost\n
+       * cancel_pressed\n
 
     Reference
     ---------
-
     a. Cichocki, P.H.a.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor factorizations,
-        IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
-
+    IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
     """
 
     cancel_pressed = 0

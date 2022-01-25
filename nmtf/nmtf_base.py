@@ -401,7 +401,7 @@ def r_ntf_solve(
     Returns
     -------
     Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, Union[np.ndarray, float], Union[np.ndarray, float],
-          Union[np.ndarray, float], List[str], str, int]
+          Union[np.ndarray, float], List[str], str, int]\n
       * mt_conv: np.ndarray\n
           Convolutional Left hand matrix\n
       * mt: np.ndarray\n
@@ -418,7 +418,7 @@ def r_ntf_solve(
           Objective minimum achieved\n
       * add_message: List[str]\n
       * err_message: str\n
-      * cancel_pressed: int\n
+      * cancel_pressed: int
     """
 
     add_message = []
@@ -706,7 +706,7 @@ def non_negative_factorization(
 
     Returns
     -------
-    dict: Estimator with following entries
+    dict: Estimator with following entries\n
       * W : array-like, shape (n_samples, n_components)\n
           Solution to the non-negative least squares problem.\n
       * H : array-like, shape (n_features, n_components)\n
@@ -905,7 +905,7 @@ def nmf_predict(
 
     Returns
     -------
-    dict: Completed estimator with following entries:
+    dict: Completed estimator with following entries:\n
       * WL : array-like, shape (n_samples, n_components)\n
            Sample leverage on each component\n
       * HL : array-like, shape (n_features, n_components)\n
@@ -1062,7 +1062,7 @@ def nmf_permutation_test_score(estimator, y, n_permutations=100, verbose=0) -> d
 
     Returns
     -------
-    dict: Completed estimator with following entries:
+    dict: Completed estimator with following entries:\n
       * score : float\n
            The true score without permuting targets.\n
       * pvalue : float\n
@@ -1192,7 +1192,7 @@ def non_negative_tensor_factorization(
 
     Returns
     -------
-    dict: Estimator with following entries
+    dict: Estimator with following entries\n
       * W : array-like, shape (n_samples, n_components)\n
           Solution to the non-negative least squares problem.\n
       * H : array-like, shape (n_features, n_components)\n
