@@ -18,30 +18,30 @@ from scipy.optimize import nnls
 from .nmtf_utils import *
 
 
-def NTFStack(M, Mmis, NBlocks):
+def ntf_stack(m, mmis, n_blocks):
     """Unfold tensor M
     for future use with NMF
     """
-    n, p = M.shape
-    Mmis = Mmis.astype(np.int)
-    n_Mmis = Mmis.shape[0]
-    NBlocks = int(NBlocks)
+    n, p = m.shape
+    mmis = mmis.astype(np.int)
+    n_mmis = mmis.shape[0]
+    n_blocks = int(n_blocks)
 
-    Mstacked = np.zeros((int(n * p / NBlocks), NBlocks))
-    if n_Mmis > 0:
-        Mmis_stacked = np.zeros((int(n * p / NBlocks), NBlocks))
+    mstacked = np.zeros((int(n * p / n_blocks), n_blocks))
+    if n_mmis > 0:
+        mmis_stacked = np.zeros((int(n * p / n_blocks), n_blocks))
     else:
-        Mmis_stacked = np.array([])
+        mmis_stacked = np.array([])
 
-    for iBlock in range(0, NBlocks):
-        for j in range(0, int(p / NBlocks)):
+    for i_block in range(0, n_blocks):
+        for j in range(0, int(p / n_blocks)):
             i1 = j * n
             i2 = i1 + n
-            Mstacked[i1:i2, iBlock] = M[:, int(iBlock * p / NBlocks + j)]
-            if n_Mmis > 0:
-                Mmis_stacked[i1:i2, iBlock] = Mmis[:, int(iBlock * p / NBlocks + j)]
+            mstacked[i1:i2, i_block] = m[:, int(i_block * p / n_blocks + j)]
+            if n_mmis > 0:
+                mmis_stacked[i1:i2, i_block] = mmis[:, int(i_block * p / n_blocks + j)]
 
-    return [Mstacked, Mmis_stacked]
+    return [mstacked, mmis_stacked]
 
 
 def ntf_solve(

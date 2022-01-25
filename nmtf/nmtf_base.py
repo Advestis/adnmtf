@@ -11,14 +11,15 @@ from typing import List, Union, Tuple
 import numpy as np
 from scipy.sparse.linalg import svds
 
-from .nmtf_core import NTFStack, ntf_solve
-from .nmtf_utils import leverage, StatusBoxTqdm, nmf_det, build_clusters, GlobalSign
+from .nmtf_core import ntf_stack, ntf_solve
+from .nmtf_utils import calc_leverage, StatusBoxTqdm, nmf_det, build_clusters, GlobalSign
 
 EPSILON = np.finfo(np.float32).eps
 
 
 # TODO (pcotte): Typing
 # TODO (pcotte): logger
+# TODO (pcotte): group similar methods
 
 
 def nmf_init(m, mmis, mt0, mw0, nc) -> List[np.ndarray]:
@@ -26,15 +27,15 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> List[np.ndarray]:
 
     Parameters
     ----------
-        m: Input matrix
-        mmis: Define missing values (0 = missing cell, 1 = real cell)
-        mt0: Initial left hand matrix (may be empty)
-        mw0: Initial right hand matrix (may be empty)
-        nc: NMF rank
+    m: Input matrix
+    mmis: Define missing values (0 = missing cell, 1 = real cell)
+    mt0: Initial left hand matrix (may be empty)
+    mw0: Initial right hand matrix (may be empty)
+    nc: NMF rank
 
     Returns
     -------
-        List[np.ndarray]: Left hand matrix and: Right hand matrix
+    List[np.ndarray]: Left hand matrix and right hand matrix
 
     Reference
     ---------
@@ -44,11 +45,11 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> List[np.ndarray]:
 
     n, p = m.shape
     mmis = mmis.astype(np.int)
-    n_Mmis = mmis.shape[0]
-    if n_Mmis == 0:
-        ID = np.where(np.isnan(m) == 1)
-        n_Mmis = ID[0].size
-        if n_Mmis > 0:
+    n_mmis = mmis.shape[0]
+    if n_mmis == 0:
+        missing_values_indexes = np.where(np.isnan(m) == 1)
+        n_mmis = missing_values_indexes[0].size
+        if n_mmis > 0:
             mmis = np.isnan(m) == 0
             mmis = mmis.astype(np.int)
             m[mmis == 0] = 0
@@ -56,9 +57,9 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> List[np.ndarray]:
         m[mmis == 0] = 0
 
     nc = int(nc)
-    Mt = np.copy(mt0)
-    Mw = np.copy(mw0)
-    if (Mt.shape[0] == 0) or (Mw.shape[0] == 0):
+    mt = np.copy(mt0)
+    mw = np.copy(mw0)
+    if (mt.shape[0] == 0) or (mw.shape[0] == 0):
         # Note that if there are missing values, SVD is performed on matrix imputed with 0's
         if nc >= min(n, p):
             # arpack does not accept to factorize at full rank -> need to duplicate in both dimensions to force it work
@@ -71,38 +72,38 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> List[np.ndarray]:
             d /= 2
             # svd causes mem allocation problem with large matrices
             # t, d, w = np.linalg.svd(M)
-            # Mt = t
-            # Mw = w.T
+            # mt = t
+            # mw = w.T
         else:
             t, d, w = svds(m, k=nc)
 
-        Mt = t[:n, :]
-        Mw = w[:, :p].T
+        mt = t[:n, :]
+        mw = w[:, :p].T
         # svds returns singular vectors in reverse order
-        Mt = Mt[:, ::-1]
-        Mw = Mw[:, ::-1]
+        mt = mt[:, ::-1]
+        mw = mw[:, ::-1]
 
     for k in range(0, nc):
-        U1 = Mt[:, k]
-        U2 = -Mt[:, k]
-        U1[U1 < 0] = 0
-        U2[U2 < 0] = 0
-        V1 = Mw[:, k]
-        V2 = -Mw[:, k]
-        V1[V1 < 0] = 0
-        V2[V2 < 0] = 0
-        U1 = np.reshape(U1, (n, 1))
-        V1 = np.reshape(V1, (1, p))
-        U2 = np.reshape(U2, (n, 1))
-        V2 = np.reshape(V2, (1, p))
-        if np.linalg.norm(U1 @ V1) > np.linalg.norm(U2 @ V2):
-            Mt[:, k] = np.reshape(U1, n)
-            Mw[:, k] = np.reshape(V1, p)
+        u1 = mt[:, k]
+        u2 = -mt[:, k]
+        u1[u1 < 0] = 0
+        u2[u2 < 0] = 0
+        v1 = mw[:, k]
+        v2 = -mw[:, k]
+        v1[v1 < 0] = 0
+        v2[v2 < 0] = 0
+        u1 = np.reshape(u1, (n, 1))
+        v1 = np.reshape(v1, (1, p))
+        u2 = np.reshape(u2, (n, 1))
+        v2 = np.reshape(v2, (1, p))
+        if np.linalg.norm(u1 @ v1) > np.linalg.norm(u2 @ v2):
+            mt[:, k] = np.reshape(u1, n)
+            mw[:, k] = np.reshape(v1, p)
         else:
-            Mt[:, k] = np.reshape(U2, n)
-            Mw[:, k] = np.reshape(V2, p)
+            mt[:, k] = np.reshape(u2, n)
+            mw[:, k] = np.reshape(v2, p)
 
-    return [Mt, Mw]
+    return [mt, mw]
 
 
 def ntf_init(
@@ -145,19 +146,19 @@ def ntf_init(
     Returns
     -------
     List[np.ndarray]
-        Mt: Left hand matrix
-        Mw: Right hand matrix
-        Mb: Block hand matrix
+        mt: Left hand matrix
+        mw: Right hand matrix
+        mb: Block hand matrix
     """
-    AddMessage = []
+    add_message = []
 
     n, p = m.shape
     mmis = mmis.astype(np.int)
-    n_Mmis = mmis.shape[0]
-    if n_Mmis == 0:
-        ID = np.where(np.isnan(m) == 1)
-        n_Mmis = ID[0].size
-        if n_Mmis > 0:
+    n_mmis = mmis.shape[0]
+    if n_mmis == 0:
+        missing_values_indexes = np.where(np.isnan(m) == 1)
+        n_mmis = missing_values_indexes[0].size
+        if n_mmis > 0:
             mmis = np.isnan(m) == 0
             mmis = mmis.astype(np.int)
             m[mmis == 0] = 0
@@ -168,163 +169,163 @@ def ntf_init(
     n_blocks = int(n_blocks)
     init_type = int(init_type)
 
-    Status0 = "Step 1 - Quick NMF Ncomp=" + str(nc) + ": "
+    status0 = f"Step 1 - Quick NMF Ncomp={nc}: "
 
     if init_type == 1:
         # Init legacy
-        Mstacked, Mmis_stacked = NTFStack(m, mmis, n_blocks)
+        mstacked, mmis_stacked = ntf_stack(m=m, mmis=mmis, n_blocks=n_blocks)
         nc2 = min(nc, n_blocks)  # factorization rank can't be > number of blocks
         if (mt_nmf.shape[0] == 0) or (mw_nmf.shape[0] == 0):
-            mt_nmf, mw_nmf = nmf_init(Mstacked, Mmis_stacked, np.array([]), np.array([]), nc2)
+            mt_nmf, mw_nmf = nmf_init(m=mstacked, mmis=mmis_stacked, mt0=np.array([]), mw0=np.array([]), nc=nc2)
         else:
-            mt_nmf, mw_nmf = nmf_init(Mstacked, Mmis_stacked, mt_nmf, mw_nmf, nc2)
+            mt_nmf, mw_nmf = nmf_init(m=mstacked, mmis=mmis_stacked, mt0=mt_nmf, mw0=mw_nmf, nc=nc2)
 
         # Quick NMF
-        dummy, mt_nmf, mw_nmf, Mb, diff, cancel_pressed = ntf_solve(
-            Mstacked,
-            Mmis_stacked,
-            mt_nmf,
-            mw_nmf,
-            np.array([]),
-            nc2,
-            tolerance,
-            log_iter,
-            Status0,
-            10,
-            0,
-            0,
-            1,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            1,
-            np.array([]),
-            my_status_box,
+        dummy, mt_nmf, mw_nmf, mb, diff, cancel_pressed = ntf_solve(
+            m=mstacked,
+            mmis=mmis_stacked,
+            mt0=mt_nmf,
+            mw0=mw_nmf,
+            mb0=np.array([]),
+            nc=nc2,
+            tolerance=tolerance,
+            log_iter=log_iter,
+            status0=status0,
+            max_iterations=10,
+            nmf_fix_user_lhe=0,
+            nmf_fix_user_rhe=0,
+            nmf_fix_user_bhe=1,
+            nmf_sparse_level=0,
+            ntf_unimodal=0,
+            ntf_smooth=0,
+            ntf_left_components=0,
+            ntf_right_components=0,
+            ntf_block_components=0,
+            n_blocks=1,
+            nmf_priors=np.array([]),
+            my_status_box=my_status_box,
         )
-        ErrMessage = ""
+        err_message = ""
 
         # Factorize Left vectors and distribute multiple factors if nc2 < nc
-        Mt = np.zeros((n, nc))
-        Mw = np.zeros((int(p / n_blocks), nc))
-        Mb = np.zeros((n_blocks, nc))
-        NFact = int(np.ceil(nc / n_blocks))
+        mt = np.zeros((n, nc))
+        mw = np.zeros((int(p / n_blocks), nc))
+        mb = np.zeros((n_blocks, nc))
+        n_fact = int(np.ceil(nc / n_blocks))
         for k in range(0, nc2):
             my_status_box.update_status(delay=1, status="Start SVD...")
-            U, d, V = svds(np.reshape(mt_nmf[:, k], (int(p / n_blocks), n)).T, k=NFact)
-            V = V.T
+            u, d, v = svds(np.reshape(mt_nmf[:, k], (int(p / n_blocks), n)).T, k=n_fact)
+            v = v.T
             # svds returns singular vectors in reverse order
-            U = U[:, ::-1]
-            V = V[:, ::-1]
+            u = u[:, ::-1]
+            v = v[:, ::-1]
             d = d[::-1]
 
             my_status_box.update_status(delay=1, status="SVD completed")
-            for iFact in range(0, NFact):
-                ind = iFact * n_blocks + k
+            for i_fact in range(0, n_fact):
+                ind = i_fact * n_blocks + k
                 if ind < nc:
-                    U1 = U[:, iFact]
-                    U2 = -U[:, iFact]
-                    U1[U1 < 0] = 0
-                    U2[U2 < 0] = 0
-                    V1 = V[:, iFact]
-                    V2 = -V[:, iFact]
-                    V1[V1 < 0] = 0
-                    V2[V2 < 0] = 0
-                    U1 = np.reshape(U1, (n, 1))
-                    V1 = np.reshape(V1, (1, int(p / n_blocks)))
-                    U2 = np.reshape(U2, (n, 1))
-                    V2 = np.reshape(V2, (1, int(p / n_blocks)))
-                    if np.linalg.norm(U1 @ V1) > np.linalg.norm(U2 @ V2):
-                        Mt[:, ind] = np.reshape(U1, n)
-                        Mw[:, ind] = d[iFact] * np.reshape(V1, int(p / n_blocks))
+                    u1 = u[:, i_fact]
+                    u2 = -u[:, i_fact]
+                    u1[u1 < 0] = 0
+                    u2[u2 < 0] = 0
+                    v1 = v[:, i_fact]
+                    v2 = -v[:, i_fact]
+                    v1[v1 < 0] = 0
+                    v2[v2 < 0] = 0
+                    u1 = np.reshape(u1, (n, 1))
+                    v1 = np.reshape(v1, (1, int(p / n_blocks)))
+                    u2 = np.reshape(u2, (n, 1))
+                    v2 = np.reshape(v2, (1, int(p / n_blocks)))
+                    if np.linalg.norm(u1 @ v1) > np.linalg.norm(u2 @ v2):
+                        mt[:, ind] = np.reshape(u1, n)
+                        mw[:, ind] = d[i_fact] * np.reshape(v1, int(p / n_blocks))
                     else:
-                        Mt[:, ind] = np.reshape(U2, n)
-                        Mw[:, ind] = d[iFact] * np.reshape(V2, int(p / n_blocks))
+                        mt[:, ind] = np.reshape(u2, n)
+                        mw[:, ind] = d[i_fact] * np.reshape(v2, int(p / n_blocks))
 
-                    Mb[:, ind] = mw_nmf[:, k]
+                    mb[:, ind] = mw_nmf[:, k]
     else:
         # Init default
         if (mt_nmf.shape[0] == 0) or (mw_nmf.shape[0] == 0):
-            mt_nmf, mw_nmf = nmf_init(m, mmis, np.array([]), np.array([]), nc)
+            mt_nmf, mw_nmf = nmf_init(m=m, mmis=mmis, mt0=np.array([]), mw0=np.array([]), nc=nc)
         else:
-            mt_nmf, mw_nmf = nmf_init(m, mmis, mt_nmf, mw_nmf, nc)
+            mt_nmf, mw_nmf = nmf_init(m=m, mmis=mmis, mt0=mt_nmf, mw0=mw_nmf, nc=nc)
 
         # Quick NMF
-        dummy, mt_nmf, mw_nmf, Mb, diff, cancel_pressed = ntf_solve(
-            m,
-            mmis,
-            mt_nmf,
-            mw_nmf,
-            np.array([]),
-            nc,
-            tolerance,
-            log_iter,
-            Status0,
-            10,
-            0,
-            0,
-            1,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            1,
-            np.array([]),
-            my_status_box,
+        dummy, mt_nmf, mw_nmf, mb, diff, cancel_pressed = ntf_solve(
+            m=m,
+            mmis=mmis,
+            mt0=mt_nmf,
+            mw0=mw_nmf,
+            mb0=np.array([]),
+            nc=nc,
+            tolerance=tolerance,
+            log_iter=log_iter,
+            status0=status0,
+            max_iterations=10,
+            nmf_fix_user_lhe=0,
+            nmf_fix_user_rhe=0,
+            nmf_fix_user_bhe=1,
+            nmf_sparse_level=0,
+            ntf_unimodal=0,
+            ntf_smooth=0,
+            ntf_left_components=0,
+            ntf_right_components=0,
+            ntf_block_components=0,
+            n_blocks=1,
+            nmf_priors=np.array([]),
+            my_status_box=my_status_box,
         )
-        ErrMessage = ""
+        err_message = ""
 
         # Factorize Left vectors
-        Mt = np.zeros((n, nc))
-        Mw = np.zeros((int(p / n_blocks), nc))
-        Mb = np.zeros((n_blocks, nc))
+        mt = np.zeros((n, nc))
+        mw = np.zeros((int(p / n_blocks), nc))
+        mb = np.zeros((n_blocks, nc))
 
         for k in range(0, nc):
             my_status_box.update_status(delay=1, status="Start SVD...")
             # noinspection PyTypeChecker
-            U, d, V = svds(np.reshape(mw_nmf[:, k], (int(p / n_blocks), n_blocks)), k=1)
-            V = V.T
-            U = np.abs(U)
-            V = np.abs(V)
+            u, d, v = svds(np.reshape(mw_nmf[:, k], (int(p / n_blocks), n_blocks)), k=1)
+            v = v.T
+            u = np.abs(u)
+            v = np.abs(v)
             my_status_box.update_status(delay=1, status="SVD completed")
-            Mt[:, k] = mt_nmf[:, k]
-            Mw[:, k] = d[0] * np.reshape(U, int(p / n_blocks))
-            Mb[:, k] = np.reshape(V, n_blocks)
+            mt[:, k] = mt_nmf[:, k]
+            mw[:, k] = d[0] * np.reshape(u, int(p / n_blocks))
+            mb[:, k] = np.reshape(v, n_blocks)
 
         for k in range(0, nc):
             if (ntf_unimodal > 0) & (ntf_left_components > 0):
                 #                 Enforce unimodal distribution
-                tmax = np.argmax(Mt[:, k])
+                tmax = np.argmax(mt[:, k])
                 for i in range(tmax + 1, n):
-                    Mt[i, k] = min(Mt[i - 1, k], Mt[i, k])
+                    mt[i, k] = min(mt[i - 1, k], mt[i, k])
 
                 for i in range(tmax - 1, -1, -1):
-                    Mt[i, k] = min(Mt[i + 1, k], Mt[i, k])
+                    mt[i, k] = min(mt[i + 1, k], mt[i, k])
 
     if (ntf_unimodal > 0) & (ntf_right_components > 0):
         #                 Enforce unimodal distribution
         # TODO (pcotte) : k seems to be defined as a for loop iterator. VERY bad practice !
-        wmax = np.argmax(Mw[:, k])
+        wmax = np.argmax(mw[:, k])
         for j in range(wmax + 1, int(p / n_blocks)):
-            Mw[j, k] = min(Mw[j - 1, k], Mw[j, k])
+            mw[j, k] = min(mw[j - 1, k], mw[j, k])
 
         for j in range(wmax - 1, -1, -1):
-            Mw[j, k] = min(Mw[j + 1, k], Mw[j, k])
+            mw[j, k] = min(mw[j + 1, k], mw[j, k])
 
     if (ntf_unimodal > 0) & (ntf_block_components > 0):
         #                 Enforce unimodal distribution
-        bmax = np.argmax(Mb[:, k])
-        for iBlock in range(bmax + 1, n_blocks):
-            Mb[iBlock, k] = min(Mb[iBlock - 1, k], Mb[iBlock, k])
+        bmax = np.argmax(mb[:, k])
+        for i_block in range(bmax + 1, n_blocks):
+            mb[i_block, k] = min(mb[i_block - 1, k], mb[i_block, k])
 
-        for iBlock in range(bmax - 1, -1, -1):
-            Mb[iBlock, k] = min(Mb[iBlock + 1, k], Mb[iBlock, k])
+        for i_block in range(bmax - 1, -1, -1):
+            mb[i_block, k] = min(mb[i_block + 1, k], mb[i_block, k])
 
-    return [Mt, Mw, Mb, AddMessage, ErrMessage, cancel_pressed]
+    return [mt, mw, mb, add_message, err_message, cancel_pressed]
 
 
 def r_ntf_solve(
@@ -570,7 +571,7 @@ def r_ntf_solve(
 
             col_clust = np.zeros(p, dtype=int)
             if nmf_calculate_leverage > 0:
-                mwn, add_message, err_message, cancel_pressed = leverage(
+                mwn, add_message, err_message, cancel_pressed = calc_leverage(
                     mwn, nmf_use_robust_leverage, add_message, my_status_box
                 )
 
@@ -615,7 +616,7 @@ def r_ntf_solve(
 
             row_clust = np.zeros(n, dtype=int)
             if nmf_calculate_leverage > 0:
-                mtn, add_message, err_message, cancel_pressed = leverage(
+                mtn, add_message, err_message, cancel_pressed = calc_leverage(
                     v=mt,
                     nmf_use_robust_leverage=nmf_use_robust_leverage,
                     add_message=add_message,

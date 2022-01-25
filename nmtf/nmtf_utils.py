@@ -227,7 +227,7 @@ def RobustMax(V0, AddMessage, myStatusBox):
     return [RobMax * Scale, AddMessage, ErrMessage, cancel_pressed]
 
 
-def leverage(v, nmf_use_robust_leverage, add_message, my_status_box):
+def calc_leverage(v, nmf_use_robust_leverage, add_message, my_status_box):
     """Calculate leverages
 
     Parameter
@@ -323,12 +323,12 @@ def build_clusters(
 
     if nmf_calculate_leverage == 1:
         my_status_box.update_status(delay=1, status="Leverages - Left components...")
-        Mtn, add_message, ErrMessage, cancel_pressed = leverage(mt, nmf_use_robust_leverage, add_message, my_status_box)
+        Mtn, add_message, ErrMessage, cancel_pressed = calc_leverage(mt, nmf_use_robust_leverage, add_message, my_status_box)
         my_status_box.update_status(delay=1, status="Leverages - Right components...")
-        Mwn, add_message, ErrMessage, cancel_pressed = leverage(mw, nmf_use_robust_leverage, add_message, my_status_box)
+        Mwn, add_message, ErrMessage, cancel_pressed = calc_leverage(mw, nmf_use_robust_leverage, add_message, my_status_box)
         if nmf_algo >= 5:
             my_status_box.update_status(delay=1, status="Leverages - Block components...")
-            Mbn, add_message, ErrMessage, cancel_pressed = leverage(
+            Mbn, add_message, ErrMessage, cancel_pressed = calc_leverage(
                 mb, nmf_use_robust_leverage, add_message, my_status_box
             )
     else:
