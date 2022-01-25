@@ -607,12 +607,12 @@ def r_ntf_solve(
 
 
 def non_negative_factorization(
-    X,
-    W=None,
-    H=None,
+    x,
+    w=None,
+    h=None,
     n_components=None,
-    update_W=True,
-    update_H=True,
+    update_w=True,
+    update_h=True,
     n_bootstrap=None,
     tol=1e-6,
     max_iter=150,
@@ -621,7 +621,7 @@ def non_negative_factorization(
     leverage="standard",
     random_state=None,
     verbose=0,
-):
+) -> dict:
     """Compute Non-negative Matrix Factorization (NMF)
 
     Find two non-negative matrices (W, H) such as x = W @ H.T + Error.
@@ -633,240 +633,217 @@ def non_negative_factorization(
 
     Parameters
     ----------
-
-    X : array-like, shape (n_samples, n_features)
+    x : array-like, shape (n_samples, n_features)
         Constant matrix.
-
-    W : array-like, shape (n_samples, n_components)
+    w : array-like, shape (n_samples, n_components)
         prior W
         If n_update_W == 0 , it is used as a constant, to solve for H only.
-
-    H : array-like, shape (n_features, n_components)
+    h : array-like, shape (n_features, n_components)
         prior H
         If n_update_H = 0 , it is used as a constant, to solve for W only.
-
     n_components : integer
         Number of components, if n_components is not set : n_components = min(n_samples, n_features)
-
-    update_W : boolean, default: True
+    update_w : boolean, default: True
         Update or keep W fixed
-
-    update_H : boolean, default: True
+    update_h : boolean, default: True
         Update or keep H fixed
-
     n_bootstrap : integer, default: 0
         Number of bootstrap runs.
-
     tol : float, default: 1e-6
         Tolerance of the stopping condition.
-
     max_iter : integer, default: 200
         Maximum number of iterations.
-
     regularization :  None | 'components' | 'transformation'
         Select whether the regularization affects the components (H), the
         transformation (W) or none of them.
-
     sparsity : float, default: 0
         Sparsity target with 0 <= sparsity < 1 representing either:
         - the % rows in W or H set to 0 (when use_hals = False)
         - the mean % rows per column in W or H set to 0 (when use_hals = True)
         sparsity == 1: adaptive sparsity through hard thresholding and hhi
-
     leverage :  None | 'standard' | 'robust', default 'standard'
         Calculate leverage of W and H rows on each component.
-
     random_state : int, RandomState instance or None, optional, default: None
         If int, random_state is the seed used by the random number generator;
         If RandomState instance, random_state is the random number generator;
         If None, the random number generator is the RandomState instance used
         by `np.random`.
-
     verbose : integer, default: 0
         The verbosity level (0/1).
 
 
     Returns
     -------
-
-    Estimator (dictionary) with following entries
-
-    W : array-like, shape (n_samples, n_components)
-        Solution to the non-negative least squares problem.
-
-    H : array-like, shape (n_features, n_components)
-        Solution to the non-negative least squares problem.
-
-    volume : scalar, volume occupied by W and H
-
-    WB : array-like, shape (n_samples, n_components)
-        Percent consistently clustered rows for each component.
-        only if n_bootstrap > 0.
-
-    HB : array-like, shape (n_features, n_components)
-        Percent consistently clustered columns for each component.
-        only if n_bootstrap > 0.
-
-    B : array-like, shape (n_observations, n_components) or (n_features, n_components)
-        only if active convex variant, H = B.T @ X or W = X @ B
-
-    diff : Objective minimum achieved
-
+    dict: Estimator with following entries
+        W : array-like, shape (n_samples, n_components)
+            Solution to the non-negative least squares problem.
+        H : array-like, shape (n_features, n_components)
+            Solution to the non-negative least squares problem.
+        volume : scalar, volume occupied by W and H
+        WB : array-like, shape (n_samples, n_components)
+            Percent consistently clustered rows for each component.
+            only if n_bootstrap > 0.
+        HB : array-like, shape (n_features, n_components)
+            Percent consistently clustered columns for each component.
+            only if n_bootstrap > 0.
+        B : array-like, shape (n_observations, n_components) or (n_features, n_components)
+            only if active convex variant, H = B.T @ X or W = X @ B
+        diff : Objective minimum achieved
     """
 
-    M = X
-    n, p = M.shape
+    m = x
+    n, p = m.shape
     # Identify missing values
-    Mmis = np.array([])
-    Mmis = Mmis.astype(np.int)
-    ID = np.where(np.isnan(M) == 1)
-    n_Mmis = ID[0].size
-    if n_Mmis > 0:
-        Mmis = np.isnan(M) == 0
-        Mmis = Mmis.astype(np.int)
-        M[Mmis == 0] = 0
+    mmis = np.array([])
+    mmis = mmis.astype(np.int)
+    missing_values_indexes = np.where(np.isnan(m) == 1)
+    n_mmis = missing_values_indexes[0].size
+    if n_mmis > 0:
+        mmis = np.isnan(m) == 0
+        mmis = mmis.astype(np.int)
+        m[mmis == 0] = 0
     else:
-        M[Mmis == 0] = 0
+        m[mmis == 0] = 0
 
     if n_components is None:
         nc = min(n, p)
     else:
         nc = n_components
 
-    NMFAlgo = 2
-    LogIter = verbose
-    myStatusBox = StatusBoxTqdm(verbose=LogIter)
+    nmf_algo = 2
+    log_iter = verbose
+    my_status_box = StatusBoxTqdm(verbose=log_iter)
     tolerance = tol
-    if (W is None) & (H is None):
-        Mt, Mw = nmf_init(M, Mmis, np.array([]), np.array([]), nc)
+    if (w is None) & (h is None):
+        mt, mw = nmf_init(m, mmis, np.array([]), np.array([]), nc)
     else:
-        if H is None:
-            Mw = np.ones((p, nc))
-        elif W is None:
-            Mt = np.ones((n, nc))
+        if h is None:
+            mw = np.ones((p, nc))
+        elif w is None:
+            mt = np.ones((n, nc))
 
         for k in range(0, nc):
-            # TODO (pcotte) : Mt and Mw can be not yet referenced : fix that
-            Mt[:, k] = Mt[:, k] / np.linalg.norm(Mt[:, k])
-            Mw[:, k] = Mw[:, k] / np.linalg.norm(Mw[:, k])
+            # TODO (pcotte) : mt and mw can be not yet referenced : fix that
+            mt[:, k] = mt[:, k] / np.linalg.norm(mt[:, k])
+            mw[:, k] = mw[:, k] / np.linalg.norm(mw[:, k])
 
     if n_bootstrap is None:
-        NMFRobustNRuns = 0
+        nmf_robust_n_runs = 0
     else:
-        NMFRobustNRuns = n_bootstrap
+        nmf_robust_n_runs = n_bootstrap
 
-    if NMFRobustNRuns > 1:
-        NMFAlgo += 2
+    if nmf_robust_n_runs > 1:
+        nmf_algo += 2
 
-    if update_W is True:
-        NMFFixUserLHE = 0
+    if update_w is True:
+        nmf_fix_user_lhe = 0
     else:
-        NMFFixUserLHE = 1
+        nmf_fix_user_lhe = 1
 
-    if update_H is True:
-        NMFFixUserRHE = 0
+    if update_h is True:
+        nmf_fix_user_rhe = 0
     else:
-        NMFFixUserRHE = 1
+        nmf_fix_user_rhe = 1
 
-    MaxIterations = max_iter
+    max_iterations = max_iter
     if regularization is None:
-        NMFSparseLevel = 0
+        nmf_sparse_level = 0
     else:
         if regularization == "components":
-            NMFSparseLevel = sparsity
+            nmf_sparse_level = sparsity
         elif regularization == "transformation":
-            NMFSparseLevel = -sparsity
+            nmf_sparse_level = -sparsity
         else:
-            NMFSparseLevel = 0
+            nmf_sparse_level = 0
 
     if leverage == "standard":
-        NMFCalculateLeverage = 1
-        NMFUseRobustLeverage = 0
+        nmf_calculate_leverage = 1
+        nmf_use_robust_leverage = 0
     elif leverage == "robust":
-        NMFCalculateLeverage = 1
-        NMFUseRobustLeverage = 1
+        nmf_calculate_leverage = 1
+        nmf_use_robust_leverage = 1
     else:
-        NMFCalculateLeverage = 0
-        NMFUseRobustLeverage = 0
+        nmf_calculate_leverage = 0
+        nmf_use_robust_leverage = 0
 
     if random_state is not None:
-        RandomSeed = random_state
-        np.random.seed(RandomSeed)
+        random_seed = random_state
+        np.random.seed(random_seed)
 
-    if NMFAlgo <= 2:
-        NTFAlgo = 5
+    if nmf_algo <= 2:
+        ntf_algo = 5
     else:
-        NTFAlgo = 6
+        ntf_algo = 6
 
-    dummy, Mt, Mw, Mb, MtPct, MwPct, diff, AddMessage, ErrMessage, cancel_pressed = r_ntf_solve(
-        M,
-        Mmis,
-        Mt,
-        Mw,
-        np.array([]),
-        nc,
-        tolerance,
-        LogIter,
-        MaxIterations,
-        NMFFixUserLHE,
-        NMFFixUserRHE,
-        1,
-        NTFAlgo,
-        NMFRobustNRuns,
-        NMFCalculateLeverage,
-        NMFUseRobustLeverage,
-        NMFSparseLevel,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        np.array([]),
-        myStatusBox,
+    dummy, mt, mw, mb, mt_pct, mw_pct, diff, add_message, err_message, cancel_pressed = r_ntf_solve(
+        m=m,
+        mmis=mmis,
+        mt0=mt,
+        mw0=mw,
+        mb0=np.array([]),
+        nc=nc,
+        tolerance=tolerance,
+        log_iter=log_iter,
+        max_iterations=max_iterations,
+        nmf_fix_user_lhe=nmf_fix_user_lhe,
+        nmf_fix_user_rhe=nmf_fix_user_rhe,
+        nmf_fix_user_bhe=1,
+        nmf_algo=ntf_algo,
+        nmf_robust_n_runs=nmf_robust_n_runs,
+        nmf_calculate_leverage=nmf_calculate_leverage,
+        nmf_use_robust_leverage=nmf_use_robust_leverage,
+        nmf_sparse_level=nmf_sparse_level,
+        ntf_unimodal=0,
+        ntf_smooth=0,
+        ntf_left_components=0,
+        ntf_right_components=0,
+        ntf_block_components=0,
+        n_blocks=1,
+        nmf_priors=np.array([]),
+        my_status_box=my_status_box,
     )
-    Mev = np.ones(nc)
-    if (NMFFixUserLHE == 0) & (NMFFixUserRHE == 0):
+    mev = np.ones(nc)
+    if (nmf_fix_user_lhe == 0) & (nmf_fix_user_rhe == 0):
         # Scale
         for k in range(0, nc):
-            ScaleMt = np.linalg.norm(Mt[:, k])
-            ScaleMw = np.linalg.norm(Mw[:, k])
-            Mev[k] = ScaleMt * ScaleMw
-            if Mev[k] > 0:
-                Mt[:, k] = Mt[:, k] / ScaleMt
-                Mw[:, k] = Mw[:, k] / ScaleMw
+            scale_mt = np.linalg.norm(mt[:, k])
+            scale_mw = np.linalg.norm(mw[:, k])
+            mev[k] = scale_mt * scale_mw
+            if mev[k] > 0:
+                mt[:, k] = mt[:, k] / scale_mt
+                mw[:, k] = mw[:, k] / scale_mw
 
-    volume = nmf_det(Mt, Mw, 1)
+    volume = nmf_det(mt, mw, 1)
 
-    for message in AddMessage:
+    for message in add_message:
         print(message)
 
-    myStatusBox.close()
+    my_status_box.close()
 
     # Order by decreasing scale
-    RMev = np.argsort(-Mev)
-    Mev = Mev[RMev]
-    Mt = Mt[:, RMev]
-    Mw = Mw[:, RMev]
-    if isinstance(MtPct, np.ndarray):
-        MtPct = MtPct[:, RMev]
-        MwPct = MwPct[:, RMev]
+    r_mev = np.argsort(-mev)
+    mev = mev[r_mev]
+    mt = mt[:, r_mev]
+    mw = mw[:, r_mev]
+    if isinstance(mt_pct, np.ndarray):
+        mt_pct = mt_pct[:, r_mev]
+        mw_pct = mw_pct[:, r_mev]
 
     # Scale by max com p
     for k in range(0, nc):
-        MaxCol = np.max(Mt[:, k])
-        if MaxCol > 0:
-            Mt[:, k] /= MaxCol
-            Mw[:, k] *= Mev[k] * MaxCol
-            Mev[k] = 1
+        max_col = np.max(mt[:, k])
+        if max_col > 0:
+            mt[:, k] /= max_col
+            mw[:, k] *= mev[k] * max_col
+            mev[k] = 1
         else:
-            Mev[k] = 0
+            mev[k] = 0
 
     estimator = {}
-    if NMFRobustNRuns <= 1:
-        estimator.update([("W", Mt), ("H", Mw), ("volume", volume), ("diff", diff)])
+    if nmf_robust_n_runs <= 1:
+        estimator.update([("W", mt), ("H", mw), ("volume", volume), ("diff", diff)])
     else:
-        estimator.update([("W", Mt), ("H", Mw), ("volume", volume), ("WB", MtPct), ("HB", MwPct), ("diff", diff)])
+        estimator.update([("W", mt), ("H", mw), ("volume", volume), ("WB", mt_pct), ("HB", mw_pct), ("diff", diff)])
 
     return estimator
 
@@ -1181,7 +1158,7 @@ def non_negative_tensor_factorization(
 
     Returns
     -------
-    dict: Estimator (dictionary) with following entries
+    dict: Estimator with following entries
         W : array-like, shape (n_samples, n_components)
             Solution to the non-negative least squares problem.
         H : array-like, shape (n_features, n_components)

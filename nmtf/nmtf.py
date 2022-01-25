@@ -139,11 +139,11 @@ class NMF:
         """
         return non_negative_factorization(
             x,
-            W=w,
-            H=h,
+            w=w,
+            h=h,
             n_components=self.n_components,
-            update_W=update_w,
-            update_H=update_h,
+            update_w=update_w,
+            update_h=update_h,
             n_bootstrap=n_bootstrap,
             tol=self.tol,
             max_iter=self.max_iter,
