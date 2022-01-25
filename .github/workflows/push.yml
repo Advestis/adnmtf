@@ -10,7 +10,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'VERSION-SKIP-CI')"
     strategy:
       matrix:
-        python-version: [ 3.7, 3.8 ]
+        python-version: [ 3.9 ]
     steps:
 
       - name: Set up Python ${{ matrix.python-version }}
@@ -44,7 +44,6 @@ jobs:
           git commit -m "docs"
 
       - name: Push doc
-        if: ${{ matrix.python-version == 3.8 }}
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.ORG_TOKEN_CICD }}
@@ -52,10 +51,9 @@ jobs:
           force: true
 
 #      - name: topypi
-#        if: ${{ matrix.python-version == 3.8 }}
 #        uses: pypa/gh-action-pypi-publish@master
 #        with:
-#          user: ${{ secrets.PYPI_LOGIN }}
-#          password: ${{ secrets.PYPI_PASSWD }}
+#          user: ${{ secrets.ORG_PYPI_LOGIN }}
+#          password: ${{ secrets.ORG_PYPI_PASSWD }}
 #          skip_existing: true
 #          verbose: true

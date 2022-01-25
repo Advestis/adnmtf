@@ -220,7 +220,7 @@ def ntf_solve_simple(
     else:
         mres = m - mfit
 
-    my_status_box.init_bar(delay=1)
+    my_status_box.init_bar()
 
     # Loop
     cont = 1
@@ -327,8 +327,8 @@ def ntf_solve_simple(
                 if log_iter == 1:
                     my_status_box.my_print(Status)
 
-            my_status_box.update_status(delay=1, status=Status)
-            my_status_box.update_bar(delay=1, step=pbar_step)
+            my_status_box.update_status(status=Status)
+            my_status_box.update_bar(step=pbar_step)
             if my_status_box.cancel_pressed:
                 cancel_pressed = 1
                 return np.array([]), mt, mw, mb, mres, cancel_pressed

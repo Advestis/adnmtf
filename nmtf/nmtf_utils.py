@@ -27,15 +27,15 @@ class StatusBoxTqdm:
 
         self.cancel_pressed = False
 
-    def update_bar(self, delay=1, step=1):
+    def update_bar(self, step=1):
         if self.log_iter == 0:
             self.pbar.update(n=step)
 
-    def init_bar(self, delay=1):
+    def init_bar(self):
         if self.log_iter == 0:
             self.pbar.n = 0
 
-    def update_status(self, delay=1, status=""):
+    def update_status(self, status=""):
         if self.log_iter == 0:
             self.pbar.set_description(status, refresh=False)
             self.pbar.refresh()
@@ -47,7 +47,7 @@ class StatusBoxTqdm:
 
     def my_print(self, status=""):
         if self.log_iter == 1:
-            super().my_print(status)
+            logger.info(status)
 
 
 def nmf_det(mt, mw, nmf_exact_det):
@@ -161,7 +161,7 @@ def robust_max(v0, add_message, my_status_box):
     i_iter = 0
     max_iterations = 100
     pbar_step = 100 / max_iterations
-    my_status_box.init_bar(delay=1)
+    my_status_box.init_bar()
 
     while ((np.linalg.norm(rob_max - rob_max0) / np.linalg.norm(rob_max)) ** 2 > 1e-6) & (i_iter < max_iterations):
         for k in range(0, nc):
@@ -182,7 +182,7 @@ def robust_max(v0, add_message, my_status_box):
             rob_max[k] = np.sum(v[:, k] * specificity) / np.sum(specificity)
             v[v[:, k] > rob_max[k], k] = rob_max[k]
 
-        my_status_box.update_bar(delay=1, step=pbar_step)
+        my_status_box.update_bar(step=pbar_step)
         if my_status_box.cancel_pressed:
             cancel_pressed = 1
             return rob_max * scale, add_message, err_message, cancel_pressed
@@ -232,7 +232,7 @@ def calc_leverage(v, nmf_use_robust_leverage, add_message, my_status_box):
         max_v = np.max(v, axis=0)
 
     pbar_step = 100 / nc
-    my_status_box.init_bar(delay=1)
+    my_status_box.init_bar()
     for k in range(0, nc):
         vr[v[:, k] > 0, k] = 1
         vn[:, k] = max_v[k] - v[:, k]
@@ -243,8 +243,8 @@ def calc_leverage(v, nmf_use_robust_leverage, add_message, my_status_box):
                 vn[:, k] = vn[:, k] + v[:, k2] ** 2
 
         status = f"Leverage: Comp {k + 1}"
-        my_status_box.update_status(delay=1, status=status)
-        my_status_box.update_bar(delay=1, step=pbar_step)
+        my_status_box.update_status(status=status)
+        my_status_box.update_bar(step=pbar_step)
         if my_status_box.cancel_pressed:
             cancel_pressed = 1
             return vn, add_message, err_message, cancel_pressed
@@ -271,7 +271,7 @@ def build_clusters(
 ):
     """Builder clusters from leverages"""
     n_blocks = int(n_blocks)
-    my_status_box.update_status(delay=1, status="Build clusters...")
+    my_status_box.update_status(status="Build clusters...")
     err_message = ""
     cancel_pressed = 0
     n, nc = np.shape(mt)
@@ -292,16 +292,16 @@ def build_clusters(
     jlast = 0
 
     if nmf_calculate_leverage == 1:
-        my_status_box.update_status(delay=1, status="Leverages - Left components...")
+        my_status_box.update_status(status="Leverages - Left components...")
         mtn, add_message, err_message, cancel_pressed = calc_leverage(
             mt, nmf_use_robust_leverage, add_message, my_status_box
         )
-        my_status_box.update_status(delay=1, status="Leverages - Right components...")
+        my_status_box.update_status(status="Leverages - Right components...")
         mwn, add_message, err_message, cancel_pressed = calc_leverage(
             mw, nmf_use_robust_leverage, add_message, my_status_box
         )
         if nmf_algo >= 5:
-            my_status_box.update_status(delay=1, status="Leverages - Block components...")
+            my_status_box.update_status(status="Leverages - Block components...")
             mbn, add_message, err_message, cancel_pressed = calc_leverage(
                 mb, nmf_use_robust_leverage, add_message, my_status_box
             )
@@ -523,8 +523,8 @@ def global_sign(nrun, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup
         pglob = 1
         for irun in range(0, nrun):
             if irun % step_iter == 0:
-                my_status_box.update_status(delay=1, status=f"Calculating global significance: {irun}/{nrun}")
-                my_status_box.update_bar(delay=1, step=pbar_step)
+                my_status_box.update_status(status=f"Calculating global significance: {irun}/{nrun}")
+                my_status_box.update_bar(step=pbar_step)
                 if my_status_box.cancel_pressed:
                     cancel_pressed = 1
                     # TODO (pcotte): prun, cluster_prob, cluster_group, cluster_ngroup could have

@@ -214,7 +214,7 @@ def ntf_init(
         mb = np.zeros((n_blocks, nc))
         n_fact = int(np.ceil(nc / n_blocks))
         for k in range(0, nc2):
-            my_status_box.update_status(delay=1, status="Start SVD...")
+            my_status_box.update_status(status="Start SVD...")
             u, d, v = svds(np.reshape(mt_nmf[:, k], (int(p / n_blocks), n)).T, k=n_fact)
             v = v.T
             # svds returns singular vectors in reverse order
@@ -222,7 +222,7 @@ def ntf_init(
             v = v[:, ::-1]
             d = d[::-1]
 
-            my_status_box.update_status(delay=1, status="SVD completed")
+            my_status_box.update_status(status="SVD completed")
             for i_fact in range(0, n_fact):
                 ind = i_fact * n_blocks + k
                 if ind < nc:
@@ -286,13 +286,13 @@ def ntf_init(
         mb = np.zeros((n_blocks, nc))
 
         for k in range(0, nc):
-            my_status_box.update_status(delay=1, status="Start SVD...")
+            my_status_box.update_status(status="Start SVD...")
             # noinspection PyTypeChecker
             u, d, v = svds(np.reshape(mw_nmf[:, k], (int(p / n_blocks), n_blocks)), k=1)
             v = v.T
             u = np.abs(u)
             v = np.abs(v)
-            my_status_box.update_status(delay=1, status="SVD completed")
+            my_status_box.update_status(status="SVD completed")
             mt[:, k] = mt_nmf[:, k]
             mw[:, k] = d[0] * np.reshape(u, int(p / n_blocks))
             mb[:, k] = np.reshape(v, n_blocks)
