@@ -51,10 +51,10 @@ class NMF:
 
         References
         ----------
-            P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
-            The American Statistician, Vol. 67, Issue 4.
-            C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
-            IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1
+        P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
+        The American Statistician, Vol. 67, Issue 4.
+        C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
+        IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1
         """
         self.n_components = n_components
         self.tol = tol
@@ -100,40 +100,37 @@ class NMF:
 
         Returns
         -------
-        dict: Estimator (dictionary) with following entries
-            W : array-like, shape (n_samples, n_components)
-                Solution to the non-negative least squares problem.
-            H : array-like, shape (n_components, n_features)
-                Solution to the non-negative least squares problem.
-            volume : scalar, volume occupied by W and H
-            WB : array-like, shape (n_samples, n_components)
-                A sample is clustered in cluster k if its leverage on component k is higher than on any other
-                components. During each run of the bootstrap, samples are re-clustered.
-                Each row of WB contains the frequencies of the n_components clusters following the bootstrap.
-                    Only if n_bootstrap > 0.
-            HB : array-like, shape (n_components, n_features)
-                A feature is clustered in cluster k if its leverage on component k is higher than on any other
-                components. During each run of the bootstrap, features are re-clustered.
-                Each row of HB contains the frequencies of the n_components clusters following the bootstrap.
-                    Only if n_bootstrap > 0.
-            B : array-like, shape (n_observations, n_components) or (n_features, n_components)
-                Only if active convex variant, H = B.T @ X or W = X @ B
-            diff : scalar, objective minimum achieved
+        dict: Estimator (dictionary) with following entries\n
+          * W : array-like, shape (n_samples, n_components)\n
+            Solution to the non-negative least squares problem.\n
+          * H : array-like, shape (n_components, n_features)\n
+            Solution to the non-negative least squares problem.\n
+          * volume : scalar, volume occupied by W and H\n
+          * WB : array-like, shape (n_samples, n_components)\n
+            A sample is clustered in cluster k if its leverage on component k is higher than on any other
+            components. During each run of the bootstrap, samples are re-clustered.
+            Each row of WB contains the frequencies of the n_components clusters following the bootstrap.
+            Only if n_bootstrap > 0.\n
+          * HB : array-like, shape (n_components, n_features)\n
+            A feature is clustered in cluster k if its leverage on component k is higher than on any other
+            components. During each run of the bootstrap, features are re-clustered.
+            Each row of HB contains the frequencies of the n_components clusters following the bootstrap.
+            Only if n_bootstrap > 0.\n
+          * B : array-like, shape (n_observations, n_components) or (n_features, n_components)\n
+            Only if active convex variant, H = B.T @ X or W = X @ B\n
+          * diff : scalar, objective minimum achieved
 
         Example
         -------
         >>> from nmtf import NMF
         >>> myNMFmodel = NMF(n_components=4)
-
-        >>>m = ...  # matrix to be factorized
+        >>> m = ...  # matrix to be factorized
         >>> estimator = myNMFmodel.fit_transform(m)
 
         References
         ----------
-
         P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
         The American Statistician, Vol. 67, Issue 4.
-
         C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
         IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1
         """
@@ -170,29 +167,29 @@ class NMF:
 
         Returns
         -------
-        dict: Completed estimator with following entries:
-            WL : array-like, shape (n_samples, n_components)
-                 Sample leverage on each component
-            HL : array-like, shape (n_features, n_components)
-                 Feature leverage on each component
-            QL : array-like, shape (n_blocks, n_components)
-                 Block leverage on each component (NTF only)
-            WR : vector-like, shape (n_samples)
-                 Ranked sample indexes (by cluster and leverage or stability)
-                 Used to produce ordered heatmaps
-            HR : vector-like, shape (n_features)
-                 Ranked feature indexes (by cluster and leverage or stability)
-                 Used to produce ordered heatmaps
-            WN : vector-like, shape (n_components)
-                 Sample cluster bounds in ordered heatmap
-            HN : vector-like, shape (n_components)
-                 Feature cluster bounds in ordered heatmap
-            WC : vector-like, shape (n_samples)
-                 Sample assigned cluster
-            HC : vector-like, shape (n_features)
-                 Feature assigned cluster
-            QC : vector-like, shape (size(blocks))
-                 Block assigned cluster (NTF only)
+        dict: Completed estimator with following entries:\n
+          * WL : array-like, shape (n_samples, n_components)\n
+             Sample leverage on each component\n
+          * HL : array-like, shape (n_features, n_components)\n
+             Feature leverage on each component\n
+          * QL : array-like, shape (n_blocks, n_components)\n
+             Block leverage on each component (NTF only)\n
+          * WR : vector-like, shape (n_samples)\n
+             Ranked sample indexes (by cluster and leverage or stability)
+             Used to produce ordered heatmaps\n
+          * HR : vector-like, shape (n_features)\n
+             Ranked feature indexes (by cluster and leverage or stability)
+             Used to produce ordered heatmaps\n
+          * WN : vector-like, shape (n_components)\n
+             Sample cluster bounds in ordered heatmap\n
+          * HN : vector-like, shape (n_components)\n
+             Feature cluster bounds in ordered heatmap\n
+          * WC : vector-like, shape (n_samples)\n
+             Sample assigned cluster\n
+          * HC : vector-like, shape (n_features)\n
+             Feature assigned cluster\n
+          * QC : vector-like, shape (size(blocks))\n
+             Block assigned cluster (NTF only)
 
         Example
         -------
@@ -222,19 +219,19 @@ class NMF:
 
         Returns
         -------
-        dict: Completed estimator with following entries:
-            score : float
-                 The true score without permuting targets.
-            pvalue : float
-                 The p-value, which approximates the probability that the score would be obtained by chance.
-            CS : array-like, shape(n_components)
-                 The size of each cluster
-            CP : array-like, shape(n_components)
-                 The pvalue of the most significant group within each cluster
-            CG : array-like, shape(n_components)
-                 The index of the most significant group within each cluster
-            CN : array-like, shape(n_components, n_groups)
-                 The size of each group within each cluster
+        dict: Completed estimator with following entries:\n
+          * score : float\n
+             The true score without permuting targets.\n
+          * pvalue : float\n
+             The p-value, which approximates the probability that the score would be obtained by chance.\n
+          * CS : array-like, shape(n_components)\n
+             The size of each cluster\n
+          * CP : array-like, shape(n_components)\n
+             The pvalue of the most significant group within each cluster\n
+          * CG : array-like, shape(n_components)\n
+             The index of the most significant group within each cluster\n
+          * CN : array-like, shape(n_components, n_groups)\n
+             The size of each group within each cluster
 
         Example
         -------
@@ -292,7 +289,6 @@ class NTF:
             init_type = 2 : NMF initialization applied on the reshaped matrix [1st dim x vectorized (2nd & 3rd dim)]
         verbose : integer, default: 0
             The verbosity level (0/1).
-
 
         Returns
         -------
@@ -379,21 +375,21 @@ class NTF:
 
         Returns
         -------
-        dict: Estimator with following entries
-            W : array-like, shape (n_samples, n_components)
-                Solution to the non-negative least squares problem.
-            H : array-like, shape (n_features, n_components)
-                Solution to the non-negative least squares problem.
-            Q : array-like, shape (n_blocks, n_components)
-                Solution to the non-negative least squares problem.
-            volume : scalar, volume occupied by W and H
-            WB : array-like, shape (n_samples, n_components)
-                Percent consistently clustered rows for each component.
-                only if n_bootstrap > 0.
-            HB : array-like, shape (n_features, n_components)
-                Percent consistently clustered columns for each component.
-                only if n_bootstrap > 0.
-            diff : scalar, objective minimum achieved
+        dict: Estimator with following entries\n
+          * W : array-like, shape (n_samples, n_components)\n
+            Solution to the non-negative least squares problem.\n
+          * H : array-like, shape (n_features, n_components)\n
+            Solution to the non-negative least squares problem.\n
+          * Q : array-like, shape (n_blocks, n_components)\n
+            Solution to the non-negative least squares problem.\n
+          * volume : scalar, volume occupied by W and H\n
+          * WB : array-like, shape (n_samples, n_components)\n
+            Percent consistently clustered rows for each component.
+            only if n_bootstrap > 0.\n
+          * HB : array-like, shape (n_features, n_components)\n
+            Percent consistently clustered columns for each component.
+            only if n_bootstrap > 0.\n
+          * diff : scalar, objective minimum achieved
 
         Example
         -------
