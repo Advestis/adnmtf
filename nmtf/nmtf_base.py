@@ -10,15 +10,16 @@
 from typing import List, Union, Tuple
 import numpy as np
 from scipy.sparse.linalg import svds
+import logging
 
 from .nmtf_core import ntf_stack, ntf_solve
 from .nmtf_utils import calc_leverage, StatusBoxTqdm, nmf_det, build_clusters, GlobalSign
 
+logger = logging.getLogger(__name__)
 EPSILON = np.finfo(np.float32).eps
 
 
 # TODO (pcotte): Typing
-# TODO (pcotte): logger
 # TODO (pcotte): group similar methods
 
 
@@ -850,7 +851,7 @@ def non_negative_factorization(
     volume = nmf_det(mt, mw, 1)
 
     for message in add_message:
-        print(message)
+        logger.info(message)
 
     my_status_box.close()
 
@@ -1012,7 +1013,7 @@ def nmf_predict(
         my_status_box=my_status_box,
     )
     for message in add_message:
-        print(message)
+        logger.info(message)
 
     my_status_box.close()
     if "Q" in estimator:
@@ -1383,7 +1384,7 @@ def non_negative_tensor_factorization(
     volume = nmf_det(mt, mw, 1)
 
     for message in add_message:
-        print(message)
+        logger.info(message)
 
     my_status_box.close()
 
