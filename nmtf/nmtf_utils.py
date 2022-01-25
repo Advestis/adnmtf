@@ -70,8 +70,7 @@ def nmf_det(mt, mw, nmf_exact_det):
 
     Reference
     ---------
-
-    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to 
+    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to
     Environmental Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509
     doi:10.3390/ijerph13050509
 
