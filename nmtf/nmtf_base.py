@@ -42,10 +42,10 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> List[np.ndarray]:
     mmis = mmis.astype(np.int)
     n_Mmis = mmis.shape[0]
     if n_Mmis == 0:
-        ID = np.where(np.isnan(m) is True)
+        ID = np.where(np.isnan(m) == 1)
         n_Mmis = ID[0].size
         if n_Mmis > 0:
-            mmis = np.isnan(m) is False
+            mmis = np.isnan(m) == 0
             mmis = mmis.astype(np.int)
             m[mmis == 0] = 0
     else:
@@ -151,10 +151,10 @@ def ntf_init(
     mmis = mmis.astype(np.int)
     n_Mmis = mmis.shape[0]
     if n_Mmis == 0:
-        ID = np.where(np.isnan(m) is True)
+        ID = np.where(np.isnan(m) == 1)
         n_Mmis = ID[0].size
         if n_Mmis > 0:
-            mmis = np.isnan(m) is False
+            mmis = np.isnan(m) == 0
             mmis = mmis.astype(np.int)
             m[mmis == 0] = 0
     else:
@@ -415,10 +415,10 @@ def r_ntf_solve(
     Mmis = Mmis.astype(np.int)
     n_Mmis = Mmis.shape[0]
     if n_Mmis == 0:
-        ID = np.where(np.isnan(M) is True)
+        ID = np.where(np.isnan(M) == 1)
         n_Mmis = ID[0].size
         if n_Mmis > 0:
-            Mmis = np.isnan(M) is False
+            Mmis = np.isnan(M) == 0
             Mmis = Mmis.astype(np.int)
             M[Mmis == 0] = 0
     else:
@@ -719,10 +719,10 @@ def non_negative_factorization(
     # Identify missing values
     Mmis = np.array([])
     Mmis = Mmis.astype(np.int)
-    ID = np.where(np.isnan(M) is True)
+    ID = np.where(np.isnan(M) == 1)
     n_Mmis = ID[0].size
     if n_Mmis > 0:
-        Mmis = np.isnan(M) is False
+        Mmis = np.isnan(M) == 0
         Mmis = Mmis.astype(np.int)
         M[Mmis == 0] = 0
     else:
@@ -1269,10 +1269,10 @@ def non_negative_tensor_factorization(
     # Identify missing values
     Mmis = np.array([])
     Mmis = Mmis.astype(np.int)
-    ID = np.where(np.isnan(M) is True)
+    ID = np.where(np.isnan(M) == 1)
     n_Mmis = ID[0].size
     if n_Mmis > 0:
-        Mmis = np.isnan(M) is False
+        Mmis = np.isnan(M) == 0
         Mmis = Mmis.astype(np.int)
         M[Mmis == 0] = 0
     else:

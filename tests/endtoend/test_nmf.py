@@ -11,9 +11,18 @@ DATA_PATH = Path(__file__).parent.parent / "data"
 @pytest.mark.parametrize(
     "path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected",
     (
+        ("data_sntf.csv", 1, 6, 6, 0, 0, "expected_result_sntf.json"),
+        (
+            "data_nmf_nc1_corrmin0.9_corrmax0.1_noise0_RandNorms_miss.csv",
+            1,
+            None,
+            1,
+            0,
+            None,
+            "expected_data_nmf_nc1_corrmin0.9_corrmax0.1_noise0_RandNorms_miss.json",
+        ),
         ("data_ntf.csv", 0, 5, 5, 0, None, "expected_result_ntf.json"),
         ("data_ntf.csv", 0, 5, 5, 0.8, 10, "expected_result_ntf_with_sparsity_bootstrap.json"),
-        ("data_sntf.csv", 1, 6, 6, 0, 0, "expected_result_sntf.json"),
         (
             (
                 np.array([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10], [11, 12]]),
@@ -34,15 +43,6 @@ DATA_PATH = Path(__file__).parent.parent / "data"
             0,
             0,
             "expected_data_nmf_nc1_corrmin0.9_corrmax0.1_noise0_RandNorms.json",
-        ),
-        (
-            "data_nmf_nc1_corrmin0.9_corrmax0.1_noise0_RandNorms_miss.csv",
-            1,
-            None,
-            1,
-            0,
-            None,
-            "expected_data_nmf_nc1_corrmin0.9_corrmax0.1_noise0_RandNorms_miss.json",
         ),
         ("data_nmf_brunet.csv", 2, None, 4, 0, 10, "expected_data_nmf_brunet.json"),
     ),
