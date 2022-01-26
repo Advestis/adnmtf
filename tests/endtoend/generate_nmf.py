@@ -30,10 +30,10 @@ def compute_test_ntf(
 
     if n_blocks is not None:
         my_ntfmodel = NTF(n_components=n_components, random_state=123)
-        estimator_ = my_ntfmodel.fit_transform(x=m0, n_blocks=n_blocks, sparsity=sparsity, n_bootstrap=n_bootstrap)
+        estimator_ = my_ntfmodel.fit_transform(m=m0, n_blocks=n_blocks, sparsity=sparsity, n_bootstrap=n_bootstrap)
         estimator_ = my_ntfmodel.predict(estimator_)
     else:
         my_nmfmodel = NMF(n_components=n_components, random_state=123)
-        estimator_ = my_nmfmodel.fit_transform(x=m0, sparsity=sparsity, n_bootstrap=n_bootstrap)
+        estimator_ = my_nmfmodel.fit_transform(m=m0, sparsity=sparsity, n_bootstrap=n_bootstrap)
 
     return estimator_, expected_estimator_
