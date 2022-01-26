@@ -799,10 +799,10 @@ def non_negative_factorization(
     else:
         if h is None:
             mw = np.ones((p, nc))
-            mt = w.copy
+            mt = w.copy()
         elif w is None:
             mt = np.ones((n, nc))
-            mw = h.copy
+            mw = h.copy()
 
         for k in range(0, nc):
             # TODO (pcotte) : mt and mw can be not yet referenced : fix that
