@@ -2,7 +2,8 @@ import pytest
 import numpy as np
 
 from .generate_nmf import compute_test_ntf
-# from .generate_json import make_json
+from .generate_json import make_json
+from . import estimator_attributes
 from pathlib import Path
 
 DATA_PATH = Path(__file__).parent.parent / "data"
@@ -48,26 +49,23 @@ DATA_PATH = Path(__file__).parent.parent / "data"
     ),
 )
 def test_nmf(path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected):
-    # make_json(path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected)
+    make_json(path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected)
     inputs = compute_test_ntf(path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected)
     print("")
     estimator = inputs[0]
     expected_estimator = inputs[1]
-    for param in estimator:
-        print(f"Testing {param}...")
-        if param.lower() == "wb" or param.lower() == "hb":
-            print(f"Ignoring {param}...")
+    for param_name in estimator_attributes:
+        print(f"Testing {param_name}...")
+        if param_name.lower() == "wb" or param_name.lower() == "hb":
+            print(f"Ignoring {param_name}...")
         else:
+            param = getattr(estimator, param_name)
+            param_exp = getattr(expected_estimator, param_name)
 
-            param_exp = param
-            if param not in expected_estimator:
-                param_exp = param.upper()
-
-            assert param_exp in expected_estimator
-            assert isinstance(estimator[param], type(expected_estimator[param_exp]))
-            if isinstance(estimator[param], np.ndarray):
-                np.testing.assert_array_almost_equal(estimator[param], expected_estimator[param_exp])
-            elif isinstance(estimator[param], float):
-                assert pytest.approx(estimator[param], rel=1e-10) == expected_estimator[param_exp]
+            assert isinstance(param, type(param_exp))
+            if isinstance(param, np.ndarray):
+                np.testing.assert_array_almost_equal(param, param_exp)
+            elif isinstance(param, float):
+                assert pytest.approx(param, rel=1e-10) == param_exp
             else:
-                assert estimator[param] == expected_estimator[param_exp]
+                assert param == param_exp

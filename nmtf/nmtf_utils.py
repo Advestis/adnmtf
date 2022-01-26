@@ -275,11 +275,12 @@ def build_clusters(
     cancel_pressed = 0
     n, nc = np.shape(mt)
     p = np.shape(mw)[0]
-    if nmf_algo >= 5:
+    if nmf_algo == "ntf":
         block_clust = np.zeros(n_blocks)
-    else:
+    elif nmf_algo == "nmf":
         block_clust = np.array([])
-        mbn = np.array([])
+    else:
+        raise ValueError(f"Unknown algo '{nmf_algo}'")
 
     r_ct = np.zeros(n)
     r_cw = np.zeros(p)
@@ -299,21 +300,24 @@ def build_clusters(
         mwn, add_message, err_message, cancel_pressed = calc_leverage(
             mw, nmf_use_robust_leverage, add_message, my_status_box
         )
-        if nmf_algo >= 5:
+        if nmf_algo == "ntf":
             my_status_box.update_status(status="Leverages - Block components...")
             mbn, add_message, err_message, cancel_pressed = calc_leverage(
                 mb, nmf_use_robust_leverage, add_message, my_status_box
             )
+        else:
+            mbn = None
     else:
         mtn = mt
         mwn = mw
-        if nmf_algo >= 5:
+        if nmf_algo == "ntf":
             mbn = mb
+        else:
+            mbn = None
 
-    if nmf_algo >= 5:
+    if nmf_algo == "ntf":
         for i_block in range(0, n_blocks):
             if nc > 1:
-                # TODO (pcotte): mbn could have not been assigned yet. Fix that.
                 block_clust[i_block] = np.argmax(mbn[i_block, :]) + 1
             else:
                 block_clust[i_block] = 1

@@ -7,8 +7,10 @@
 # Dec 28, '19
 import numpy as np
 import logging
+
+from .estimator import Estimator
 from .nmtf_base import init_factorization, nmf_init, r_ntf_solve, ntf_init
-from .nmtf_utils import nmf_det, StatusBoxTqdm, build_clusters, global_sign
+from .nmtf_utils import nmf_det, StatusBoxTqdm
 
 logger = logging.getLogger(__name__)
 
@@ -76,16 +78,17 @@ class NMTF:
         regularization=None,
         sparsity=0,
         **ntf_kwargs
-    ) -> dict:
+    ) -> Estimator:
         """To implement in daughter class"""
         pass
 
-    def predict(self, estimator, blocks=None, cluster_by_stability=False, custom_order=False) -> dict:
+    @staticmethod
+    def predict(estimator, blocks=None, cluster_by_stability=False, custom_order=False):
         """Derives from factorization result ordered sample and feature indexes for future use in ordered heatmaps
 
         Parameters
         ----------
-        estimator: tuplet as returned by fit_transform
+        estimator: `nmtf.estimator.Estimator`
         blocks: array-like, shape(n_blocks), default None
             Size of each block (if any) in ordered heatmap.
         cluster_by_stability: boolean, default False
@@ -94,183 +97,25 @@ class NMTF:
              if False samples/features with highest leverage or stability appear on top of each cluster
              if True within cluster ordering is modified to suggest a continuum  between adjacent clusters
 
-        Returns
-        -------
-        dict: Completed estimator with following entries:\n
-          * WL: array-like, shape (n_samples, n_components)\n
-             Sample leverage on each component\n
-          * HL: array-like, shape (n_features, n_components)\n
-             Feature leverage on each component\n
-          * QL: array-like, shape (n_blocks, n_components)\n
-             Block leverage on each component (NTF only)\n
-          * WR: vector-like, shape (n_samples)\n
-             Ranked sample indexes (by cluster and leverage or stability)
-             Used to produce ordered heatmaps\n
-          * HR: vector-like, shape (n_features)\n
-             Ranked feature indexes (by cluster and leverage or stability)
-             Used to produce ordered heatmaps\n
-          * WN: vector-like, shape (n_components)\n
-             Sample cluster bounds in ordered heatmap\n
-          * HN: vector-like, shape (n_components)\n
-             Feature cluster bounds in ordered heatmap\n
-          * WC: vector-like, shape (n_samples)\n
-             Sample assigned cluster\n
-          * HC: vector-like, shape (n_features)\n
-             Feature assigned cluster\n
-          * QC: vector-like, shape (size(blocks))\n
-             Block assigned cluster (NTF only)
-
         Example
         -------
         >>> from nmtf import NMF
         >>> myNMFmodel = NMF(n_components=4)
         >>> m = ...  # matrix to be factorized
         >>> myestimator = myNMFmodel.fit_transform(m)
-        >>> myestimator = myNMFmodel.predict(myestimator)
+        >>> myNMFmodel.predict(myestimator)
         """
-        mt = estimator["W"]
-        mw = estimator["H"]
-        if "Q" in estimator:
-            # X is a 3D tensor, in unfolded form of a 2D array
-            # horizontal concatenation of blocks of equal size.
-            mb = estimator["Q"]
-            nmf_algo = 5
-            n_blocks = mb.shape[0]
-            blk_size = mw.shape[0] * np.ones(n_blocks)
-        else:
-            mb = np.array([])
-            nmf_algo = 0
-            if blocks is None:
-                n_blocks = 1
-                blk_size = np.array([mw.shape[0]])
-            else:
-                n_blocks = blocks.shape[0]
-                blk_size = blocks
+        estimator.predict(blocks, cluster_by_stability, custom_order)
 
-        if "WB" in estimator:
-            mt_pct = estimator["WB"]
-        else:
-            mt_pct = None
-
-        if "HB" in estimator:
-            mw_pct = estimator["HB"]
-        else:
-            mw_pct = None
-
-        if self.leverage == "standard":
-            nmf_calculate_leverage = 1
-            nmf_use_robust_leverage = 0
-        elif self.leverage == "robust":
-            nmf_calculate_leverage = 1
-            nmf_use_robust_leverage = 1
-        else:
-            nmf_calculate_leverage = 0
-            nmf_use_robust_leverage = 0
-
-        if cluster_by_stability is True:
-            nmf_robust_cluster_by_stability = 1
-        else:
-            nmf_robust_cluster_by_stability = 0
-
-        if custom_order is True:
-            cell_plot_ordered_clusters = 1
-        else:
-            cell_plot_ordered_clusters = 0
-
-        add_message = []
-        my_status_box = StatusBoxTqdm(verbose=self.verbose)
-
-        (
-            mtn,
-            mwn,
-            mbn,
-            r_ct,
-            r_cw,
-            n_ct,
-            n_cw,
-            row_clust,
-            col_clust,
-            block_clust,
-            add_message,
-            err_message,
-            cancel_pressed,
-        ) = build_clusters(
-            mt=mt,
-            mw=mw,
-            mb=mb,
-            mt_pct=mt_pct,
-            mw_pct=mw_pct,
-            n_blocks=n_blocks,
-            blk_size=blk_size,
-            nmf_calculate_leverage=nmf_calculate_leverage,
-            nmf_use_robust_leverage=nmf_use_robust_leverage,
-            nmf_algo=nmf_algo,
-            nmf_robust_cluster_by_stability=nmf_robust_cluster_by_stability,
-            cell_plot_ordered_clusters=cell_plot_ordered_clusters,
-            add_message=add_message,
-            my_status_box=my_status_box,
-        )
-        for message in add_message:
-            logger.info(message)
-
-        my_status_box.close()
-        if "Q" in estimator:
-            estimator.update(
-                [
-                    ("WL", mtn),
-                    ("HL", mwn),
-                    ("WR", r_ct),
-                    ("HR", r_cw),
-                    ("WN", n_ct),
-                    ("HN", n_cw),
-                    ("WC", row_clust),
-                    ("HC", col_clust),
-                    ("QL", mbn),
-                    ("QC", block_clust),
-                ]
-            )
-        else:
-            estimator.update(
-                [
-                    ("WL", mtn),
-                    ("HL", mwn),
-                    ("WR", r_ct),
-                    ("HR", r_cw),
-                    ("WN", n_ct),
-                    ("HN", n_cw),
-                    ("WC", row_clust),
-                    ("HC", col_clust),
-                    ("QL", None),
-                    ("QC", None),
-                ]
-            )
-        return estimator
-
-    # TODO (pcotte): this function is not called by any pytest. Make a pytest calling it.
-    def permutation_test_score(self, estimator, y, n_permutations=100) -> dict:
+    @staticmethod
+    def permutation_test_score(estimator, y, n_permutations=100):
         """Derives from factorization result ordered sample and feature indexes for future use in ordered heatmaps
 
         Parameters
         ----------
-        estimator: tuplet as returned by fit_transform
+        estimator: `nmtf.estimator.Estimator`
         y:  array-like, group to be predicted
         n_permutations:  integer, default: 100
-
-        Returns
-        -------
-        dict: Completed estimator with following entries:\n
-          * score: float\n
-             The true score without permuting targets.\n
-          * pvalue: float\n
-             The p-value, which approximates the probability that the score would be obtained by chance.\n
-          * CS: array-like, shape(n_components)\n
-             The size of each cluster\n
-          * CP: array-like, shape(n_components)\n
-             The pvalue of the most significant group within each cluster\n
-          * CG: array-like, shape(n_components)\n
-             The index of the most significant group within each cluster\n
-          * CN: array-like, shape(n_components, n_groups)\n
-             The size of each group within each cluster
 
         Example
         -------
@@ -279,36 +124,9 @@ class NMTF:
         >>> m = ...  # matrix to be factorized
         >>> myestimator = myNMFmodel.fit_transform(m)
         >>> sample_group = ...  # the group each sample is associated with
-        >>> myestimator = myNMFmodel.permutation_test_score(myestimator, sample_group, n_permutations=100)
+        >>> myNMFmodel.permutation_test_score(myestimator, sample_group, n_permutations=100)
         """
-        mt = estimator["W"]
-        r_ct = estimator["WR"]
-        n_ct = estimator["WN"]
-        row_groups = y
-        uniques, index = np.unique([row for row in row_groups], return_index=True)
-        list_groups = row_groups[index]
-        nb_groups = list_groups.shape[0]
-        ngroup = np.zeros(nb_groups)
-        for group in range(0, nb_groups):
-            ngroup[group] = np.where(row_groups == list_groups[group])[0].shape[0]
-
-        nrun = n_permutations
-        my_status_box = StatusBoxTqdm(verbose=self.verbose)
-        cluster_size, pglob, prun, cluster_prob, cluster_group, cluster_ngroup, cancel_pressed = global_sign(
-            nrun, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup, my_status_box
-        )
-
-        estimator.update(
-            [
-                ("score", prun),
-                ("pvalue", pglob),
-                ("CS", cluster_size),
-                ("CP", cluster_prob),
-                ("CG", cluster_group),
-                ("CN", cluster_ngroup),
-            ]
-        )
-        return estimator
+        estimator.permutation_test_score(y, n_permutations)
 
 
 class NMF(NMTF):
@@ -324,7 +142,7 @@ class NMF(NMTF):
         regularization=None,
         sparsity=0,
         **ntf_kwargs
-    ) -> dict:
+    ) -> Estimator:
         """Compute Non-negative Matrix Factorization (NMF)
 
         Find two non-negative matrices (W, H) such as x = W @ H.T + Error.
@@ -361,25 +179,7 @@ class NMF(NMTF):
 
         Returns
         -------
-        dict: Estimator (dictionary) with following entries\n
-          * W: array-like, shape (n_samples, n_components)\n
-            Solution to the non-negative least squares problem.\n
-          * H: array-like, shape (n_components, n_features)\n
-            Solution to the non-negative least squares problem.\n
-          * volume: scalar, volume occupied by W and H\n
-          * WB: array-like, shape (n_samples, n_components)\n
-            A sample is clustered in cluster k if its leverage on component k is higher than on any other
-            components. During each run of the bootstrap, samples are re-clustered.
-            Each row of WB contains the frequencies of the n_components clusters following the bootstrap.
-            Only if n_bootstrap > 0.\n
-          * HB: array-like, shape (n_components, n_features)\n
-            A feature is clustered in cluster k if its leverage on component k is higher than on any other
-            components. During each run of the bootstrap, features are re-clustered.
-            Each row of HB contains the frequencies of the n_components clusters following the bootstrap.
-            Only if n_bootstrap > 0.\n
-          * B: array-like, shape (n_observations, n_components) or (n_features, n_components)\n
-            Only if active convex variant, H = B.T @ X or W = X @ B\n
-          * diff: scalar, objective minimum achieved
+        `nmtf.estimator.Estimator`
 
         Example
         -------
@@ -529,11 +329,19 @@ class NMF(NMTF):
             else:
                 mev[k] = 0
 
-        estimator = {}
         if nmf_robust_n_runs <= 1:
-            estimator.update([("W", mt), ("H", mw), ("volume", volume), ("diff", diff)])
+            estimator = Estimator(w=mt, h=mw, volume=volume, diff=diff, leverage=self.leverage, verbose=self.verbose)
         else:
-            estimator.update([("W", mt), ("H", mw), ("volume", volume), ("WB", mt_pct), ("HB", mw_pct), ("diff", diff)])
+            estimator = Estimator(
+                w=mt,
+                h=mw,
+                volume=volume,
+                wb=mt_pct,
+                hb=mw_pct,
+                diff=diff,
+                leverage=self.leverage,
+                verbose=self.verbose
+            )
 
         return estimator
 
@@ -627,7 +435,7 @@ class NTF(NMTF):
         n_blocks=None,
         q=None,
         update_q=True,
-    ):
+    ) -> Estimator:
         """Compute Non-negative Tensor Factorization (NTF)
 
         Find three non-negative matrices (W, H, Q) such as x = W @@ H @@ Q + Error (@@ = tensor product).
@@ -670,21 +478,7 @@ class NTF(NMTF):
 
         Returns
         -------
-        dict: Estimator with following entries\n
-          * W: array-like, shape (n_samples, n_components)\n
-            Solution to the non-negative least squares problem.\n
-          * H: array-like, shape (n_features, n_components)\n
-            Solution to the non-negative least squares problem.\n
-          * Q: array-like, shape (n_blocks, n_components)\n
-            Solution to the non-negative least squares problem.\n
-          * volume: scalar, volume occupied by W and H\n
-          * WB: array-like, shape (n_samples, n_components)\n
-            Percent consistently clustered rows for each component.
-            only if n_bootstrap > 0.\n
-          * HB: array-like, shape (n_features, n_components)\n
-            Percent consistently clustered columns for each component.
-            only if n_bootstrap > 0.\n
-          * diff: scalar, objective minimum achieved
+        `nmtf.estimator.Estimator`
 
         Example
         -------
@@ -857,12 +651,27 @@ class NTF(NMTF):
 
         my_status_box.close()
 
-        estimator = {}
         if nmf_robust_n_runs <= 1:
-            estimator.update([("W", mt), ("H", mw), ("Q", mb), ("volume", volume), ("diff", diff)])
+            estimator = Estimator(
+                w=mt,
+                h=mw,
+                q=mb,
+                volume=volume,
+                diff=diff,
+                leverage=self.leverage,
+                verbose=self.verbose
+            )
         else:
-            estimator.update(
-                [("W", mt), ("H", mw), ("Q", mb), ("volume", volume), ("WB", mt_pct), ("HB", mw_pct), ("diff", diff)]
+            estimator = Estimator(
+                w=mt,
+                h=mw,
+                q=mb,
+                volume=volume,
+                wb=mt_pct,
+                hb=mw_pct,
+                diff=diff,
+                leverage=self.leverage,
+                verbose=self.verbose
             )
 
         return estimator

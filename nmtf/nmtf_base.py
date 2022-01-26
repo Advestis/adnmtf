@@ -13,7 +13,7 @@ from scipy.sparse.linalg import svds
 import logging
 
 from .nmtf_core import ntf_stack, ntf_solve
-from .nmtf_utils import calc_leverage, StatusBoxTqdm, nmf_det, build_clusters, global_sign
+from .nmtf_utils import calc_leverage
 
 logger = logging.getLogger(__name__)
 EPSILON = np.finfo(np.float32).eps

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 DATA_PATH = Path(__file__).parent.parent / "data"
+from . import estimator_attributes
 
 
 def make_json(path, row_header, n_blocks, n_components, sparsity, n_bootstrap, expected):
@@ -18,15 +19,16 @@ def make_json(path, row_header, n_blocks, n_components, sparsity, n_bootstrap, e
         m0 = path[0].dot(path[1])
     if n_blocks is not None:
         my_model = NTF(n_components=n_components, random_state=123)
-        estimator_ = my_model.fit_transform(m0, n_blocks, sparsity=sparsity, n_bootstrap=n_bootstrap)
+        estimator = my_model.fit_transform(m0, n_blocks=n_blocks, sparsity=sparsity, n_bootstrap=n_bootstrap)
     else:
         my_model = NMF(n_components=n_components, random_state=123)
-        estimator_ = my_model.fit_transform(m0, sparsity=sparsity, n_bootstrap=n_bootstrap)
-    estimator_ = my_model.predict(estimator_)
-    for item in estimator_:
-        if isinstance(estimator_[item], np.ndarray):
-            estimator_[item] = estimator_[item].tolist()
+        estimator = my_model.fit_transform(m0, sparsity=sparsity, n_bootstrap=n_bootstrap)
+    my_model.predict(estimator)
+    estimator_ = {}
+    for item in estimator_attributes:
+        if isinstance(getattr(estimator, item), np.ndarray):
+            estimator_[item] = getattr(estimator, item).tolist()
+        else:
+            estimator_[item] = getattr(estimator, item)
     with open(DATA_PATH / expected, "w") as ifile:
         json.dump(estimator_, ifile)
-
-    return estimator_
