@@ -17,10 +17,11 @@ from .nmtf_base import (
 # TODO (pcotte) : typing
 
 
-class NMF:
-
-    def __init__(self, n_components=None, tol=1e-6, max_iter=150, leverage="standard", random_state=None, verbose=0):
-        """Initialize NMF model
+class NMTF:
+    def __init__(
+        self, n_components=None, tol=1e-6, max_iter=150, leverage="standard", random_state=None, verbose=0, **ntf_kwargs
+    ):
+        """Initialize NMF or NTF model
 
         Parameters
         ----------
@@ -39,6 +40,8 @@ class NMF:
             by `np.random`.
         verbose : integer, default: 0
             The verbosity level (0/1).
+        ntf_kwargs: dict
+            Additional keyword arguments for NTF
 
         Returns
         -------
@@ -64,92 +67,19 @@ class NMF:
         self.verbose = verbose
 
     def fit_transform(
-        self, x, w=None, h=None, update_w=True, update_h=True, n_bootstrap=None, regularization=None, sparsity=0
+        self,
+        x,
+        w=None,
+        h=None,
+        update_w=True,
+        update_h=True,
+        n_bootstrap=None,
+        regularization=None,
+        sparsity=0,
+        **ntf_kwargs
     ) -> dict:
-        """Compute Non-negative Matrix Factorization (NMF)
-
-        Find two non-negative matrices (W, H) such as x = W @ H.T + Error.
-        This factorization can be used for example for
-        dimensionality reduction, source separation or topic extraction.
-
-        The objective function is minimized with an alternating minimization of W
-        and H.
-
-        Parameters
-        ----------
-        x : array-like, shape (n_samples, n_features)
-            Constant matrix.
-        w : array-like, shape (n_samples, n_components)
-            prior W
-        h : array-like, shape (n_features, n_components)
-            prior H
-        update_w : boolean, default: True
-            Update or keep W fixed
-        update_h : boolean, default: True
-            Update or keep H fixed
-        n_bootstrap : integer, default: 0
-            Number of bootstrap runs.
-        regularization :  None | 'components' | 'transformation'
-            Select whether the regularization affects the components (H), the
-            transformation (W) or none of them.
-        sparsity : float, default: 0
-            Sparsity target with 0 <= sparsity < 1 representing either:
-            - the % rows in W or H set to 0 (when use_hals = False)
-            - the mean % rows per column in W or H set to 0 (when use_hals = True)
-            sparsity == 1: adaptive sparsity through hard thresholding and hhi
-
-        Returns
-        -------
-        dict: Estimator (dictionary) with following entries\n
-          * W : array-like, shape (n_samples, n_components)\n
-            Solution to the non-negative least squares problem.\n
-          * H : array-like, shape (n_components, n_features)\n
-            Solution to the non-negative least squares problem.\n
-          * volume : scalar, volume occupied by W and H\n
-          * WB : array-like, shape (n_samples, n_components)\n
-            A sample is clustered in cluster k if its leverage on component k is higher than on any other
-            components. During each run of the bootstrap, samples are re-clustered.
-            Each row of WB contains the frequencies of the n_components clusters following the bootstrap.
-            Only if n_bootstrap > 0.\n
-          * HB : array-like, shape (n_components, n_features)\n
-            A feature is clustered in cluster k if its leverage on component k is higher than on any other
-            components. During each run of the bootstrap, features are re-clustered.
-            Each row of HB contains the frequencies of the n_components clusters following the bootstrap.
-            Only if n_bootstrap > 0.\n
-          * B : array-like, shape (n_observations, n_components) or (n_features, n_components)\n
-            Only if active convex variant, H = B.T @ X or W = X @ B\n
-          * diff : scalar, objective minimum achieved
-
-        Example
-        -------
-        >>> from nmtf import NMF
-        >>> myNMFmodel = NMF(n_components=4)
-        >>> m = ...  # matrix to be factorized
-        >>> estimator = myNMFmodel.fit_transform(m)
-
-        References
-        ----------
-        P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
-        The American Statistician, Vol. 67, Issue 4.
-        C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
-        IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1
-        """
-        return non_negative_factorization(
-            x,
-            w=w,
-            h=h,
-            n_components=self.n_components,
-            update_w=update_w,
-            update_h=update_h,
-            n_bootstrap=n_bootstrap,
-            tol=self.tol,
-            max_iter=self.max_iter,
-            regularization=regularization,
-            sparsity=sparsity,
-            leverage=self.leverage,
-            random_state=self.random_state,
-            verbose=self.verbose,
-        )
+        """To implement in daughter class"""
+        pass
 
     def predict(self, estimator, blocks=None, cluster_by_stability=False, custom_order=False) -> dict:
         """Derives from factorization result ordered sample and feature indexes for future use in ordered heatmaps
@@ -245,22 +175,124 @@ class NMF:
         return nmf_permutation_test_score(estimator, y, n_permutations=n_permutations, verbose=self.verbose)
 
 
-class NTF:
+class NMF(NMTF):
+    def fit_transform(
+        self,
+        x,
+        w=None,
+        h=None,
+        update_w=True,
+        update_h=True,
+        n_bootstrap=None,
+        regularization=None,
+        sparsity=0,
+        **ntf_kwargs
+    ) -> dict:
+        """Compute Non-negative Matrix Factorization (NMF)
 
+        Find two non-negative matrices (W, H) such as x = W @ H.T + Error.
+        This factorization can be used for example for
+        dimensionality reduction, source separation or topic extraction.
+
+        The objective function is minimized with an alternating minimization of W
+        and H.
+
+        Parameters
+        ----------
+        x : array-like, shape (n_samples, n_features)
+            Constant matrix.
+        w : array-like, shape (n_samples, n_components)
+            prior W
+        h : array-like, shape (n_features, n_components)
+            prior H
+        update_w : boolean, default: True
+            Update or keep W fixed
+        update_h : boolean, default: True
+            Update or keep H fixed
+        n_bootstrap : integer, default: 0
+            Number of bootstrap runs.
+        regularization :  None | 'components' | 'transformation'
+            Select whether the regularization affects the components (H), the
+            transformation (W) or none of them.
+        sparsity : float, default: 0
+            Sparsity target with 0 <= sparsity < 1 representing either:
+            - the % rows in W or H set to 0 (when use_hals = False)
+            - the mean % rows per column in W or H set to 0 (when use_hals = True)
+            sparsity == 1: adaptive sparsity through hard thresholding and hhi
+        ntf_kwargs: dict
+            Should be empty
+
+        Returns
+        -------
+        dict: Estimator (dictionary) with following entries\n
+          * W : array-like, shape (n_samples, n_components)\n
+            Solution to the non-negative least squares problem.\n
+          * H : array-like, shape (n_components, n_features)\n
+            Solution to the non-negative least squares problem.\n
+          * volume : scalar, volume occupied by W and H\n
+          * WB : array-like, shape (n_samples, n_components)\n
+            A sample is clustered in cluster k if its leverage on component k is higher than on any other
+            components. During each run of the bootstrap, samples are re-clustered.
+            Each row of WB contains the frequencies of the n_components clusters following the bootstrap.
+            Only if n_bootstrap > 0.\n
+          * HB : array-like, shape (n_components, n_features)\n
+            A feature is clustered in cluster k if its leverage on component k is higher than on any other
+            components. During each run of the bootstrap, features are re-clustered.
+            Each row of HB contains the frequencies of the n_components clusters following the bootstrap.
+            Only if n_bootstrap > 0.\n
+          * B : array-like, shape (n_observations, n_components) or (n_features, n_components)\n
+            Only if active convex variant, H = B.T @ X or W = X @ B\n
+          * diff : scalar, objective minimum achieved
+
+        Example
+        -------
+        >>> from nmtf import NMF
+        >>> myNMFmodel = NMF(n_components=4)
+        >>> m = ...  # matrix to be factorized
+        >>> estimator = myNMFmodel.fit_transform(m)
+
+        References
+        ----------
+        P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
+        The American Statistician, Vol. 67, Issue 4.
+        C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
+        IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1
+        """
+        if len(ntf_kwargs) > 0:
+            raise ValueError("You gave NTF keyword arguments to NMF 'fit_transform'. Are you using the correct class ?")
+        return non_negative_factorization(
+            x,
+            w=w,
+            h=h,
+            n_components=self.n_components,
+            update_w=update_w,
+            update_h=update_h,
+            n_bootstrap=n_bootstrap,
+            tol=self.tol,
+            max_iter=self.max_iter,
+            regularization=regularization,
+            sparsity=sparsity,
+            leverage=self.leverage,
+            random_state=self.random_state,
+            verbose=self.verbose,
+        )
+
+
+class NTF(NMTF):
     def __init__(
         self,
         n_components=None,
+        tol=1e-6,
+        max_iter=150,
+        leverage="standard",
+        random_state=None,
+        verbose=0,
         unimodal=False,
         smooth=False,
         apply_left=False,
         apply_right=False,
         apply_block=False,
-        tol=1e-6,
-        max_iter=150,
-        leverage="standard",
-        random_state=None,
         init_type=1,
-        verbose=0,
     ):
         """Initialize NTF model
 
@@ -268,11 +300,6 @@ class NTF:
         ----------
         n_components : integer
             Number of components, if n_components is not set : n_components = min(n_samples, n_features)
-        unimodal : Boolean, default: False
-        smooth : Boolean, default: False
-        apply_left : Boolean, default: False
-        apply_right : Boolean, default: False
-        apply_block : Boolean, default: False
         tol : float, default: 1e-6
             Tolerance of the stopping condition.
         max_iter : integer, default: 200
@@ -284,11 +311,16 @@ class NTF:
             If RandomState instance, random_state is the random number generator;
             If None, the random number generator is the RandomState instance used
             by `np.random`.
+        verbose : integer, default: 0
+            The verbosity level (0/1).
+        unimodal : Boolean, default: False
+        smooth : Boolean, default: False
+        apply_left : Boolean, default: False
+        apply_right : Boolean, default: False
+        apply_block : Boolean, default: False
         init_type : integer, default 1
             init_type = 1 : NMF initialization applied on the reshaped matrix [vectorized (1st & 2nd dim) x 3rd dim]
             init_type = 2 : NMF initialization applied on the reshaped matrix [1st dim x vectorized (2nd & 3rd dim)]
-        verbose : integer, default: 0
-            The verbosity level (0/1).
 
         Returns
         -------
@@ -306,31 +338,33 @@ class NTF:
         IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
 
         """
-        self.n_components = n_components
+        super().__init__(
+            n_components=n_components,
+            tol=tol,
+            max_iter=max_iter,
+            leverage=leverage,
+            random_state=random_state,
+            verbose=verbose,
+        )
         self.unimodal = unimodal
         self.smooth = smooth
         self.apply_left = apply_left
         self.apply_right = apply_right
         self.apply_block = apply_block
-        self.tol = tol
-        self.max_iter = max_iter
-        self.leverage = leverage
-        self.random_state = random_state
         self.init_type = init_type
-        self.verbose = verbose
 
     def fit_transform(
         self,
         x,
-        n_blocks,
-        n_bootstrap=None,
-        regularization=None,
-        sparsity=0,
         w=None,
         h=None,
-        q=None,
         update_w=True,
         update_h=True,
+        regularization=None,
+        sparsity=0,
+        n_bootstrap=None,
+        n_blocks=None,
+        q=None,
         update_q=True,
     ):
         """Compute Non-negative Tensor Factorization (NTF)
@@ -405,6 +439,8 @@ class NTF:
         factorizations,
         IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
         """
+        if n_blocks is None:
+            raise ValueError("Argument 'n_blocks' can not be None")
         return non_negative_tensor_factorization(
             x,
             n_blocks,
@@ -430,19 +466,3 @@ class NTF:
             init_type=self.init_type,
             verbose=self.verbose,
         )
-
-    def predict(self, estimator, blocks=None, cluster_by_stability=False, custom_order=False) -> dict:
-        """See `nmtf.nmtf.NMF.predict`"""
-        return nmf_predict(
-            estimator,
-            blocks=blocks,
-            leverage=self.leverage,
-            cluster_by_stability=cluster_by_stability,
-            custom_order=custom_order,
-            verbose=self.verbose,
-        )
-
-    @staticmethod
-    def permutation_test_score(estimator, y, n_permutations=100):
-        """See `nmtf.nmtf.NMF.permutation_test_score`"""
-        return nmf_permutation_test_score(estimator, y, n_permutations=n_permutations)
