@@ -89,6 +89,7 @@ class NMTF:
         Parameters
         ----------
         estimator: `nmtf.estimator.Estimator`
+            Modified in place
         blocks: array-like, shape(n_blocks), default None
             Size of each block (if any) in ordered heatmap.
         cluster_by_stability: boolean, default False
@@ -114,6 +115,7 @@ class NMTF:
         Parameters
         ----------
         estimator: `nmtf.estimator.Estimator`
+            Modified in place
         y:  array-like, group to be predicted
         n_permutations:  integer, default: 100
 
@@ -200,11 +202,11 @@ class NMF(NMTF):
 
         m, n, p, mmis, nc = init_factorization(m, self.n_components)
 
-        nmf_algo = 2
+        nmf_algo = "non-robust"
         log_iter = self.verbose
         my_status_box = StatusBoxTqdm(verbose=log_iter)
         tolerance = self.tol
-        if (w is None) & (h is None):
+        if w is None and h is None:
             mt, mw = nmf_init(m, mmis, np.array([]), np.array([]), nc)
         elif h is None:
             mw = np.ones((p, nc))
@@ -213,6 +215,8 @@ class NMF(NMTF):
             mt = np.ones((n, nc))
             mw = h.copy()
 
+            # TODO (pcotte): this is not pytested
+            # TODO (pcotte): might be optimised, maybe ?
             for k in range(0, nc):
                 mt[:, k] = mt[:, k] / np.linalg.norm(mt[:, k])
                 mw[:, k] = mw[:, k] / np.linalg.norm(mw[:, k])
@@ -223,7 +227,7 @@ class NMF(NMTF):
             nmf_robust_n_runs = n_bootstrap
 
         if nmf_robust_n_runs > 1:
-            nmf_algo += 2
+            nmf_algo = "robust"
 
         if update_w is True:
             nmf_fix_user_lhe = 0
@@ -260,12 +264,7 @@ class NMF(NMTF):
             random_seed = self.random_state
             np.random.seed(random_seed)
 
-        if nmf_algo <= 2:
-            ntf_algo = 5
-        else:
-            ntf_algo = 6
-
-        dummy, mt, mw, mb, mt_pct, mw_pct, diff, add_message, err_message, cancel_pressed = r_ntf_solve(
+        _, mt, mw, mb, mt_pct, mw_pct, diff, add_message, err_message, cancel_pressed = r_ntf_solve(
             m=m,
             mmis=mmis,
             mt0=mt,
@@ -278,7 +277,7 @@ class NMF(NMTF):
             nmf_fix_user_lhe=nmf_fix_user_lhe,
             nmf_fix_user_rhe=nmf_fix_user_rhe,
             nmf_fix_user_bhe=1,
-            nmf_algo=ntf_algo,
+            nmf_algo=nmf_algo,
             nmf_robust_n_runs=nmf_robust_n_runs,
             nmf_calculate_leverage=nmf_calculate_leverage,
             nmf_use_robust_leverage=nmf_use_robust_leverage,
@@ -293,7 +292,7 @@ class NMF(NMTF):
             my_status_box=my_status_box,
         )
         mev = np.ones(nc)
-        if (nmf_fix_user_lhe == 0) & (nmf_fix_user_rhe == 0):
+        if nmf_fix_user_lhe == 0 and nmf_fix_user_rhe == 0:
             # Scale
             for k in range(0, nc):
                 scale_mt = np.linalg.norm(mt[:, k])
@@ -320,6 +319,7 @@ class NMF(NMTF):
             mw_pct = mw_pct[:, r_mev]
 
         # Scale by max com p
+        # TODO (pcotte): might be optimised, maybe ?
         for k in range(0, nc):
             max_col = np.max(mt[:, k])
             if max_col > 0:
@@ -329,7 +329,7 @@ class NMF(NMTF):
             else:
                 mev[k] = 0
 
-        if nmf_robust_n_runs <= 1:
+        if nmf_algo == "non-robust":
             estimator = Estimator(w=mt, h=mw, volume=volume, diff=diff, leverage=self.leverage, verbose=self.verbose)
         else:
             estimator = Estimator(
@@ -556,6 +556,7 @@ class NTF(NMTF):
                 mb0 = np.copy(q)
 
             mfit = np.zeros((n, p))
+            # TODO (pcotte): might be optimised, maybe ?
             for k in range(0, nc):
                 for i_block in range(0, n_blocks):
                     mfit[:, i_block * p_block: (i_block + 1) * p_block] += (
@@ -563,12 +564,14 @@ class NTF(NMTF):
                     )
 
             scale_ratio = (np.linalg.norm(mfit) / np.linalg.norm(m)) ** (1 / 3)
+            # TODO (pcotte): might be optimised, maybe ?
             for k in range(0, nc):
                 mt0[:, k] /= scale_ratio
                 mw0[:, k] /= scale_ratio
                 mb0[:, k] /= scale_ratio
 
             mfit = np.zeros((n, p))
+            # TODO (pcotte): might be optimised, maybe ?
             for k in range(0, nc):
                 for i_block in range(0, n_blocks):
                     mfit[:, i_block * p_block: (i_block + 1) * p_block] += (
@@ -583,9 +586,9 @@ class NTF(NMTF):
             nmf_robust_n_runs = n_bootstrap
 
         if nmf_robust_n_runs <= 1:
-            nmf_algo = 5
+            nmf_algo = "non-robust"
         else:
-            nmf_algo = 6
+            nmf_algo = "robust"
 
         if self.leverage == "standard":
             nmf_calculate_leverage = 1

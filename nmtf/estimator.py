@@ -7,8 +7,14 @@ from nmtf.nmtf_utils import StatusBoxTqdm, build_clusters, global_sign
 logger = logging.getLogger(__name__)
 
 
+# TODO (pcotte): typing
+
 class Estimator:
     """
+    Estimator object. Created by `nmtf.nmtf.NMTF.fit_transform`, and updated by `nmtf.nmtf.NMTF.predict` and
+    `nmtf.nmtf.NMTF.fit_transform.permutation_test_score`. The same Estimator class is used both by NMF and NTF, the
+    difference will be that some attributes will be None in the case of NMF.
+
     Attributes
     -------
     w: array-like, shape (n_samples, n_components)
@@ -253,6 +259,8 @@ class Estimator:
         )
 
     def update(self, **kwargs):
+        """Updates this estimator's attributes according to given keyword arguments. Only attributes already defined
+        in the estimator can be updated this way."""
         for item in kwargs:
             if not hasattr(self, item):
                 raise ValueError(f"Can not update attribute '{item}'")

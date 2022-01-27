@@ -123,7 +123,7 @@ def init_ntf_type_1(m, mmis, n_blocks, nc, mt_nmf, mw_nmf, tolerance, log_iter, 
         mt_nmf, mw_nmf = nmf_init(m=mstacked, mmis=mmis_stacked, mt0=mt_nmf, mw0=mw_nmf, nc=nc2)
 
     # Quick NMF
-    dummy, mt_nmf, mw_nmf, mb, diff, cancel_pressed = ntf_solve(
+    _, mt_nmf, mw_nmf, mb, diff, cancel_pressed = ntf_solve(
         m=mstacked,
         mmis=mmis_stacked,
         mt0=mt_nmf,
@@ -212,7 +212,7 @@ def init_ntf_type_2(
         mt_nmf, mw_nmf = nmf_init(m=m, mmis=mmis, mt0=mt_nmf, mw0=mw_nmf, nc=nc)
 
     # Quick NMF
-    dummy, mt_nmf, mw_nmf, mb, diff, cancel_pressed = ntf_solve(
+    _, mt_nmf, mw_nmf, mb, diff, cancel_pressed = ntf_solve(
         m=m,
         mmis=mmis,
         mt0=mt_nmf,
@@ -352,7 +352,7 @@ def ntf_init(
             p=p,
         )
 
-    if (ntf_unimodal > 0) & (ntf_right_components > 0):
+    if ntf_unimodal > 0 and ntf_right_components > 0:
         # Enforce unimodal distribution
         wmax = np.argmax(mw[:, k])
         for j in range(wmax + 1, int(p / n_blocks)):
@@ -361,7 +361,7 @@ def ntf_init(
         for j in range(wmax - 1, -1, -1):
             mw[j, k] = min(mw[j + 1, k], mw[j, k])
 
-    if (ntf_unimodal > 0) & (ntf_block_components > 0):
+    if ntf_unimodal > 0 and ntf_block_components > 0:
         # Enforce unimodal distribution
         bmax = np.argmax(mb[:, k])
         for i_block in range(bmax + 1, n_blocks):
@@ -427,7 +427,7 @@ def r_ntf_solve(
     nmf_fix_user_lhe: fix left hand matrix columns: = 1, else = 0
     nmf_fix_user_rhe: fix  right hand matrix columns: = 1, else = 0
     nmf_fix_user_bhe: fix  block hand matrix columns: = 1, else = 0
-    nmf_algo: =5: Non-robust version, =6: Robust version
+    nmf_algo: "non-robust" version or "robust" version
     nmf_robust_n_runs: Number of bootstrap runs
     nmf_calculate_leverage: Calculate leverages
     nmf_use_robust_leverage: Calculate leverages based on robust max across factoring columns
@@ -504,7 +504,7 @@ def r_ntf_solve(
     mb = np.copy(mb0)
 
     # Check parameter consistency (and correct if needed)
-    if (nc == 1) | (nmf_algo == 5):
+    if nc == 1 or nmf_algo == "non-robust":
         nmf_robust_n_runs = 0
 
     if nmf_robust_n_runs == 0:
@@ -685,8 +685,7 @@ def r_ntf_solve(
     return mt_conv, mt, mw, mb, mt_pct, mw_pct, diff, add_message, err_message, cancel_pressed
 
 
-def init_factorization(x, n_components):
-    m = x
+def init_factorization(m, n_components):
     n, p = m.shape
     # Identify missing values
     mmis = np.array([])

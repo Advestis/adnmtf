@@ -198,16 +198,16 @@ def ntf_solve_simple(
     mfit = np.zeros((n, p0))
     for k in range(0, nc):
         if n_blocks > 1:
-            for iBlock in range(0, n_blocks):
-                mfit[:, id_blockp[iBlock]: id_blockp[iBlock] + p] += (
-                    mb[iBlock, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+            for i_block in range(0, n_blocks):
+                mfit[:, id_blockp[i_block]: id_blockp[i_block] + p] += (
+                    mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
                 )
         else:
             mfit[:, id_blockp[0]: id_blockp[0] + p] += np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
 
     denomt = np.zeros(n)
     denomw = np.zeros(p)
-    denomBlock = np.zeros((n_blocks, nc))
+    denom_block = np.zeros((n_blocks, nc))
     mt2 = np.zeros(n)
     mw2 = np.zeros(p)
     mt_mw = np.zeros(nxp)
@@ -265,7 +265,7 @@ def ntf_solve_simple(
                 nmf_fix_user_bhe,
                 mt_mw,
                 nxp,
-                denomBlock,
+                denom_block,
                 ntf_block_components,
                 c,
                 mfit,
@@ -300,7 +300,7 @@ def ntf_solve_simple(
                 nmf_fix_user_bhe=nmf_fix_user_bhe,
                 mt_mw=mt_mw,
                 nxp=nxp,
-                denom_block=denomBlock,
+                denom_block=denom_block,
                 ntf_block_components=ntf_block_components,
                 c=c,
                 mfit=mfit,
@@ -336,8 +336,8 @@ def ntf_solve_simple(
 
         i_iter += 1
 
-        if (cont == 0) | (i_iter == max_iterations) | ((cont == 0) & (abs(nmf_sparse_level) == 1)):
-            if (nmf_sparse_level > 0) & (nmf_sparse_level < 1):
+        if cont == 0 or i_iter == max_iterations or (cont == 0 and abs(nmf_sparse_level) == 1):
+            if 0 < nmf_sparse_level < 1:
                 sparse_test = np.zeros((nc, 1))
                 percent_zeros0 = percent_zeros
                 for k in range(0, nc):
@@ -355,7 +355,7 @@ def ntf_solve_simple(
                         i_iter = 0
                         cont = 1
 
-            elif (nmf_sparse_level < 0) & (nmf_sparse_level > -1):
+            elif 0 > nmf_sparse_level > -1:
                 sparse_test = np.zeros((nc, 1))
                 percent_zeros0 = percent_zeros
                 for k in range(0, nc):
@@ -427,7 +427,7 @@ def ntf_solve_simple(
         logger.info(f"component: {k} right hhi: {hhi}")
 
     if (n_mmis > 0) & (nmf_fix_user_bhe == 0):
-        mb *= denomBlock
+        mb *= denom_block
 
     # TODO (pcotte) : mt and mw can be not yet referenced : fix that
     return np.array([]), mt, mw, mb, diff, cancel_pressed
