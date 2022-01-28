@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 workdir = Path(__file__).parent
 
-name = "nmtf"
+name = "adnmtf"
 author = "Paul Fogel"
 author_email = "paul_fogel@hotmail.com"
 description = ""
@@ -75,14 +75,14 @@ version = None
 if git_installed == 0:
     try:
         version = get_version()
-        with open(str(workdir / name / "_version.py"), "w") as vfile:
+        with open(str(workdir / "nmtf" / "_version.py"), "w") as vfile:
             vfile.write(f"__version__ = \"{version}\"")
     except FileNotFoundError as e:
         pass
 if version is None:
     # noinspection PyBroadException
     try:
-        with open(str(workdir / name / "_version.py"), "r") as vfile:
+        with open(str(workdir / "nmtf" / "_version.py"), "r") as vfile:
             version = vfile.readline().split("= ")[-1]
     except Exception:
         version = None
