@@ -1,5 +1,5 @@
-from nmtf import NTF
-from nmtf import NMF
+from adnmtf import NTF
+from adnmtf import NMF
 import pandas as pd
 import numpy as np
 import json

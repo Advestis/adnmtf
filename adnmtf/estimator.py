@@ -2,7 +2,7 @@ import logging
 
 import numpy as np
 
-from nmtf.nmtf_utils import StatusBoxTqdm, build_clusters, global_sign
+from .nmtf_utils import StatusBoxTqdm, build_clusters, global_sign
 
 logger = logging.getLogger(__name__)
 

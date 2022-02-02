@@ -1,11 +1,11 @@
-from nmtf import NMF
-from nmtf import NTF
+from adnmtf import NMF
+from adnmtf import NTF
 
 import numpy as np
 import pandas as pd
 import json
 from pathlib import Path
-from nmtf.estimator import Estimator
+from adnmtf.estimator import Estimator
 
 DATA_PATH = Path(__file__).parent.parent / "data"
 
