@@ -50,7 +50,7 @@ class NMTF:
 
         Example
         -------
-        >>> from nmtf import NMF
+        >>> from adnmtf import NMF
         >>> myNMFmodel = NMF(n_components=4)
 
         References
@@ -100,7 +100,7 @@ class NMTF:
 
         Example
         -------
-        >>> from nmtf import NMF
+        >>> from adnmtf import NMF
         >>> myNMFmodel = NMF(n_components=4)
         >>> m = ...  # matrix to be factorized
         >>> myestimator = myNMFmodel.fit_transform(m)
@@ -121,7 +121,7 @@ class NMTF:
 
         Example
         -------
-        >>> from nmtf import NMF
+        >>> from adnmtf import NMF
         >>> myNMFmodel = NMF(n_components=4)
         >>> m = ...  # matrix to be factorized
         >>> myestimator = myNMFmodel.fit_transform(m)
@@ -185,7 +185,7 @@ class NMF(NMTF):
 
         Example
         -------
-        >>> from nmtf import NMF
+        >>> from adnmtf import NMF
         >>> myNMFmodel = NMF(n_components=4)
         >>> mm = ...  # matrix to be factorized
         >>> est = myNMFmodel.fit_transform(mm)
@@ -397,7 +397,7 @@ class NTF(NMTF):
 
         Example
         -------
-        >>> from nmtf import NTF
+        >>> from adnmtf import NTF
         >>> myNTFmodel = NTF(n_components=4)
 
         Reference
@@ -482,7 +482,7 @@ class NTF(NMTF):
 
         Example
         -------
-        >>> from nmtf import NTF
+        >>> from adnmtf import NTF
         >>> myNTFmodel = NTF(n_components=4)
         >>> t = ...  # tensor with 5 blocks to be factorized
         >>> est = myNTFmodel.fit_transform(t, 5)
