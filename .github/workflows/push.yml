@@ -2,6 +2,7 @@ on:
   push:
     branches:
       - master
+      - main
 
 name: master
 jobs:
@@ -13,37 +14,55 @@ jobs:
         python-version: [ 3.9 ]
     steps:
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
+      - name: Set envvars
+        run: |
+          repo_name=$(echo ${{ github.repository }} | sed "s/${{ github.repository_owner }}\///g")
+          echo "REPO_NAME=$repo_name" >> $GITHUB_ENV
+          echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+          if [ "${GITHUB_REF#refs/heads/}" != "master" ] && [ "${GITHUB_REF#refs/heads/}" != "main" ] ; then
+            echo "SUFFIX=$(echo -${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+          fi
+
+      - name: Check envvars
+        run: |
+          echo "branch: ${{ env.BRANCH_NAME }}"
+          echo "repo: ${{ env.REPO_NAME }}"
+          echo "suffix: ${{ env.SUFFIX }}"
 
       - uses: actions/checkout@master
         with:
           persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
           fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
 
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
       - name: build
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
           python setup.py sdist
 
       - name: make doc
+        if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main' }}
         run: |
-          pip3 install pdoc3
-          pdoc --force --html -o docs nmtf
-          mv docs/nmtf/* docs/
-          rm -r docs/nmtf
+          pip install -r requirements.txt
+          pip install pdoc3
+          pdoc --html ${{ env.REPO_NAME }} -o docs
+          mv docs/${{ env.REPO_NAME }}/* docs/
+          rm -r docs/${{ env.REPO_NAME }}
 
       - name: commit doc
+        if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main' }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add -f docs
+          git add .
           git commit -m "docs"
 
       - name: Push doc
+        if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main' }}
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.ORG_TOKEN_CICD }}
@@ -51,9 +70,10 @@ jobs:
           force: true
 
       - name: topypi
+        if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main' }}
         uses: pypa/gh-action-pypi-publish@master
         with:
-          user: ${{ secrets.PF_PYPI_LOGIN }}
-          password: ${{ secrets.PF_PYPI_PWD }}
+          user: ${{ secrets.ORG_PYPI_LOGIN }}
+          password: ${{ secrets.ORG_PYPI_PASSWD }}
           skip_existing: true
           verbose: true
