@@ -55,11 +55,8 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          ls
-          git status
-          ls docs
           git add .
-          git commit -m "docs"
+          git commit -m "docs" --allow-empty
 
       - name: Push doc
         if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main' }}
