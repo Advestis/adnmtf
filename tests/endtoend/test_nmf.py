@@ -18,9 +18,9 @@ def test_nmf(inputs_):
         if param.lower() == "wb" or param.lower() == "hb":
             print(f"Ignoring {param}...")
         else:
-            if test_name == "test_nmf4":
-                np.savetxt(DATA_PATH / "test_nmf4_W.csv", estimator['W'])
-                np.savetxt(DATA_PATH / "test_nmf4_H.csv", estimator['H'])
+            if test_name == "test_xxx":
+                np.savetxt(DATA_PATH / "test_W.csv", estimator['W'])
+                np.savetxt(DATA_PATH / "test_H.csv", estimator['H'])
 
             param_exp = param
             if param not in expected_estimator:
