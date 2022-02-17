@@ -102,6 +102,26 @@ def NMFInit(M, Mmis, Mt0, Mw0, nc, tolerance, LogIter, myStatusBox):
             Mt[:, k] = np.reshape(U2, n)
             Mw[:, k] = np.reshape(V2, p)
 
+     # First warm up with multiplicative rules
+    precision = EPSILON
+    Mt += precision
+    Mw += precision
+    for iter_mult in range(0, 20):
+        print(iter_mult)
+        if n_Mmis > 0:
+            Mw = \
+                Mw * ((Mt.T @ (M * Mmis)) / (
+                        Mt.T @ ((Mt @ Mw.T) * Mmis) + precision)).T
+            Mt = \
+                Mt * ((M * Mmis) @ Mw / (
+                        ((Mt @ Mw.T) * Mmis) @ Mw + precision))
+        else:
+            Mw = \
+                Mw * ((Mt.T @ M) / (
+                        (Mt.T @ Mt) @ Mw.T + precision)).T
+            Mt = \
+                Mt * (M @ Mw / (Mt @ (Mw.T @ Mw) + precision))
+
     return [Mt, Mw]
 
 def rNMFSolve(
