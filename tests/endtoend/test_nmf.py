@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 
 from .generate_nmf import compute_test_ntf
-#from .generate_json import make_json
+from .generate_json import make_json
 from . import estimator_attributes
 from pathlib import Path
 
@@ -12,6 +12,7 @@ DATA_PATH = Path(__file__).parent.parent / "data"
 @pytest.mark.parametrize(
     "path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected",
     (
+        ("data_nmf_swimmer.csv", 0, None, 17, 0, 0, "expected_result_data_nmf_swimmer.json"),
         ("data_sntf.csv", 1, 6, 6, 0, 0, "expected_result_sntf.json"),
         (
             "data_nmf_nc1_corrmin0.9_corrmax0.1_noise0_RandNorms_miss.csv",
@@ -49,7 +50,7 @@ DATA_PATH = Path(__file__).parent.parent / "data"
     ),
 )
 def test_nmf(path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected):
-    #make_json(path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected)
+    make_json(path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected)
     inputs = compute_test_ntf(path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected)
     print("")
     estimator = inputs[0]

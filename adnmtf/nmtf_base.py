@@ -78,7 +78,7 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> Tuple[np.ndarray, np.ndarray]:
             w *= np.sqrt(2)
             d /= 2
             # svd causes mem allocation problem with large matrices
-            # t, d, w = np.linalg.svd(M)
+            #t, d, w = np.linalg.svd(m)
             # mt = t
             # mw = w.T
         else:
@@ -128,6 +128,9 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> Tuple[np.ndarray, np.ndarray]:
                         (mt.T @ mt) @ mw.T + precision)).T
             mt = \
                 mt * (m @ mw / (mt @ (mw.T @ mw) + precision))
+
+    # np.savetxt("C:/Users/paul_/PycharmProjects/nmtf_private/tests/data/datatest_W.csv", mt)
+    # np.savetxt("C:/Users/paul_/PycharmProjects/nmtf_private/tests/data/datatest_H.csv", mw)
 
     return mt, mw
 
