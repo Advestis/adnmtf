@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 
 from .generate_nmf import compute_test_ntf
-# from .generate_json import make_json
+#from .generate_json import make_json
 from . import estimator_attributes
 from pathlib import Path
 
@@ -49,7 +49,7 @@ DATA_PATH = Path(__file__).parent.parent / "data"
     ),
 )
 def test_nmf(path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected):
-    # make_json(path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected)
+    #make_json(path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected)
     inputs = compute_test_ntf(path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected)
     print("")
     estimator = inputs[0]

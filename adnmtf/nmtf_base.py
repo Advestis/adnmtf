@@ -38,7 +38,7 @@ def init(m, mmis, nc):
         m[mmis == 0] = 0
 
     nc = int(nc)
-    return n, p, nc
+    return n, p, nc, n_mmis
 
 
 def nmf_init(m, mmis, mt0, mw0, nc) -> Tuple[np.ndarray, np.ndarray]:
@@ -62,7 +62,7 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> Tuple[np.ndarray, np.ndarray]:
     Pattern Recognition Pattern Recognition Volume 41, Issue 4, April 2008, Pages 1350-1362
     """
 
-    n, p, nc = init(m, mmis, nc)
+    n, p, nc, n_mmis = init(m, mmis, nc)
 
     mt = np.copy(mt0)
     mw = np.copy(mw0)
@@ -109,6 +109,25 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> Tuple[np.ndarray, np.ndarray]:
         else:
             mt[:, k] = np.reshape(u2, n)
             mw[:, k] = np.reshape(v2, p)
+
+    #Warm up using multiplicative rules
+    precision = EPSILON
+    mt += precision
+    mw += precision
+    for iter_mult in range(0, 20):
+        if n_mmis > 0:
+            mw = \
+                mw * ((mt.T @ (m * mmis)) / (
+                        mt.T @ ((mt @ mw.T) * mmis) + precision)).T
+            mt = \
+                mt * ((m * mmis) @ mw / (
+                        ((mt @ mw.T) * mmis) @ mw + precision))
+        else:
+            mw = \
+                mw * ((mt.T @ m) / (
+                        (mt.T @ mt) @ mw.T + precision)).T
+            mt = \
+                mt * (m @ mw / (mt @ (mw.T @ mw) + precision))
 
     return mt, mw
 
@@ -312,7 +331,7 @@ def ntf_init(
       * mb: Block hand matrix\n
     """
 
-    n, p, nc = init(m, mmis, nc)
+    n, p, nc, n_mmis = init(m, mmis, nc)
 
     n_blocks = int(n_blocks)
     init_type = int(init_type)
