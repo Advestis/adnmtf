@@ -68,24 +68,25 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> Tuple[np.ndarray, np.ndarray]:
     mw = np.copy(mw0)
     if (mt.shape[0] == 0) or (mw.shape[0] == 0):
         # Note that if there are missing values, SVD is performed on matrix imputed with 0's
+        np.random.seed(1)
         if nc >= min(n, p):
             # arpack does not accept to factorize at full rank -> need to duplicate in both dimensions to force it work
             # noinspection PyTypeChecker
             t, d, w = svds(
-                np.concatenate((np.concatenate((m, m), axis=1), np.concatenate((m, m), axis=1)), axis=0), k=nc
+                np.concatenate((np.concatenate((m, m), axis=1), np.concatenate((m, m), axis=1)), axis=0), k=nc,
+                v0=np.random.uniform(size=2 * min(n, p))
             )
-            t *= np.sqrt(2)
-            w *= np.sqrt(2)
             d /= 2
             # svd causes mem allocation problem with large matrices
-            #t, d, w = np.linalg.svd(m)
+            # t, d, w = np.linalg.svd(m)
             # mt = t
             # mw = w.T
         else:
-            t, d, w = svds(m, k=nc)
+            t, d, w = svds(m, k=nc, v0=np.random.uniform(size=min(n, p)))
+            # t, d, w = np.linalg.svd(m)
 
-        mt = t[:n, :]
-        mw = w[:, :p].T
+        mt = t[:n, :nc]
+        mw = w[:nc, :p].T
         # svds returns singular vectors in reverse order
         mt = mt[:, ::-1]
         mw = mw[:, ::-1]
@@ -110,11 +111,11 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> Tuple[np.ndarray, np.ndarray]:
             mt[:, k] = np.reshape(u2, n)
             mw[:, k] = np.reshape(v2, p)
 
-    #Warm up using multiplicative rules
+    # Warm up using multiplicative rules
     precision = EPSILON
     mt += precision
     mw += precision
-    for iter_mult in range(0, 20):
+    for iter_mult in range(0, 100):
         if n_mmis > 0:
             mw = \
                 mw * ((mt.T @ (m * mmis)) / (
@@ -212,20 +213,20 @@ def init_ntf_type_1(m, mmis, n_blocks, nc, mt_nmf, mw_nmf, tolerance, log_iter, 
 
 
 def init_ntf_type_2(
-    m,
-    mmis,
-    n_blocks,
-    nc,
-    mt_nmf,
-    mw_nmf,
-    ntf_unimodal,
-    ntf_left_components,
-    tolerance,
-    log_iter,
-    status0,
-    my_status_box,
-    n,
-    p,
+        m,
+        mmis,
+        n_blocks,
+        nc,
+        mt_nmf,
+        mw_nmf,
+        ntf_unimodal,
+        ntf_left_components,
+        tolerance,
+        log_iter,
+        status0,
+        my_status_box,
+        n,
+        p,
 ):
     # Init default
     if (mt_nmf.shape[0] == 0) or (mw_nmf.shape[0] == 0):
@@ -290,20 +291,20 @@ def init_ntf_type_2(
 
 
 def ntf_init(
-    m,
-    mmis,
-    mt_nmf,
-    mw_nmf,
-    nc,
-    tolerance,
-    log_iter,
-    ntf_unimodal,
-    ntf_left_components,
-    ntf_right_components,
-    ntf_block_components,
-    n_blocks,
-    init_type,
-    my_status_box,
+        m,
+        mmis,
+        mt_nmf,
+        mw_nmf,
+        nc,
+        tolerance,
+        log_iter,
+        ntf_unimodal,
+        ntf_left_components,
+        ntf_right_components,
+        ntf_block_components,
+        n_blocks,
+        init_type,
+        my_status_box,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, List[str], str, int]:
     """Initialize NTF components for HALS
 
@@ -396,31 +397,31 @@ def ntf_init(
 
 
 def r_ntf_solve(
-    m,
-    mmis,
-    mt0,
-    mw0,
-    mb0,
-    nc,
-    tolerance,
-    log_iter,
-    max_iterations,
-    nmf_fix_user_lhe,
-    nmf_fix_user_rhe,
-    nmf_fix_user_bhe,
-    nmf_algo,
-    nmf_robust_n_runs,
-    nmf_calculate_leverage,
-    nmf_use_robust_leverage,
-    nmf_sparse_level,
-    ntf_unimodal,
-    ntf_smooth,
-    ntf_left_components,
-    ntf_right_components,
-    ntf_block_components,
-    n_blocks,
-    nmf_priors,
-    my_status_box,
+        m,
+        mmis,
+        mt0,
+        mw0,
+        mb0,
+        nc,
+        tolerance,
+        log_iter,
+        max_iterations,
+        nmf_fix_user_lhe,
+        nmf_fix_user_rhe,
+        nmf_fix_user_bhe,
+        nmf_algo,
+        nmf_robust_n_runs,
+        nmf_calculate_leverage,
+        nmf_use_robust_leverage,
+        nmf_sparse_level,
+        ntf_unimodal,
+        ntf_smooth,
+        ntf_left_components,
+        ntf_right_components,
+        ntf_block_components,
+        n_blocks,
+        nmf_priors,
+        my_status_box,
 ) -> Tuple[
     np.ndarray,
     np.ndarray,
@@ -631,7 +632,7 @@ def r_ntf_solve(
                 scale_mw = np.linalg.norm(mw_blk[:, k * nmf_robust_n_runs + i_bootstrap])
                 if scale_mw > 0:
                     mw_blk[:, k * nmf_robust_n_runs + i_bootstrap] = (
-                        mw_blk[:, k * nmf_robust_n_runs + i_bootstrap] / scale_mw
+                            mw_blk[:, k * nmf_robust_n_runs + i_bootstrap] / scale_mw
                     )
 
                 mwn[:, k] = mw_blk[:, k * nmf_robust_n_runs + i_bootstrap]

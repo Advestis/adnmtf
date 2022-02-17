@@ -36,7 +36,7 @@ def compute_test_ntf(path, row_header, n_blocks, n_components, sparsity, n_boots
     else:
         my_nmfmodel = NMF(n_components=n_components, random_state=123)
         estimator = my_nmfmodel.fit_transform(m=m0, sparsity=sparsity, n_bootstrap=n_bootstrap)
-        # np.savetxt("C:/Users/paul_/PycharmProjects/nmtf_private/tests/data/datatest_W.csv", estimator.w)
         my_nmfmodel.predict(estimator)
 
+    # np.savetxt("C:/Users/paul_/PycharmProjects/nmtf_private/tests/data/datatest_W.csv", estimator.w)
     return estimator, expected_estimator
