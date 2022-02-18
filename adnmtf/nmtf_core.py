@@ -11,6 +11,7 @@ from typing import Tuple
 import numpy as np
 from .nmtf_utils import EPSILON, sparse_opt
 import logging
+
 logger = logging.getLogger(__name__)
 
 # TODO (pcotte): typing
@@ -147,7 +148,7 @@ def ntf_solve_simple(
      nmf_fix_user_lhe: = 1 => fixed left hand matrix columns
      nmf_fix_user_rhe: = 1 => fixed  right hand matrix columns
      nmf_fix_user_bhe: = 1 => fixed  block hand matrix columns
-     nmf_sparse_level : sparsity level (as defined by Hoyer); +/- = make RHE/LHe sparse
+     nmf_sparse_level: sparsity level (as defined by Hoyer); +/- = make RHE/LHe sparse
      ntf_unimodal: Apply Unimodal constraint on factoring vectors
      ntf_smooth: Apply Smooth constraint on factoring vectors
      ntf_left_components: Apply Unimodal/Smooth constraint on left hand matrix
@@ -429,7 +430,7 @@ def ntf_solve_simple(
     if (n_mmis > 0) & (nmf_fix_user_bhe == 0):
         mb *= denom_block
 
-    # TODO (pcotte) : mt and mw can be not yet referenced : fix that
+    # TODO (pcotte): mt and mw can be not yet referenced: fix that
     return np.array([]), mt, mw, mb, diff, cancel_pressed
 
 
@@ -485,7 +486,7 @@ def ntf_update(
     if n_blocks > 1:
         for i_block in range(0, n_blocks):
             mpart[:, id_blockp[i_block]: id_blockp[i_block] + p] = (
-                    mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+                mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
             )
     else:
         mpart[:, id_blockp[0]: id_blockp[0] + p] = np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
@@ -667,9 +668,9 @@ def ntf_update(
             mt_mw[:] = mt_mw[:] ** 2
             for i_block in range(0, n_blocks):
                 # Broadcast missing cells into Mb to calculate Mb.T * Mb
-                denom_block[i_block, k] = np.reshape(
-                    mmis[:, id_blockp[i_block]: id_blockp[i_block] + p], (1, nxp)
-                ) @ mt_mw
+                denom_block[i_block, k] = (
+                    np.reshape(mmis[:, id_blockp[i_block]: id_blockp[i_block] + p], (1, nxp)) @ mt_mw
+                )
 
             maxdenom_block = np.max(denom_block[:, k])
             denom_block[denom_block[:, k] < denom_cutoff * maxdenom_block] = denom_cutoff * maxdenom_block
@@ -705,7 +706,7 @@ def ntf_update(
     if n_blocks > 1:
         for i_block in range(0, n_blocks):
             mfit[:, id_blockp[i_block]: id_blockp[i_block] + p] += (
-                    mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+                mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
             )
     else:
         mfit[:, id_blockp[0]: id_blockp[0] + p] += np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
