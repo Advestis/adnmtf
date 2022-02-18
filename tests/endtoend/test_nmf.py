@@ -12,7 +12,8 @@ DATA_PATH = Path(__file__).parent.parent / "data"
 @pytest.mark.parametrize(
     "path, iloc, n_blocks, n_components, sparsity, n_bootstrap, expected",
     (
-        ("data_nmf_swimmer.csv", 0, None, 17, 0, 0, "expected_result_data_nmf_swimmer.json"),
+        # Can not work because of seed being different from one computer to another
+        # ("data_nmf_swimmer.csv", 0, None, 17, 0, 0, "expected_result_data_nmf_swimmer.json"),
         ("data_sntf.csv", 1, 6, 6, 0, 0, "expected_result_sntf.json"),
         (
             "data_nmf_nc1_corrmin0.9_corrmax0.1_noise0_RandNorms_miss.csv",
