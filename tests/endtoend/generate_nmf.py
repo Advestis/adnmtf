@@ -9,7 +9,6 @@ from adnmtf.estimator import Estimator
 
 DATA_PATH = Path(__file__).parent.parent / "data"
 
-
 def compute_test_ntf(path, row_header, n_blocks, n_components, sparsity, n_bootstrap, json_file):
     expected_estimator = Estimator(w=None, h=None, volume=None, diff=None, leverage=None, verbose=None)
     with open(DATA_PATH / json_file, "r") as ifile:
@@ -29,6 +28,8 @@ def compute_test_ntf(path, row_header, n_blocks, n_components, sparsity, n_boots
     else:
         m0 = path[0].dot(path[1])
 
+    m0 = m0.astype(float)
+
     if n_blocks is not None:
         my_ntfmodel = NTF(n_components=n_components, random_state=123)
         estimator = my_ntfmodel.fit_transform(m=m0, n_blocks=n_blocks, sparsity=sparsity, n_bootstrap=n_bootstrap)
@@ -38,5 +39,5 @@ def compute_test_ntf(path, row_header, n_blocks, n_components, sparsity, n_boots
         estimator = my_nmfmodel.fit_transform(m=m0, sparsity=sparsity, n_bootstrap=n_bootstrap)
         my_nmfmodel.predict(estimator)
 
-    # np.savetxt("C:/Users/paul_/PycharmProjects/nmtf_private/tests/data/datatest_W.csv", estimator.w)
+    np.savetxt("C:/Users/paul_/PycharmProjects/nmtf_private/tests/data/datatest_W.csv", estimator.w)
     return estimator, expected_estimator

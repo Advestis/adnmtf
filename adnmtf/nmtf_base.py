@@ -68,7 +68,7 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> Tuple[np.ndarray, np.ndarray]:
     mw = np.copy(mw0)
     if (mt.shape[0] == 0) or (mw.shape[0] == 0):
         # Note that if there are missing values, SVD is performed on matrix imputed with 0's
-        np.random.seed(1)
+        np.random.seed(3)
         if nc >= min(n, p):
             # arpack does not accept to factorize at full rank -> need to duplicate in both dimensions to force it work
             # noinspection PyTypeChecker
