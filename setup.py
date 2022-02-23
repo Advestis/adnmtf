@@ -81,7 +81,7 @@ if git_installed == 0:
         pass
 if version is None:
     # noinspection PyBroadException
-    with open(str(workdir / "nmtf" / "_version.py"), "r") as vfile:
+    with open(str(workdir / "adnmtf" / "_version.py"), "r") as vfile:
         version = vfile.readline().split("= ")[-1]
 
 if "v" in version:
