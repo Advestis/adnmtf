@@ -85,15 +85,14 @@ if version is None:
         with open(str(workdir / "nmtf" / "_version.py"), "r") as vfile:
             version = vfile.readline().split("= ")[-1]
     except Exception:
-        version = None
+        version = str(workdir).replace(f"{name}-", "")
 
-if version is not None:
-    if "v" in version:
-        version = version.replace("v", "")
-    if "-" in version:
-        version = version.replace("-", "")
-    if "\"" in version:
-        version = version.replace("\"", "")
+if "v" in version:
+    version = version.replace("v", "")
+if "-" in version:
+    version = version.replace("-", "")
+if "\"" in version:
+    version = version.replace("\"", "")
 
 
 if __name__ == "__main__":
