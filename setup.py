@@ -86,6 +86,7 @@ if version is None:
             version = vfile.readline().split("= ")[-1]
     except Exception:
         version = None
+
 if version is not None:
     if "v" in version:
         version = version.replace("v", "")
