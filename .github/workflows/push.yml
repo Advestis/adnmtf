@@ -41,20 +41,6 @@ jobs:
           python -m pip install --upgrade pip
           python setup.py sdist
 
-#      - name: commit version
-#        run: |
-#          git config --local user.email "action@github.com"
-#          git config --local user.name "GitHub Action"
-#          git add ${{ env.REPO_NAME }}/_version.py
-#          git commit -m "VERSION-SKIP-CI"
-#
-#      - name: Push version
-#        uses: ad-m/github-push-action@master
-#        with:
-#          github_token: ${{ secrets.ORG_TOKEN_CICD }}
-#          branch: ${{ env.BRANCH_NAME }}
-#          force: true
-
       - name: make doc
         if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main' }}
         run: |
