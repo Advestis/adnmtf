@@ -87,7 +87,7 @@ if version is None:
     except Exception:
         for elem in workdir.parents:
             print(elem.name)
-        version = str(workdir.name).replace(f"{name}-", "")
+        version = __file__
 
 if "v" in version:
     version = version.replace("v", "")
