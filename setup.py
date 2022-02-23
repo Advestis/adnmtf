@@ -101,24 +101,46 @@ if __name__ == "__main__":
     if sys.argv[1] == "version":
         exit(0)
 
-    setup(
-        name=name,
-        version=version,
-        author=author,
-        author_email=author_email,
-        url=url,
-        packages=find_packages(exclude=("tests*",)),
-        include_package_data=True,
-        description=description,
-        long_description=long_description,
-        long_description_content_type="text/markdown",
-        install_requires=requirements,
-        package_data={"": ["*", ".*"]},
-        classifiers=[
-            "Programming Language :: Python :: 3",
-            "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-            "Operating System :: OS Independent",
-            "Development Status :: 5 - Production/Stable"
-        ],
-        python_requires='>=3.6',
-    )
+    if version is None:
+        setup(
+            name=name,
+            author=author,
+            author_email=author_email,
+            url=url,
+            packages=find_packages(exclude=("tests*",)),
+            include_package_data=True,
+            description=description,
+            long_description=long_description,
+            long_description_content_type="text/markdown",
+            install_requires=requirements,
+            package_data={"": ["*", ".*"]},
+            classifiers=[
+                "Programming Language :: Python :: 3",
+                "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+                "Operating System :: OS Independent",
+                "Development Status :: 5 - Production/Stable"
+            ],
+            python_requires='>=3.6',
+        )
+    else:
+        setup(
+            name=name,
+            version=version,
+            author=author,
+            author_email=author_email,
+            url=url,
+            packages=find_packages(exclude=("tests*",)),
+            include_package_data=True,
+            description=description,
+            long_description=long_description,
+            long_description_content_type="text/markdown",
+            install_requires=requirements,
+            package_data={"": ["*", ".*"]},
+            classifiers=[
+                "Programming Language :: Python :: 3",
+                "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+                "Operating System :: OS Independent",
+                "Development Status :: 5 - Production/Stable"
+            ],
+            python_requires='>=3.6',
+        )
