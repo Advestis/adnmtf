@@ -68,24 +68,26 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> Tuple[np.ndarray, np.ndarray]:
     mw = np.copy(mw0)
     if (mt.shape[0] == 0) or (mw.shape[0] == 0):
         # Note that if there are missing values, SVD is performed on matrix imputed with 0's
+        np.random.seed(3)
         if nc >= min(n, p):
             # arpack does not accept to factorize at full rank -> need to duplicate in both dimensions to force it work
             # noinspection PyTypeChecker
             t, d, w = svds(
-                np.concatenate((np.concatenate((m, m), axis=1), np.concatenate((m, m), axis=1)), axis=0), k=nc
+                np.concatenate((np.concatenate((m, m), axis=1), np.concatenate((m, m), axis=1)), axis=0),
+                k=nc,
+                v0=np.random.uniform(size=2 * min(n, p)),
             )
-            t *= np.sqrt(2)
-            w *= np.sqrt(2)
             d /= 2
             # svd causes mem allocation problem with large matrices
-            # t, d, w = np.linalg.svd(M)
+            # t, d, w = np.linalg.svd(m)
             # mt = t
             # mw = w.T
         else:
-            t, d, w = svds(m, k=nc)
+            t, d, w = svds(m, k=nc, v0=np.random.uniform(size=min(n, p)))
+            # t, d, w = np.linalg.svd(m)
 
-        mt = t[:n, :]
-        mw = w[:, :p].T
+        mt = t[:n, :nc]
+        mw = w[:nc, :p].T
         # svds returns singular vectors in reverse order
         mt = mt[:, ::-1]
         mw = mw[:, ::-1]
@@ -110,24 +112,20 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> Tuple[np.ndarray, np.ndarray]:
             mt[:, k] = np.reshape(u2, n)
             mw[:, k] = np.reshape(v2, p)
 
-    #Warm up using multiplicative rules
+    # Warm up using multiplicative rules
     precision = EPSILON
     mt += precision
     mw += precision
-    for iter_mult in range(0, 20):
+    for _ in range(0, 100):
         if n_mmis > 0:
-            mw = \
-                mw * ((mt.T @ (m * mmis)) / (
-                        mt.T @ ((mt @ mw.T) * mmis) + precision)).T
-            mt = \
-                mt * ((m * mmis) @ mw / (
-                        ((mt @ mw.T) * mmis) @ mw + precision))
+            mw = mw * ((mt.T @ (m * mmis)) / (mt.T @ ((mt @ mw.T) * mmis) + precision)).T
+            mt = mt * ((m * mmis) @ mw / (((mt @ mw.T) * mmis) @ mw + precision))
         else:
-            mw = \
-                mw * ((mt.T @ m) / (
-                        (mt.T @ mt) @ mw.T + precision)).T
-            mt = \
-                mt * (m @ mw / (mt @ (mw.T @ mw) + precision))
+            mw = mw * ((mt.T @ m) / ((mt.T @ mt) @ mw.T + precision)).T
+            mt = mt * (m @ mw / (mt @ (mw.T @ mw) + precision))
+
+    # np.savetxt("C:/Users/paul_/PycharmProjects/nmtf_private/tests/data/datatest_W.csv", mt)
+    # np.savetxt("C:/Users/paul_/PycharmProjects/nmtf_private/tests/data/datatest_H.csv", mw)
 
     return mt, mw
 

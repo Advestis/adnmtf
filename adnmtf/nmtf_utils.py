@@ -189,9 +189,7 @@ def robust_max(v0, add_message, my_status_box):
         i_iter += 1
 
     if i_iter == max_iterations:
-        add_message.insert(
-            len(add_message), f"Warning: Max iterations reached while calculating robust max (N = {n})"
-        )
+        add_message.insert(len(add_message), f"Warning: Max iterations reached while calculating robust max (N = {n})")
 
     return rob_max * scale, add_message, err_message, cancel_pressed
 
@@ -426,7 +424,7 @@ def build_clusters(
         block_clust,
         add_message,
         err_message,
-        cancel_pressed
+        cancel_pressed,
     )
 
 
@@ -550,7 +548,6 @@ def global_sign(nrun, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup
 
             if irun < nrun - 1:
                 # permute row groups
-                Boot = np.random.permutation
                 # TODO (pcotte): row_groups0 could have not been assigned yet. Fix that.
                 row_groups = row_groups0[np.random.permutation(n)]
             else:
