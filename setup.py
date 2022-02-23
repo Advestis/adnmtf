@@ -75,7 +75,7 @@ version = None
 if git_installed == 0:
     try:
         version = get_version()
-        with open(str(workdir / "nmtf" / "_version.py"), "w") as vfile:
+        with open(str(workdir / "adnmtf" / "_version.py"), "w") as vfile:
             vfile.write(f"__version__ = \"{version}\"")
     except FileNotFoundError as e:
         pass
