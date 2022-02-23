@@ -75,13 +75,13 @@ version = None
 if git_installed == 0:
     try:
         version = get_version()
-        with open(str(workdir / "adnmtf" / "_version.py"), "w") as vfile:
+        with open(str(workdir / f"{name}" / "_version.py"), "w") as vfile:
             vfile.write(f"__version__ = \"{version}\"")
     except FileNotFoundError as e:
         pass
 if version is None:
     # noinspection PyBroadException
-    with open(str(workdir / "adnmtf" / "_version.py"), "r") as vfile:
+    with open(str(workdir / f"{name}" / "_version.py"), "r") as vfile:
         version = vfile.readline().split("= ")[-1]
 
 if "v" in version:
