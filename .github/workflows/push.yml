@@ -49,7 +49,7 @@ jobs:
           pdoc --html ${{ env.REPO_NAME }} -o docs
           mv docs/${{ env.REPO_NAME }}/* docs/
           rm -r docs/${{ env.REPO_NAME }}
-          if ! [ -d docs/ ] ; then echo "error: docs directory not created" ; exit 1
+          if ! [ -d docs/ ] ; then echo "error: docs directory not created" ; exit 1 ; fi
 
       - name: commit doc
         if: ${{ env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'main' }}
