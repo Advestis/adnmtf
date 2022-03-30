@@ -117,7 +117,7 @@ if __name__ == "__main__":
             "Programming Language :: Python :: 3.9",
             "License :: OSI Approved :: MIT License",
             "Operating System :: Unix",
-            "Operating System :: Windows",
+            "Operating System :: Microsoft :: Windows",
             "Development Status :: 5 - Production/Stable"
         ],
         python_requires='>=3.6',
