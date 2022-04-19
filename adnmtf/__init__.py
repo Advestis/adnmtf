@@ -2,12 +2,10 @@
 Non-negative Matrix and Tensor Factorization\n
 Author: Paul Fogel\n
 License: MIT\n
-https://github.com/Advestis/nmtf_private
+https://github.com/Advestis/adnmtf
 """
 
 from .nmtf import NMF, NTF
 
-try:
-    from ._version import __version__
-except ImportError:
-    pass
+from . import _version
+__version__ = _version.get_versions()['version']

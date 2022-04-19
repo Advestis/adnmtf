@@ -1,7 +1,0 @@
-pandas
-numpy
-sklearn
-tqdm
-scipy
-pdoc3
-pytest
