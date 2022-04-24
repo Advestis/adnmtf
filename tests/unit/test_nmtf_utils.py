@@ -5,7 +5,6 @@ from adnmtf.nmtf_utils import sparse_opt
 
 arr = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
-
 @pytest.mark.parametrize(
     "b, alpha, two_sided, expected",
     [
