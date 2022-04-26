@@ -34,7 +34,7 @@ Developped in collaboration with [Advestis](https://advestis.com/) ([Github](htt
 ## NMF Example
 
 ```python
-from nmtf import NMF
+from adnmtf import NMF
 import numpy as np
 
 w = np.array([[1, 2],
@@ -80,7 +80,7 @@ feature indexes for future use in ordered heatmaps.
 ## NTF Example
 
 ```python
-from nmtf import NTF
+from adnmtf import NTF
 import pandas as pd
 
 DATA_PATH = ...
