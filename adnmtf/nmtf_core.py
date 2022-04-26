@@ -422,10 +422,13 @@ def ntf_solve_simple(
                 diff0 = 1.0e99
 
     for k in range(0, nc):
-        hhi = np.round((np.linalg.norm(mt[:, k], ord=1) / np.linalg.norm(mt[:, k], ord=2)) ** 2, decimals=0)
-        logger.info(f"component: {k}, left hhi: {hhi}")
-        hhi = np.round((np.linalg.norm(mw[:, k], ord=1) / np.linalg.norm(mw[:, k], ord=2)) ** 2, decimals=0)
-        logger.info(f"component: {k} right hhi: {hhi}")
+        if np.max(mt[:, k]) > 0:
+            hhi = np.round((np.linalg.norm(mt[:, k], ord=1) / np.linalg.norm(mt[:, k], ord=2)) ** 2, decimals=0)
+            logger.info(f"component: {k}, left hhi: {hhi}")
+
+        if np.max(mw[:, k]) > 0:
+            hhi = np.round((np.linalg.norm(mw[:, k], ord=1) / np.linalg.norm(mw[:, k], ord=2)) ** 2, decimals=0)
+            logger.info(f"component: {k} right hhi: {hhi}")
 
     if (n_mmis > 0) & (nmf_fix_user_bhe == 0):
         mb *= denom_block
