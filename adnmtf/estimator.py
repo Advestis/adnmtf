@@ -2,7 +2,7 @@ import logging
 
 import numpy as np
 
-from .nmtf_utils import StatusBoxTqdm, build_clusters, global_sign
+from .nmtf_utils import StatusBox, build_clusters, global_sign
 
 logger = logging.getLogger(__name__)
 
@@ -174,7 +174,7 @@ class Estimator:
             cell_plot_ordered_clusters = 0
 
         add_message = []
-        my_status_box = StatusBoxTqdm(verbose=self.verbose)
+        my_status_box = StatusBox(verbose=self.verbose)
 
         (
             mtn,
@@ -244,7 +244,7 @@ class Estimator:
             ngroup[group] = np.where(row_groups == list_groups[group])[0].shape[0]
 
         nrun = n_permutations
-        my_status_box = StatusBoxTqdm(verbose=self.verbose)
+        my_status_box = StatusBox(verbose=self.verbose)
         cluster_size, pglob, prun, cluster_prob, cluster_group, cluster_ngroup, cancel_pressed = global_sign(
             nrun, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup, my_status_box
         )
