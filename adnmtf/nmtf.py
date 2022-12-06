@@ -10,7 +10,7 @@ import logging
 
 from .estimator import Estimator
 from .nmtf_base import init_factorization, nmf_init, r_ntf_solve, ntf_init
-from .nmtf_utils import nmf_det, StatusBoxTqdm
+from .nmtf_utils import nmf_det, StatusBox
 
 logger = logging.getLogger(__name__)
 
@@ -204,7 +204,7 @@ class NMF(NMTF):
 
         nmf_algo = "non-robust"
         log_iter = self.verbose
-        my_status_box = StatusBoxTqdm(verbose=log_iter)
+        my_status_box = StatusBox(verbose=log_iter)
         tolerance = self.tol
         if w is None and h is None:
             mt, mw = nmf_init(m, mmis, np.array([]), np.array([]), nc)
@@ -520,7 +520,7 @@ class NTF(NMTF):
             random_seed = self.random_state
             np.random.seed(random_seed)
 
-        my_status_box = StatusBoxTqdm(verbose=log_iter)
+        my_status_box = StatusBox(verbose=log_iter)
 
         if (w is None) & (h is None) & (q is None):
             mt0, mw0, mb0, add_message, err_message, cancel_pressed = ntf_init(
