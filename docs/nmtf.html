@@ -1,0 +1,2327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>adnmtf.nmtf API documentation</title>
+<meta name="description" content="Classes accessing Non-negative matrix and tensor factorization functions" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>adnmtf.nmtf</code></h1>
+</header>
+<section id="section-intro">
+<p>Classes accessing Non-negative matrix and tensor factorization functions</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34; Classes accessing Non-negative matrix and tensor factorization functions
+&#34;&#34;&#34;
+
+# Author: Paul Fogel
+
+# License: MIT
+# Dec 28, &#39;19
+import numpy as np
+import logging
+
+from .estimator import Estimator
+from .nmtf_base import init_factorization, nmf_init, r_ntf_solve, ntf_init
+from .nmtf_utils import nmf_det, get_status_box
+
+logger = logging.getLogger(__name__)
+
+# TODO (pcotte): typing
+
+
+class NMTF:
+    &#34;&#34;&#34;Abstract class overleaded by `nmtf.nmft.NMF` and `nmtf.nmft.NTF`&#34;&#34;&#34;
+    def __init__(
+        self, n_components=None, tol=1e-6, max_iter=150, leverage=&#34;standard&#34;, random_state=None, verbose=0, **ntf_kwargs
+    ):
+        &#34;&#34;&#34;Initialize NMF or NTF model
+
+        Parameters
+        ----------
+        n_components: integer
+            Number of components, if n_components is not set: n_components = min(n_samples, n_features)
+        tol: float, default: 1e-6
+            Tolerance of the stopping condition.
+        max_iter: integer, default: 200
+            Maximum number of iterations.
+        leverage:  None | &#39;standard&#39; | &#39;robust&#39;, default &#39;standard&#39;
+            Calculate leverage of W and H rows on each component.
+        random_state: int, RandomState instance or None, optional, default: None
+            If int, random_state is the seed used by the random number generator;
+            If RandomState instance, random_state is the random number generator;
+            If None, the random number generator is the RandomState instance used
+            by `np.random`.
+        verbose: integer, default: 0
+            The verbosity level (0/1).
+        ntf_kwargs: dict
+            Additional keyword arguments for NTF
+
+        Returns
+        -------
+        NMF model
+
+        Example
+        -------
+        &gt;&gt;&gt; from adnmtf import NMF
+        &gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+
+        References
+        ----------
+        P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
+        The American Statistician, Vol. 67, Issue 4.
+        C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
+        IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1
+        &#34;&#34;&#34;
+        self.n_components = n_components
+        self.tol = tol
+        self.max_iter = max_iter
+        self.leverage = leverage
+        self.random_state = random_state
+        self.verbose = verbose
+
+    def fit_transform(
+        self,
+        m,
+        w=None,
+        h=None,
+        update_w=True,
+        update_h=True,
+        n_bootstrap=None,
+        regularization=None,
+        sparsity=0,
+        **ntf_kwargs
+    ) -&gt; Estimator:
+        &#34;&#34;&#34;To implement in daughter class&#34;&#34;&#34;
+        pass
+
+    @staticmethod
+    def predict(estimator, blocks=None, cluster_by_stability=False, custom_order=False):
+        &#34;&#34;&#34;Derives from factorization result ordered sample and feature indexes for future use in ordered heatmaps
+
+        Parameters
+        ----------
+        estimator: `nmtf.estimator.Estimator`
+            Modified in place
+        blocks: array-like, shape(n_blocks), default None
+            Size of each block (if any) in ordered heatmap.
+        cluster_by_stability: boolean, default False
+             Use stability instead of leverage to assign samples/features to clusters
+        custom_order:  boolean, default False
+             if False samples/features with highest leverage or stability appear on top of each cluster
+             if True within cluster ordering is modified to suggest a continuum  between adjacent clusters
+
+        Example
+        -------
+        &gt;&gt;&gt; from adnmtf import NMF
+        &gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+        &gt;&gt;&gt; m = ...  # matrix to be factorized
+        &gt;&gt;&gt; myestimator = myNMFmodel.fit_transform(m)
+        &gt;&gt;&gt; myNMFmodel.predict(myestimator)
+        &#34;&#34;&#34;
+        estimator.predict(blocks, cluster_by_stability, custom_order)
+
+    @staticmethod
+    def permutation_test_score(estimator, y, n_permutations=100):
+        &#34;&#34;&#34;Derives from factorization result ordered sample and feature indexes for future use in ordered heatmaps
+
+        Parameters
+        ----------
+        estimator: `nmtf.estimator.Estimator`
+            Modified in place
+        y:  array-like, group to be predicted
+        n_permutations:  integer, default: 100
+
+        Example
+        -------
+        &gt;&gt;&gt; from adnmtf import NMF
+        &gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+        &gt;&gt;&gt; m = ...  # matrix to be factorized
+        &gt;&gt;&gt; myestimator = myNMFmodel.fit_transform(m)
+        &gt;&gt;&gt; sample_group = ...  # the group each sample is associated with
+        &gt;&gt;&gt; myNMFmodel.permutation_test_score(myestimator, sample_group, n_permutations=100)
+        &#34;&#34;&#34;
+        estimator.permutation_test_score(y, n_permutations)
+
+
+class NMF(NMTF):
+    &#34;&#34;&#34;Overloads `nmtf.nmft.NMTF`.&#34;&#34;&#34;
+    def fit_transform(
+        self,
+        m,
+        w=None,
+        h=None,
+        update_w=True,
+        update_h=True,
+        n_bootstrap=None,
+        regularization=None,
+        sparsity=0,
+        **ntf_kwargs
+    ) -&gt; Estimator:
+        &#34;&#34;&#34;Compute Non-negative Matrix Factorization (NMF)
+
+        Find two non-negative matrices (W, H) such as x = W @ H.T + Error.
+        This factorization can be used for example for
+        dimensionality reduction, source separation or topic extraction.
+
+        The objective function is minimized with an alternating minimization of W
+        and H.
+
+        Parameters
+        ----------
+        m: array-like, shape (n_samples, n_features)
+            Constant matrix.
+        w: array-like, shape (n_samples, n_components)
+            prior W
+        h: array-like, shape (n_features, n_components)
+            prior H
+        update_w: boolean, default: True
+            Update or keep W fixed
+        update_h: boolean, default: True
+            Update or keep H fixed
+        n_bootstrap: integer, default: 0
+            Number of bootstrap runs.
+        regularization:  None | &#39;components&#39; | &#39;transformation&#39;
+            Select whether the regularization affects the components (H), the
+            transformation (W) or none of them.
+        sparsity: float, default: 0
+            Sparsity target with 0 &lt;= sparsity &lt; 1 representing either:
+            - the % rows in W or H set to 0 (when use_hals = False)
+            - the mean % rows per column in W or H set to 0 (when use_hals = True)
+            sparsity == 1: adaptive sparsity through hard thresholding and hhi
+        ntf_kwargs: dict
+            Should be empty
+
+        Returns
+        -------
+        `nmtf.estimator.Estimator`
+
+        Example
+        -------
+        &gt;&gt;&gt; from adnmtf import NMF
+        &gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+        &gt;&gt;&gt; mm = ...  # matrix to be factorized
+        &gt;&gt;&gt; est = myNMFmodel.fit_transform(mm)
+
+        References
+        ----------
+        P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
+        The American Statistician, Vol. 67, Issue 4.
+        C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
+        IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1
+        &#34;&#34;&#34;
+        if len(ntf_kwargs) &gt; 0:
+            raise ValueError(&#34;You gave NTF keyword arguments to NMF &#39;fit_transform&#39;. Are you using the correct class ?&#34;)
+
+        m, n, p, mmis, nc = init_factorization(m, self.n_components)
+
+        nmf_algo = &#34;non-robust&#34;
+        log_iter = self.verbose
+        my_status_box = get_status_box()(verbose=log_iter)
+        tolerance = self.tol
+        if w is None and h is None:
+            mt, mw = nmf_init(m, mmis, np.array([]), np.array([]), nc)
+        elif h is None:
+            mw = np.ones((p, nc))
+            mt = w.copy()
+        else:
+            mt = np.ones((n, nc))
+            mw = h.copy()
+
+            # TODO (pcotte): this is not pytested
+            # TODO (pcotte): might be optimised, maybe ?
+            for k in range(0, nc):
+                mt[:, k] = mt[:, k] / np.linalg.norm(mt[:, k])
+                mw[:, k] = mw[:, k] / np.linalg.norm(mw[:, k])
+
+        if n_bootstrap is None:
+            nmf_robust_n_runs = 0
+        else:
+            nmf_robust_n_runs = n_bootstrap
+
+        if nmf_robust_n_runs &gt; 1:
+            nmf_algo = &#34;robust&#34;
+
+        if update_w is True:
+            nmf_fix_user_lhe = 0
+        else:
+            nmf_fix_user_lhe = 1
+
+        if update_h is True:
+            nmf_fix_user_rhe = 0
+        else:
+            nmf_fix_user_rhe = 1
+
+        max_iterations = self.max_iter
+        if regularization is None:
+            nmf_sparse_level = 0
+        else:
+            if regularization == &#34;components&#34;:
+                nmf_sparse_level = sparsity
+            elif regularization == &#34;transformation&#34;:
+                nmf_sparse_level = -sparsity
+            else:
+                nmf_sparse_level = 0
+
+        if self.leverage == &#34;standard&#34;:
+            nmf_calculate_leverage = 1
+            nmf_use_robust_leverage = 0
+        elif self.leverage == &#34;robust&#34;:
+            nmf_calculate_leverage = 1
+            nmf_use_robust_leverage = 1
+        else:
+            nmf_calculate_leverage = 0
+            nmf_use_robust_leverage = 0
+
+        if self.random_state is not None:
+            random_seed = self.random_state
+            np.random.seed(random_seed)
+
+        _, mt, mw, mb, mt_pct, mw_pct, diff, add_message, err_message, cancel_pressed = r_ntf_solve(
+            m=m,
+            mmis=mmis,
+            mt0=mt,
+            mw0=mw,
+            mb0=np.array([]),
+            nc=nc,
+            tolerance=tolerance,
+            log_iter=log_iter,
+            max_iterations=max_iterations,
+            nmf_fix_user_lhe=nmf_fix_user_lhe,
+            nmf_fix_user_rhe=nmf_fix_user_rhe,
+            nmf_fix_user_bhe=1,
+            nmf_algo=nmf_algo,
+            nmf_robust_n_runs=nmf_robust_n_runs,
+            nmf_calculate_leverage=nmf_calculate_leverage,
+            nmf_use_robust_leverage=nmf_use_robust_leverage,
+            nmf_sparse_level=nmf_sparse_level,
+            ntf_unimodal=0,
+            ntf_smooth=0,
+            ntf_left_components=0,
+            ntf_right_components=0,
+            ntf_block_components=0,
+            n_blocks=1,
+            nmf_priors=np.array([]),
+            my_status_box=my_status_box,
+        )
+        mev = np.ones(nc)
+        if nmf_fix_user_lhe == 0 and nmf_fix_user_rhe == 0:
+            # Scale
+            for k in range(0, nc):
+                scale_mt = np.linalg.norm(mt[:, k])
+                scale_mw = np.linalg.norm(mw[:, k])
+                mev[k] = scale_mt * scale_mw
+                if mev[k] &gt; 0:
+                    mt[:, k] = mt[:, k] / scale_mt
+                    mw[:, k] = mw[:, k] / scale_mw
+
+        volume = nmf_det(mt, mw, 1)
+
+        for message in add_message:
+            logger.info(message)
+
+        my_status_box.close()
+
+        # Order by decreasing scale
+        r_mev = np.argsort(-mev)
+        mev = mev[r_mev]
+        mt = mt[:, r_mev]
+        mw = mw[:, r_mev]
+        if isinstance(mt_pct, np.ndarray):
+            mt_pct = mt_pct[:, r_mev]
+            mw_pct = mw_pct[:, r_mev]
+
+        # Scale by max com p
+        # TODO (pcotte): might be optimised, maybe ?
+        for k in range(0, nc):
+            max_col = np.max(mt[:, k])
+            if max_col &gt; 0:
+                mt[:, k] /= max_col
+                mw[:, k] *= mev[k] * max_col
+                mev[k] = 1
+            else:
+                mev[k] = 0
+
+        if nmf_algo == &#34;non-robust&#34;:
+            estimator = Estimator(w=mt, h=mw, volume=volume, diff=diff, leverage=self.leverage, verbose=self.verbose)
+        else:
+            estimator = Estimator(
+                w=mt,
+                h=mw,
+                volume=volume,
+                wb=mt_pct,
+                hb=mw_pct,
+                diff=diff,
+                leverage=self.leverage,
+                verbose=self.verbose
+            )
+
+        return estimator
+
+
+class NTF(NMTF):
+    &#34;&#34;&#34;Overloads `nmtf.nmft.NMTF`.&#34;&#34;&#34;
+    def __init__(
+        self,
+        n_components=None,
+        tol=1e-6,
+        max_iter=150,
+        leverage=&#34;standard&#34;,
+        random_state=None,
+        verbose=0,
+        unimodal=False,
+        smooth=False,
+        apply_left=False,
+        apply_right=False,
+        apply_block=False,
+        init_type=1,
+    ):
+        &#34;&#34;&#34;Initialize NTF model
+
+        Parameters
+        ----------
+        n_components: integer
+            Number of components, if n_components is not set: n_components = min(n_samples, n_features)
+        tol: float, default: 1e-6
+            Tolerance of the stopping condition.
+        max_iter: integer, default: 200
+            Maximum number of iterations.
+        leverage:  None | &#39;standard&#39; | &#39;robust&#39;, default &#39;standard&#39;
+            Calculate leverage of W and H rows on each component.
+        random_state: int, RandomState instance or None, optional, default: None
+            If int, random_state is the seed used by the random number generator;
+            If RandomState instance, random_state is the random number generator;
+            If None, the random number generator is the RandomState instance used
+            by `np.random`.
+        verbose: integer, default: 0
+            The verbosity level (0/1).
+        unimodal: Boolean, default: False
+        smooth: Boolean, default: False
+        apply_left: Boolean, default: False
+        apply_right: Boolean, default: False
+        apply_block: Boolean, default: False
+        init_type: integer, default 1
+            init_type = 1: NMF initialization applied on the reshaped matrix [vectorized (1st &amp; 2nd dim) x 3rd dim]
+            init_type = 2: NMF initialization applied on the reshaped matrix [1st dim x vectorized (2nd &amp; 3rd dim)]
+
+        Returns
+        -------
+        NTF model
+
+        Example
+        -------
+        &gt;&gt;&gt; from adnmtf import NTF
+        &gt;&gt;&gt; myNTFmodel = NTF(n_components=4)
+
+        Reference
+        ---------
+        A. Cichocki, P.H.A.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor
+        factorizations,
+        IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
+
+        &#34;&#34;&#34;
+        super().__init__(
+            n_components=n_components,
+            tol=tol,
+            max_iter=max_iter,
+            leverage=leverage,
+            random_state=random_state,
+            verbose=verbose,
+        )
+        self.unimodal = unimodal
+        self.smooth = smooth
+        self.apply_left = apply_left
+        self.apply_right = apply_right
+        self.apply_block = apply_block
+        self.init_type = init_type
+        
+    def fit_transform(
+        self,
+        m,
+        w=None,
+        h=None,
+        update_w=True,
+        update_h=True,
+        regularization=None,
+        sparsity=0,
+        n_bootstrap=None,
+        n_blocks=None,
+        q=None,
+        update_q=True,
+    ) -&gt; Estimator:
+        &#34;&#34;&#34;Compute Non-negative Tensor Factorization (NTF)
+
+        Find three non-negative matrices (W, H, Q) such as x = W @@ H @@ Q + Error (@@ = tensor product).
+        This factorization can be used for example for
+        dimensionality reduction, source separation or topic extraction.
+
+        The objective function is minimized with an alternating minimization of W
+        and H.
+
+        Parameters
+        ----------
+        m: array-like, shape (n_samples, n_features x n_blocks)
+            Constant matrix.
+            X is a tensor with shape (n_samples, n_features, n_blocks), however unfolded along 2nd and 3rd
+            dimensions.
+        n_blocks: integer
+            Number of blocks defining the 3rd dimension of the tensor
+        n_bootstrap: integer
+            Number of bootstrap runs
+        regularization:  None | &#39;components&#39; | &#39;transformation&#39;
+            Select whether the regularization affects the components (H), the
+            transformation (W) or none of them.
+        sparsity: float, default: 0
+            Sparsity target with 0 &lt;= sparsity &lt; 1 representing either:
+            - the % rows in W or H set to 0 (when use_hals = False)
+            - the mean % rows per column in W or H set to 0 (when use_hals = True)
+            sparsity == 1: adaptive sparsity through hard thresholding and hhi
+        w: array-like, shape (n_samples, n_components)
+            Prior W
+        h: array-like, shape (n_features, n_components)
+            Prior H
+        q: array-like, shape (n_blocks, n_components)
+            Prior Q
+        update_w: boolean, default: True
+            Update or keep W fixed
+        update_h: boolean, default: True
+            Update or keep H fixed
+        update_q: boolean, default: True
+            Update or keep Q fixed
+
+        Returns
+        -------
+        `nmtf.estimator.Estimator`
+
+        Example
+        -------
+        &gt;&gt;&gt; from adnmtf import NTF
+        &gt;&gt;&gt; myNTFmodel = NTF(n_components=4)
+        &gt;&gt;&gt; t = ...  # tensor with 5 blocks to be factorized
+        &gt;&gt;&gt; est = myNTFmodel.fit_transform(t, 5)
+
+        Reference
+        ---------
+
+        A. Cichocki, P.H.A.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor
+        factorizations,
+        IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
+        &#34;&#34;&#34;
+        if n_blocks is None:
+            raise ValueError(&#34;Argument &#39;n_blocks&#39; can not be None&#34;)
+        m, n, p, mmis, nc = init_factorization(m, self.n_components)
+
+        n_blocks = n_blocks
+        p_block = int(p / n_blocks)
+        tolerance = self.tol
+        log_iter = self.verbose
+        if regularization is None:
+            nmf_sparse_level = 0
+        else:
+            if regularization == &#34;components&#34;:
+                nmf_sparse_level = sparsity
+            elif regularization == &#34;transformation&#34;:
+                nmf_sparse_level = -sparsity
+            else:
+                nmf_sparse_level = 0
+        ntf_unimodal = self.unimodal
+        ntf_smooth = self.smooth
+        ntf_left_components = self.apply_left
+        ntf_right_components = self.apply_right
+        ntf_block_components = self.apply_block
+        if self.random_state is not None:
+            random_seed = self.random_state
+            np.random.seed(random_seed)
+
+        my_status_box = get_status_box()(verbose=log_iter)
+
+        if (w is None) &amp; (h is None) &amp; (q is None):
+            mt0, mw0, mb0, add_message, err_message, cancel_pressed = ntf_init(
+                m=m,
+                mmis=mmis,
+                mt_nmf=np.array([]),
+                mw_nmf=np.array([]),
+                nc=nc,
+                tolerance=tolerance,
+                log_iter=log_iter,
+                ntf_unimodal=ntf_unimodal,
+                ntf_left_components=ntf_left_components,
+                ntf_right_components=ntf_right_components,
+                ntf_block_components=ntf_block_components,
+                n_blocks=n_blocks,
+                init_type=self.init_type,
+                my_status_box=my_status_box,
+            )
+        else:
+            if w is None:
+                mt0 = np.ones((n, nc))
+            else:
+                mt0 = np.copy(w)
+
+            if h is None:
+                mw0 = np.ones((p_block, nc))
+            else:
+                mw0 = np.copy(h)
+
+            if q is None:
+                mb0 = np.ones((n_blocks, nc))
+            else:
+                mb0 = np.copy(q)
+
+            mfit = np.zeros((n, p))
+            # TODO (pcotte): might be optimised, maybe ?
+            for k in range(0, nc):
+                for i_block in range(0, n_blocks):
+                    mfit[:, i_block * p_block: (i_block + 1) * p_block] += (
+                            mb0[i_block, k] * np.reshape(mt0[:, k], (n, 1)) @ np.reshape(mw0[:, k], (1, p_block))
+                    )
+
+            scale_ratio = (np.linalg.norm(mfit) / np.linalg.norm(m)) ** (1 / 3)
+            # TODO (pcotte): might be optimised, maybe ?
+            for k in range(0, nc):
+                mt0[:, k] /= scale_ratio
+                mw0[:, k] /= scale_ratio
+                mb0[:, k] /= scale_ratio
+
+            mfit = np.zeros((n, p))
+            # TODO (pcotte): might be optimised, maybe ?
+            for k in range(0, nc):
+                for i_block in range(0, n_blocks):
+                    mfit[:, i_block * p_block: (i_block + 1) * p_block] += (
+                            mb0[i_block, k] * np.reshape(mt0[:, k], (n, 1)) @ np.reshape(mw0[:, k], (1, p_block))
+                    )
+
+        max_iterations = self.max_iter
+
+        if n_bootstrap is None:
+            nmf_robust_n_runs = 0
+        else:
+            nmf_robust_n_runs = n_bootstrap
+
+        if nmf_robust_n_runs &lt;= 1:
+            nmf_algo = &#34;non-robust&#34;
+        else:
+            nmf_algo = &#34;robust&#34;
+
+        if self.leverage == &#34;standard&#34;:
+            nmf_calculate_leverage = 1
+            nmf_use_robust_leverage = 0
+        elif self.leverage == &#34;robust&#34;:
+            nmf_calculate_leverage = 1
+            nmf_use_robust_leverage = 1
+        else:
+            nmf_calculate_leverage = 0
+            nmf_use_robust_leverage = 0
+
+        if self.random_state is not None:
+            random_seed = self.random_state
+            np.random.seed(random_seed)
+
+        if update_w:
+            nmf_fix_user_lhe = 0
+        else:
+            nmf_fix_user_lhe = 1
+
+        if update_h:
+            nmf_fix_user_rhe = 0
+        else:
+            nmf_fix_user_rhe = 1
+
+        if update_q:
+            nmf_fix_user_bhe = 0
+        else:
+            nmf_fix_user_bhe = 1
+
+        mt_conv, mt, mw, mb, mt_pct, mw_pct, diff, add_message, err_message, cancel_pressed = r_ntf_solve(
+            m=m,
+            mmis=mmis,
+            mt0=mt0,
+            mw0=mw0,
+            mb0=mb0,
+            nc=nc,
+            tolerance=tolerance,
+            log_iter=log_iter,
+            max_iterations=max_iterations,
+            nmf_fix_user_lhe=nmf_fix_user_lhe,
+            nmf_fix_user_rhe=nmf_fix_user_rhe,
+            nmf_fix_user_bhe=nmf_fix_user_bhe,
+            nmf_algo=nmf_algo,
+            nmf_robust_n_runs=nmf_robust_n_runs,
+            nmf_calculate_leverage=nmf_calculate_leverage,
+            nmf_use_robust_leverage=nmf_use_robust_leverage,
+            nmf_sparse_level=nmf_sparse_level,
+            ntf_unimodal=ntf_unimodal,
+            ntf_smooth=ntf_smooth,
+            ntf_left_components=ntf_left_components,
+            ntf_right_components=ntf_right_components,
+            ntf_block_components=ntf_block_components,
+            n_blocks=n_blocks,
+            nmf_priors=np.array([]),
+            my_status_box=my_status_box,
+        )
+
+        volume = nmf_det(mt, mw, 1)
+
+        for message in add_message:
+            logger.info(message)
+
+        my_status_box.close()
+
+        if nmf_robust_n_runs &lt;= 1:
+            estimator = Estimator(
+                w=mt,
+                h=mw,
+                q=mb,
+                volume=volume,
+                diff=diff,
+                leverage=self.leverage,
+                verbose=self.verbose
+            )
+        else:
+            estimator = Estimator(
+                w=mt,
+                h=mw,
+                q=mb,
+                volume=volume,
+                wb=mt_pct,
+                hb=mw_pct,
+                diff=diff,
+                leverage=self.leverage,
+                verbose=self.verbose
+            )
+
+        return estimator</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="adnmtf.nmtf.NMF"><code class="flex name class">
+<span>class <span class="ident">NMF</span></span>
+<span>(</span><span>n_components=None, tol=1e-06, max_iter=150, leverage='standard', random_state=None, verbose=0, **ntf_kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Overloads <code>nmtf.nmft.NMTF</code>.</p>
+<p>Initialize NMF or NTF model</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>n_components</code></strong> :&ensp;<code>integer</code></dt>
+<dd>Number of components, if n_components is not set: n_components = min(n_samples, n_features)</dd>
+<dt><strong><code>tol</code></strong> :&ensp;<code>float</code>, default<code>: 1e-6</code></dt>
+<dd>Tolerance of the stopping condition.</dd>
+<dt><strong><code>max_iter</code></strong> :&ensp;<code>integer</code>, default<code>: 200</code></dt>
+<dd>Maximum number of iterations.</dd>
+<dt><strong><code>leverage</code></strong> :&ensp;<code>None | 'standard' | 'robust'</code>, default <code>'standard'</code></dt>
+<dd>Calculate leverage of W and H rows on each component.</dd>
+<dt><strong><code>random_state</code></strong> :&ensp;<code>int, RandomState instance</code> or <code>None</code>, optional, default<code>: None</code></dt>
+<dd>If int, random_state is the seed used by the random number generator;
+If RandomState instance, random_state is the random number generator;
+If None, the random number generator is the RandomState instance used
+by <code>np.random</code>.</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>integer</code>, default<code>: 0</code></dt>
+<dd>The verbosity level (0/1).</dd>
+<dt><strong><code>ntf_kwargs</code></strong> :&ensp;<code>dict</code></dt>
+<dd>Additional keyword arguments for NTF</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="adnmtf.nmtf.NMF" href="#adnmtf.nmtf.NMF">NMF</a> model</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="example">Example</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; from adnmtf import NMF
+&gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+</code></pre>
+<h2 id="references">References</h2>
+<p>P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
+The American Statistician, Vol. 67, Issue 4.
+C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
+IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NMF(NMTF):
+    &#34;&#34;&#34;Overloads `nmtf.nmft.NMTF`.&#34;&#34;&#34;
+    def fit_transform(
+        self,
+        m,
+        w=None,
+        h=None,
+        update_w=True,
+        update_h=True,
+        n_bootstrap=None,
+        regularization=None,
+        sparsity=0,
+        **ntf_kwargs
+    ) -&gt; Estimator:
+        &#34;&#34;&#34;Compute Non-negative Matrix Factorization (NMF)
+
+        Find two non-negative matrices (W, H) such as x = W @ H.T + Error.
+        This factorization can be used for example for
+        dimensionality reduction, source separation or topic extraction.
+
+        The objective function is minimized with an alternating minimization of W
+        and H.
+
+        Parameters
+        ----------
+        m: array-like, shape (n_samples, n_features)
+            Constant matrix.
+        w: array-like, shape (n_samples, n_components)
+            prior W
+        h: array-like, shape (n_features, n_components)
+            prior H
+        update_w: boolean, default: True
+            Update or keep W fixed
+        update_h: boolean, default: True
+            Update or keep H fixed
+        n_bootstrap: integer, default: 0
+            Number of bootstrap runs.
+        regularization:  None | &#39;components&#39; | &#39;transformation&#39;
+            Select whether the regularization affects the components (H), the
+            transformation (W) or none of them.
+        sparsity: float, default: 0
+            Sparsity target with 0 &lt;= sparsity &lt; 1 representing either:
+            - the % rows in W or H set to 0 (when use_hals = False)
+            - the mean % rows per column in W or H set to 0 (when use_hals = True)
+            sparsity == 1: adaptive sparsity through hard thresholding and hhi
+        ntf_kwargs: dict
+            Should be empty
+
+        Returns
+        -------
+        `nmtf.estimator.Estimator`
+
+        Example
+        -------
+        &gt;&gt;&gt; from adnmtf import NMF
+        &gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+        &gt;&gt;&gt; mm = ...  # matrix to be factorized
+        &gt;&gt;&gt; est = myNMFmodel.fit_transform(mm)
+
+        References
+        ----------
+        P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
+        The American Statistician, Vol. 67, Issue 4.
+        C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
+        IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1
+        &#34;&#34;&#34;
+        if len(ntf_kwargs) &gt; 0:
+            raise ValueError(&#34;You gave NTF keyword arguments to NMF &#39;fit_transform&#39;. Are you using the correct class ?&#34;)
+
+        m, n, p, mmis, nc = init_factorization(m, self.n_components)
+
+        nmf_algo = &#34;non-robust&#34;
+        log_iter = self.verbose
+        my_status_box = get_status_box()(verbose=log_iter)
+        tolerance = self.tol
+        if w is None and h is None:
+            mt, mw = nmf_init(m, mmis, np.array([]), np.array([]), nc)
+        elif h is None:
+            mw = np.ones((p, nc))
+            mt = w.copy()
+        else:
+            mt = np.ones((n, nc))
+            mw = h.copy()
+
+            # TODO (pcotte): this is not pytested
+            # TODO (pcotte): might be optimised, maybe ?
+            for k in range(0, nc):
+                mt[:, k] = mt[:, k] / np.linalg.norm(mt[:, k])
+                mw[:, k] = mw[:, k] / np.linalg.norm(mw[:, k])
+
+        if n_bootstrap is None:
+            nmf_robust_n_runs = 0
+        else:
+            nmf_robust_n_runs = n_bootstrap
+
+        if nmf_robust_n_runs &gt; 1:
+            nmf_algo = &#34;robust&#34;
+
+        if update_w is True:
+            nmf_fix_user_lhe = 0
+        else:
+            nmf_fix_user_lhe = 1
+
+        if update_h is True:
+            nmf_fix_user_rhe = 0
+        else:
+            nmf_fix_user_rhe = 1
+
+        max_iterations = self.max_iter
+        if regularization is None:
+            nmf_sparse_level = 0
+        else:
+            if regularization == &#34;components&#34;:
+                nmf_sparse_level = sparsity
+            elif regularization == &#34;transformation&#34;:
+                nmf_sparse_level = -sparsity
+            else:
+                nmf_sparse_level = 0
+
+        if self.leverage == &#34;standard&#34;:
+            nmf_calculate_leverage = 1
+            nmf_use_robust_leverage = 0
+        elif self.leverage == &#34;robust&#34;:
+            nmf_calculate_leverage = 1
+            nmf_use_robust_leverage = 1
+        else:
+            nmf_calculate_leverage = 0
+            nmf_use_robust_leverage = 0
+
+        if self.random_state is not None:
+            random_seed = self.random_state
+            np.random.seed(random_seed)
+
+        _, mt, mw, mb, mt_pct, mw_pct, diff, add_message, err_message, cancel_pressed = r_ntf_solve(
+            m=m,
+            mmis=mmis,
+            mt0=mt,
+            mw0=mw,
+            mb0=np.array([]),
+            nc=nc,
+            tolerance=tolerance,
+            log_iter=log_iter,
+            max_iterations=max_iterations,
+            nmf_fix_user_lhe=nmf_fix_user_lhe,
+            nmf_fix_user_rhe=nmf_fix_user_rhe,
+            nmf_fix_user_bhe=1,
+            nmf_algo=nmf_algo,
+            nmf_robust_n_runs=nmf_robust_n_runs,
+            nmf_calculate_leverage=nmf_calculate_leverage,
+            nmf_use_robust_leverage=nmf_use_robust_leverage,
+            nmf_sparse_level=nmf_sparse_level,
+            ntf_unimodal=0,
+            ntf_smooth=0,
+            ntf_left_components=0,
+            ntf_right_components=0,
+            ntf_block_components=0,
+            n_blocks=1,
+            nmf_priors=np.array([]),
+            my_status_box=my_status_box,
+        )
+        mev = np.ones(nc)
+        if nmf_fix_user_lhe == 0 and nmf_fix_user_rhe == 0:
+            # Scale
+            for k in range(0, nc):
+                scale_mt = np.linalg.norm(mt[:, k])
+                scale_mw = np.linalg.norm(mw[:, k])
+                mev[k] = scale_mt * scale_mw
+                if mev[k] &gt; 0:
+                    mt[:, k] = mt[:, k] / scale_mt
+                    mw[:, k] = mw[:, k] / scale_mw
+
+        volume = nmf_det(mt, mw, 1)
+
+        for message in add_message:
+            logger.info(message)
+
+        my_status_box.close()
+
+        # Order by decreasing scale
+        r_mev = np.argsort(-mev)
+        mev = mev[r_mev]
+        mt = mt[:, r_mev]
+        mw = mw[:, r_mev]
+        if isinstance(mt_pct, np.ndarray):
+            mt_pct = mt_pct[:, r_mev]
+            mw_pct = mw_pct[:, r_mev]
+
+        # Scale by max com p
+        # TODO (pcotte): might be optimised, maybe ?
+        for k in range(0, nc):
+            max_col = np.max(mt[:, k])
+            if max_col &gt; 0:
+                mt[:, k] /= max_col
+                mw[:, k] *= mev[k] * max_col
+                mev[k] = 1
+            else:
+                mev[k] = 0
+
+        if nmf_algo == &#34;non-robust&#34;:
+            estimator = Estimator(w=mt, h=mw, volume=volume, diff=diff, leverage=self.leverage, verbose=self.verbose)
+        else:
+            estimator = Estimator(
+                w=mt,
+                h=mw,
+                volume=volume,
+                wb=mt_pct,
+                hb=mw_pct,
+                diff=diff,
+                leverage=self.leverage,
+                verbose=self.verbose
+            )
+
+        return estimator</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="adnmtf.nmtf.NMTF" href="#adnmtf.nmtf.NMTF">NMTF</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="adnmtf.nmtf.NMF.fit_transform"><code class="name flex">
+<span>def <span class="ident">fit_transform</span></span>(<span>self, m, w=None, h=None, update_w=True, update_h=True, n_bootstrap=None, regularization=None, sparsity=0, **ntf_kwargs) ‑> <a title="adnmtf.estimator.Estimator" href="estimator.html#adnmtf.estimator.Estimator">Estimator</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Compute Non-negative Matrix Factorization (NMF)</p>
+<p>Find two non-negative matrices (W, H) such as x = W @ H.T + Error.
+This factorization can be used for example for
+dimensionality reduction, source separation or topic extraction.</p>
+<p>The objective function is minimized with an alternating minimization of W
+and H.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>m</code></strong> :&ensp;<code>array-like, shape (n_samples, n_features)</code></dt>
+<dd>Constant matrix.</dd>
+<dt><strong><code>w</code></strong> :&ensp;<code>array-like, shape (n_samples, n_components)</code></dt>
+<dd>prior W</dd>
+<dt><strong><code>h</code></strong> :&ensp;<code>array-like, shape (n_features, n_components)</code></dt>
+<dd>prior H</dd>
+<dt><strong><code>update_w</code></strong> :&ensp;<code>boolean</code>, default<code>: True</code></dt>
+<dd>Update or keep W fixed</dd>
+<dt><strong><code>update_h</code></strong> :&ensp;<code>boolean</code>, default<code>: True</code></dt>
+<dd>Update or keep H fixed</dd>
+<dt><strong><code>n_bootstrap</code></strong> :&ensp;<code>integer</code>, default<code>: 0</code></dt>
+<dd>Number of bootstrap runs.</dd>
+<dt><strong><code>regularization</code></strong> :&ensp;<code>None | 'components' | 'transformation'</code></dt>
+<dd>Select whether the regularization affects the components (H), the
+transformation (W) or none of them.</dd>
+<dt><strong><code>sparsity</code></strong> :&ensp;<code>float</code>, default<code>: 0</code></dt>
+<dd>Sparsity target with 0 &lt;= sparsity &lt; 1 representing either:
+- the % rows in W or H set to 0 (when use_hals = False)
+- the mean % rows per column in W or H set to 0 (when use_hals = True)
+sparsity == 1: adaptive sparsity through hard thresholding and hhi</dd>
+<dt><strong><code>ntf_kwargs</code></strong> :&ensp;<code>dict</code></dt>
+<dd>Should be empty</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p><code>nmtf.estimator.Estimator</code></p>
+<h2 id="example">Example</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; from adnmtf import NMF
+&gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+&gt;&gt;&gt; mm = ...  # matrix to be factorized
+&gt;&gt;&gt; est = myNMFmodel.fit_transform(mm)
+</code></pre>
+<h2 id="references">References</h2>
+<p>P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
+The American Statistician, Vol. 67, Issue 4.
+C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
+IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit_transform(
+    self,
+    m,
+    w=None,
+    h=None,
+    update_w=True,
+    update_h=True,
+    n_bootstrap=None,
+    regularization=None,
+    sparsity=0,
+    **ntf_kwargs
+) -&gt; Estimator:
+    &#34;&#34;&#34;Compute Non-negative Matrix Factorization (NMF)
+
+    Find two non-negative matrices (W, H) such as x = W @ H.T + Error.
+    This factorization can be used for example for
+    dimensionality reduction, source separation or topic extraction.
+
+    The objective function is minimized with an alternating minimization of W
+    and H.
+
+    Parameters
+    ----------
+    m: array-like, shape (n_samples, n_features)
+        Constant matrix.
+    w: array-like, shape (n_samples, n_components)
+        prior W
+    h: array-like, shape (n_features, n_components)
+        prior H
+    update_w: boolean, default: True
+        Update or keep W fixed
+    update_h: boolean, default: True
+        Update or keep H fixed
+    n_bootstrap: integer, default: 0
+        Number of bootstrap runs.
+    regularization:  None | &#39;components&#39; | &#39;transformation&#39;
+        Select whether the regularization affects the components (H), the
+        transformation (W) or none of them.
+    sparsity: float, default: 0
+        Sparsity target with 0 &lt;= sparsity &lt; 1 representing either:
+        - the % rows in W or H set to 0 (when use_hals = False)
+        - the mean % rows per column in W or H set to 0 (when use_hals = True)
+        sparsity == 1: adaptive sparsity through hard thresholding and hhi
+    ntf_kwargs: dict
+        Should be empty
+
+    Returns
+    -------
+    `nmtf.estimator.Estimator`
+
+    Example
+    -------
+    &gt;&gt;&gt; from adnmtf import NMF
+    &gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+    &gt;&gt;&gt; mm = ...  # matrix to be factorized
+    &gt;&gt;&gt; est = myNMFmodel.fit_transform(mm)
+
+    References
+    ----------
+    P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
+    The American Statistician, Vol. 67, Issue 4.
+    C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
+    IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1
+    &#34;&#34;&#34;
+    if len(ntf_kwargs) &gt; 0:
+        raise ValueError(&#34;You gave NTF keyword arguments to NMF &#39;fit_transform&#39;. Are you using the correct class ?&#34;)
+
+    m, n, p, mmis, nc = init_factorization(m, self.n_components)
+
+    nmf_algo = &#34;non-robust&#34;
+    log_iter = self.verbose
+    my_status_box = get_status_box()(verbose=log_iter)
+    tolerance = self.tol
+    if w is None and h is None:
+        mt, mw = nmf_init(m, mmis, np.array([]), np.array([]), nc)
+    elif h is None:
+        mw = np.ones((p, nc))
+        mt = w.copy()
+    else:
+        mt = np.ones((n, nc))
+        mw = h.copy()
+
+        # TODO (pcotte): this is not pytested
+        # TODO (pcotte): might be optimised, maybe ?
+        for k in range(0, nc):
+            mt[:, k] = mt[:, k] / np.linalg.norm(mt[:, k])
+            mw[:, k] = mw[:, k] / np.linalg.norm(mw[:, k])
+
+    if n_bootstrap is None:
+        nmf_robust_n_runs = 0
+    else:
+        nmf_robust_n_runs = n_bootstrap
+
+    if nmf_robust_n_runs &gt; 1:
+        nmf_algo = &#34;robust&#34;
+
+    if update_w is True:
+        nmf_fix_user_lhe = 0
+    else:
+        nmf_fix_user_lhe = 1
+
+    if update_h is True:
+        nmf_fix_user_rhe = 0
+    else:
+        nmf_fix_user_rhe = 1
+
+    max_iterations = self.max_iter
+    if regularization is None:
+        nmf_sparse_level = 0
+    else:
+        if regularization == &#34;components&#34;:
+            nmf_sparse_level = sparsity
+        elif regularization == &#34;transformation&#34;:
+            nmf_sparse_level = -sparsity
+        else:
+            nmf_sparse_level = 0
+
+    if self.leverage == &#34;standard&#34;:
+        nmf_calculate_leverage = 1
+        nmf_use_robust_leverage = 0
+    elif self.leverage == &#34;robust&#34;:
+        nmf_calculate_leverage = 1
+        nmf_use_robust_leverage = 1
+    else:
+        nmf_calculate_leverage = 0
+        nmf_use_robust_leverage = 0
+
+    if self.random_state is not None:
+        random_seed = self.random_state
+        np.random.seed(random_seed)
+
+    _, mt, mw, mb, mt_pct, mw_pct, diff, add_message, err_message, cancel_pressed = r_ntf_solve(
+        m=m,
+        mmis=mmis,
+        mt0=mt,
+        mw0=mw,
+        mb0=np.array([]),
+        nc=nc,
+        tolerance=tolerance,
+        log_iter=log_iter,
+        max_iterations=max_iterations,
+        nmf_fix_user_lhe=nmf_fix_user_lhe,
+        nmf_fix_user_rhe=nmf_fix_user_rhe,
+        nmf_fix_user_bhe=1,
+        nmf_algo=nmf_algo,
+        nmf_robust_n_runs=nmf_robust_n_runs,
+        nmf_calculate_leverage=nmf_calculate_leverage,
+        nmf_use_robust_leverage=nmf_use_robust_leverage,
+        nmf_sparse_level=nmf_sparse_level,
+        ntf_unimodal=0,
+        ntf_smooth=0,
+        ntf_left_components=0,
+        ntf_right_components=0,
+        ntf_block_components=0,
+        n_blocks=1,
+        nmf_priors=np.array([]),
+        my_status_box=my_status_box,
+    )
+    mev = np.ones(nc)
+    if nmf_fix_user_lhe == 0 and nmf_fix_user_rhe == 0:
+        # Scale
+        for k in range(0, nc):
+            scale_mt = np.linalg.norm(mt[:, k])
+            scale_mw = np.linalg.norm(mw[:, k])
+            mev[k] = scale_mt * scale_mw
+            if mev[k] &gt; 0:
+                mt[:, k] = mt[:, k] / scale_mt
+                mw[:, k] = mw[:, k] / scale_mw
+
+    volume = nmf_det(mt, mw, 1)
+
+    for message in add_message:
+        logger.info(message)
+
+    my_status_box.close()
+
+    # Order by decreasing scale
+    r_mev = np.argsort(-mev)
+    mev = mev[r_mev]
+    mt = mt[:, r_mev]
+    mw = mw[:, r_mev]
+    if isinstance(mt_pct, np.ndarray):
+        mt_pct = mt_pct[:, r_mev]
+        mw_pct = mw_pct[:, r_mev]
+
+    # Scale by max com p
+    # TODO (pcotte): might be optimised, maybe ?
+    for k in range(0, nc):
+        max_col = np.max(mt[:, k])
+        if max_col &gt; 0:
+            mt[:, k] /= max_col
+            mw[:, k] *= mev[k] * max_col
+            mev[k] = 1
+        else:
+            mev[k] = 0
+
+    if nmf_algo == &#34;non-robust&#34;:
+        estimator = Estimator(w=mt, h=mw, volume=volume, diff=diff, leverage=self.leverage, verbose=self.verbose)
+    else:
+        estimator = Estimator(
+            w=mt,
+            h=mw,
+            volume=volume,
+            wb=mt_pct,
+            hb=mw_pct,
+            diff=diff,
+            leverage=self.leverage,
+            verbose=self.verbose
+        )
+
+    return estimator</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="adnmtf.nmtf.NMTF" href="#adnmtf.nmtf.NMTF">NMTF</a></b></code>:
+<ul class="hlist">
+<li><code><a title="adnmtf.nmtf.NMTF.permutation_test_score" href="#adnmtf.nmtf.NMTF.permutation_test_score">permutation_test_score</a></code></li>
+<li><code><a title="adnmtf.nmtf.NMTF.predict" href="#adnmtf.nmtf.NMTF.predict">predict</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="adnmtf.nmtf.NMTF"><code class="flex name class">
+<span>class <span class="ident">NMTF</span></span>
+<span>(</span><span>n_components=None, tol=1e-06, max_iter=150, leverage='standard', random_state=None, verbose=0, **ntf_kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Abstract class overleaded by <code>nmtf.nmft.NMF</code> and <code>nmtf.nmft.NTF</code></p>
+<p>Initialize NMF or NTF model</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>n_components</code></strong> :&ensp;<code>integer</code></dt>
+<dd>Number of components, if n_components is not set: n_components = min(n_samples, n_features)</dd>
+<dt><strong><code>tol</code></strong> :&ensp;<code>float</code>, default<code>: 1e-6</code></dt>
+<dd>Tolerance of the stopping condition.</dd>
+<dt><strong><code>max_iter</code></strong> :&ensp;<code>integer</code>, default<code>: 200</code></dt>
+<dd>Maximum number of iterations.</dd>
+<dt><strong><code>leverage</code></strong> :&ensp;<code>None | 'standard' | 'robust'</code>, default <code>'standard'</code></dt>
+<dd>Calculate leverage of W and H rows on each component.</dd>
+<dt><strong><code>random_state</code></strong> :&ensp;<code>int, RandomState instance</code> or <code>None</code>, optional, default<code>: None</code></dt>
+<dd>If int, random_state is the seed used by the random number generator;
+If RandomState instance, random_state is the random number generator;
+If None, the random number generator is the RandomState instance used
+by <code>np.random</code>.</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>integer</code>, default<code>: 0</code></dt>
+<dd>The verbosity level (0/1).</dd>
+<dt><strong><code>ntf_kwargs</code></strong> :&ensp;<code>dict</code></dt>
+<dd>Additional keyword arguments for NTF</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="adnmtf.nmtf.NMF" href="#adnmtf.nmtf.NMF">NMF</a> model</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="example">Example</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; from adnmtf import NMF
+&gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+</code></pre>
+<h2 id="references">References</h2>
+<p>P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
+The American Statistician, Vol. 67, Issue 4.
+C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
+IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NMTF:
+    &#34;&#34;&#34;Abstract class overleaded by `nmtf.nmft.NMF` and `nmtf.nmft.NTF`&#34;&#34;&#34;
+    def __init__(
+        self, n_components=None, tol=1e-6, max_iter=150, leverage=&#34;standard&#34;, random_state=None, verbose=0, **ntf_kwargs
+    ):
+        &#34;&#34;&#34;Initialize NMF or NTF model
+
+        Parameters
+        ----------
+        n_components: integer
+            Number of components, if n_components is not set: n_components = min(n_samples, n_features)
+        tol: float, default: 1e-6
+            Tolerance of the stopping condition.
+        max_iter: integer, default: 200
+            Maximum number of iterations.
+        leverage:  None | &#39;standard&#39; | &#39;robust&#39;, default &#39;standard&#39;
+            Calculate leverage of W and H rows on each component.
+        random_state: int, RandomState instance or None, optional, default: None
+            If int, random_state is the seed used by the random number generator;
+            If RandomState instance, random_state is the random number generator;
+            If None, the random number generator is the RandomState instance used
+            by `np.random`.
+        verbose: integer, default: 0
+            The verbosity level (0/1).
+        ntf_kwargs: dict
+            Additional keyword arguments for NTF
+
+        Returns
+        -------
+        NMF model
+
+        Example
+        -------
+        &gt;&gt;&gt; from adnmtf import NMF
+        &gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+
+        References
+        ----------
+        P. Fogel, D.M. Hawkins, C. Beecher, G. Luta, S. S. Young (2013). A Tale of Two Matrix Factorizations.
+        The American Statistician, Vol. 67, Issue 4.
+        C. H.Q. Ding et al (2010) Convex and Semi-Nonnegative Matrix Factorizations
+        IEEE Transactions on Pattern Analysis and Machine Intelligence Vol: 32 Issue: 1
+        &#34;&#34;&#34;
+        self.n_components = n_components
+        self.tol = tol
+        self.max_iter = max_iter
+        self.leverage = leverage
+        self.random_state = random_state
+        self.verbose = verbose
+
+    def fit_transform(
+        self,
+        m,
+        w=None,
+        h=None,
+        update_w=True,
+        update_h=True,
+        n_bootstrap=None,
+        regularization=None,
+        sparsity=0,
+        **ntf_kwargs
+    ) -&gt; Estimator:
+        &#34;&#34;&#34;To implement in daughter class&#34;&#34;&#34;
+        pass
+
+    @staticmethod
+    def predict(estimator, blocks=None, cluster_by_stability=False, custom_order=False):
+        &#34;&#34;&#34;Derives from factorization result ordered sample and feature indexes for future use in ordered heatmaps
+
+        Parameters
+        ----------
+        estimator: `nmtf.estimator.Estimator`
+            Modified in place
+        blocks: array-like, shape(n_blocks), default None
+            Size of each block (if any) in ordered heatmap.
+        cluster_by_stability: boolean, default False
+             Use stability instead of leverage to assign samples/features to clusters
+        custom_order:  boolean, default False
+             if False samples/features with highest leverage or stability appear on top of each cluster
+             if True within cluster ordering is modified to suggest a continuum  between adjacent clusters
+
+        Example
+        -------
+        &gt;&gt;&gt; from adnmtf import NMF
+        &gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+        &gt;&gt;&gt; m = ...  # matrix to be factorized
+        &gt;&gt;&gt; myestimator = myNMFmodel.fit_transform(m)
+        &gt;&gt;&gt; myNMFmodel.predict(myestimator)
+        &#34;&#34;&#34;
+        estimator.predict(blocks, cluster_by_stability, custom_order)
+
+    @staticmethod
+    def permutation_test_score(estimator, y, n_permutations=100):
+        &#34;&#34;&#34;Derives from factorization result ordered sample and feature indexes for future use in ordered heatmaps
+
+        Parameters
+        ----------
+        estimator: `nmtf.estimator.Estimator`
+            Modified in place
+        y:  array-like, group to be predicted
+        n_permutations:  integer, default: 100
+
+        Example
+        -------
+        &gt;&gt;&gt; from adnmtf import NMF
+        &gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+        &gt;&gt;&gt; m = ...  # matrix to be factorized
+        &gt;&gt;&gt; myestimator = myNMFmodel.fit_transform(m)
+        &gt;&gt;&gt; sample_group = ...  # the group each sample is associated with
+        &gt;&gt;&gt; myNMFmodel.permutation_test_score(myestimator, sample_group, n_permutations=100)
+        &#34;&#34;&#34;
+        estimator.permutation_test_score(y, n_permutations)</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="adnmtf.nmtf.NMF" href="#adnmtf.nmtf.NMF">NMF</a></li>
+<li><a title="adnmtf.nmtf.NTF" href="#adnmtf.nmtf.NTF">NTF</a></li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="adnmtf.nmtf.NMTF.permutation_test_score"><code class="name flex">
+<span>def <span class="ident">permutation_test_score</span></span>(<span>estimator, y, n_permutations=100)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Derives from factorization result ordered sample and feature indexes for future use in ordered heatmaps</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>estimator</code></strong> :&ensp;<code>nmtf.estimator.Estimator</code></dt>
+<dd>Modified in place</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>array-like, group to be predicted</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>n_permutations</code></strong> :&ensp;<code> integer</code>, default<code>: 100</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="example">Example</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; from adnmtf import NMF
+&gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+&gt;&gt;&gt; m = ...  # matrix to be factorized
+&gt;&gt;&gt; myestimator = myNMFmodel.fit_transform(m)
+&gt;&gt;&gt; sample_group = ...  # the group each sample is associated with
+&gt;&gt;&gt; myNMFmodel.permutation_test_score(myestimator, sample_group, n_permutations=100)
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def permutation_test_score(estimator, y, n_permutations=100):
+    &#34;&#34;&#34;Derives from factorization result ordered sample and feature indexes for future use in ordered heatmaps
+
+    Parameters
+    ----------
+    estimator: `nmtf.estimator.Estimator`
+        Modified in place
+    y:  array-like, group to be predicted
+    n_permutations:  integer, default: 100
+
+    Example
+    -------
+    &gt;&gt;&gt; from adnmtf import NMF
+    &gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+    &gt;&gt;&gt; m = ...  # matrix to be factorized
+    &gt;&gt;&gt; myestimator = myNMFmodel.fit_transform(m)
+    &gt;&gt;&gt; sample_group = ...  # the group each sample is associated with
+    &gt;&gt;&gt; myNMFmodel.permutation_test_score(myestimator, sample_group, n_permutations=100)
+    &#34;&#34;&#34;
+    estimator.permutation_test_score(y, n_permutations)</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf.NMTF.predict"><code class="name flex">
+<span>def <span class="ident">predict</span></span>(<span>estimator, blocks=None, cluster_by_stability=False, custom_order=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Derives from factorization result ordered sample and feature indexes for future use in ordered heatmaps</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>estimator</code></strong> :&ensp;<code>nmtf.estimator.Estimator</code></dt>
+<dd>Modified in place</dd>
+<dt><strong><code>blocks</code></strong> :&ensp;<code>array-like, shape(n_blocks)</code>, default <code>None</code></dt>
+<dd>Size of each block (if any) in ordered heatmap.</dd>
+<dt><strong><code>cluster_by_stability</code></strong> :&ensp;<code>boolean</code>, default <code>False</code></dt>
+<dd>Use stability instead of leverage to assign samples/features to clusters</dd>
+<dt><strong><code>custom_order</code></strong> :&ensp;<code> boolean</code>, default <code>False</code></dt>
+<dd>if False samples/features with highest leverage or stability appear on top of each cluster
+if True within cluster ordering is modified to suggest a continuum
+between adjacent clusters</dd>
+</dl>
+<h2 id="example">Example</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; from adnmtf import NMF
+&gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+&gt;&gt;&gt; m = ...  # matrix to be factorized
+&gt;&gt;&gt; myestimator = myNMFmodel.fit_transform(m)
+&gt;&gt;&gt; myNMFmodel.predict(myestimator)
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def predict(estimator, blocks=None, cluster_by_stability=False, custom_order=False):
+    &#34;&#34;&#34;Derives from factorization result ordered sample and feature indexes for future use in ordered heatmaps
+
+    Parameters
+    ----------
+    estimator: `nmtf.estimator.Estimator`
+        Modified in place
+    blocks: array-like, shape(n_blocks), default None
+        Size of each block (if any) in ordered heatmap.
+    cluster_by_stability: boolean, default False
+         Use stability instead of leverage to assign samples/features to clusters
+    custom_order:  boolean, default False
+         if False samples/features with highest leverage or stability appear on top of each cluster
+         if True within cluster ordering is modified to suggest a continuum  between adjacent clusters
+
+    Example
+    -------
+    &gt;&gt;&gt; from adnmtf import NMF
+    &gt;&gt;&gt; myNMFmodel = NMF(n_components=4)
+    &gt;&gt;&gt; m = ...  # matrix to be factorized
+    &gt;&gt;&gt; myestimator = myNMFmodel.fit_transform(m)
+    &gt;&gt;&gt; myNMFmodel.predict(myestimator)
+    &#34;&#34;&#34;
+    estimator.predict(blocks, cluster_by_stability, custom_order)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="adnmtf.nmtf.NMTF.fit_transform"><code class="name flex">
+<span>def <span class="ident">fit_transform</span></span>(<span>self, m, w=None, h=None, update_w=True, update_h=True, n_bootstrap=None, regularization=None, sparsity=0, **ntf_kwargs) ‑> <a title="adnmtf.estimator.Estimator" href="estimator.html#adnmtf.estimator.Estimator">Estimator</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>To implement in daughter class</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit_transform(
+    self,
+    m,
+    w=None,
+    h=None,
+    update_w=True,
+    update_h=True,
+    n_bootstrap=None,
+    regularization=None,
+    sparsity=0,
+    **ntf_kwargs
+) -&gt; Estimator:
+    &#34;&#34;&#34;To implement in daughter class&#34;&#34;&#34;
+    pass</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="adnmtf.nmtf.NTF"><code class="flex name class">
+<span>class <span class="ident">NTF</span></span>
+<span>(</span><span>n_components=None, tol=1e-06, max_iter=150, leverage='standard', random_state=None, verbose=0, unimodal=False, smooth=False, apply_left=False, apply_right=False, apply_block=False, init_type=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Overloads <code>nmtf.nmft.NMTF</code>.</p>
+<p>Initialize NTF model</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>n_components</code></strong> :&ensp;<code>integer</code></dt>
+<dd>Number of components, if n_components is not set: n_components = min(n_samples, n_features)</dd>
+<dt><strong><code>tol</code></strong> :&ensp;<code>float</code>, default<code>: 1e-6</code></dt>
+<dd>Tolerance of the stopping condition.</dd>
+<dt><strong><code>max_iter</code></strong> :&ensp;<code>integer</code>, default<code>: 200</code></dt>
+<dd>Maximum number of iterations.</dd>
+<dt><strong><code>leverage</code></strong> :&ensp;<code>None | 'standard' | 'robust'</code>, default <code>'standard'</code></dt>
+<dd>Calculate leverage of W and H rows on each component.</dd>
+<dt><strong><code>random_state</code></strong> :&ensp;<code>int, RandomState instance</code> or <code>None</code>, optional, default<code>: None</code></dt>
+<dd>If int, random_state is the seed used by the random number generator;
+If RandomState instance, random_state is the random number generator;
+If None, the random number generator is the RandomState instance used
+by <code>np.random</code>.</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>integer</code>, default<code>: 0</code></dt>
+<dd>The verbosity level (0/1).</dd>
+<dt><strong><code>unimodal</code></strong> :&ensp;<code>Boolean</code>, default<code>: False</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>smooth</code></strong> :&ensp;<code>Boolean</code>, default<code>: False</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>apply_left</code></strong> :&ensp;<code>Boolean</code>, default<code>: False</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>apply_right</code></strong> :&ensp;<code>Boolean</code>, default<code>: False</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>apply_block</code></strong> :&ensp;<code>Boolean</code>, default<code>: False</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>init_type</code></strong> :&ensp;<code>integer</code>, default <code>1</code></dt>
+<dd>init_type = 1: NMF initialization applied on the reshaped matrix [vectorized (1st &amp; 2nd dim) x 3rd dim]
+init_type = 2: NMF initialization applied on the reshaped matrix [1st dim x vectorized (2nd &amp; 3rd dim)]</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="adnmtf.nmtf.NTF" href="#adnmtf.nmtf.NTF">NTF</a> model</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="example">Example</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; from adnmtf import NTF
+&gt;&gt;&gt; myNTFmodel = NTF(n_components=4)
+</code></pre>
+<h2 id="reference">Reference</h2>
+<p>A. Cichocki, P.H.A.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor
+factorizations,
+IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class NTF(NMTF):
+    &#34;&#34;&#34;Overloads `nmtf.nmft.NMTF`.&#34;&#34;&#34;
+    def __init__(
+        self,
+        n_components=None,
+        tol=1e-6,
+        max_iter=150,
+        leverage=&#34;standard&#34;,
+        random_state=None,
+        verbose=0,
+        unimodal=False,
+        smooth=False,
+        apply_left=False,
+        apply_right=False,
+        apply_block=False,
+        init_type=1,
+    ):
+        &#34;&#34;&#34;Initialize NTF model
+
+        Parameters
+        ----------
+        n_components: integer
+            Number of components, if n_components is not set: n_components = min(n_samples, n_features)
+        tol: float, default: 1e-6
+            Tolerance of the stopping condition.
+        max_iter: integer, default: 200
+            Maximum number of iterations.
+        leverage:  None | &#39;standard&#39; | &#39;robust&#39;, default &#39;standard&#39;
+            Calculate leverage of W and H rows on each component.
+        random_state: int, RandomState instance or None, optional, default: None
+            If int, random_state is the seed used by the random number generator;
+            If RandomState instance, random_state is the random number generator;
+            If None, the random number generator is the RandomState instance used
+            by `np.random`.
+        verbose: integer, default: 0
+            The verbosity level (0/1).
+        unimodal: Boolean, default: False
+        smooth: Boolean, default: False
+        apply_left: Boolean, default: False
+        apply_right: Boolean, default: False
+        apply_block: Boolean, default: False
+        init_type: integer, default 1
+            init_type = 1: NMF initialization applied on the reshaped matrix [vectorized (1st &amp; 2nd dim) x 3rd dim]
+            init_type = 2: NMF initialization applied on the reshaped matrix [1st dim x vectorized (2nd &amp; 3rd dim)]
+
+        Returns
+        -------
+        NTF model
+
+        Example
+        -------
+        &gt;&gt;&gt; from adnmtf import NTF
+        &gt;&gt;&gt; myNTFmodel = NTF(n_components=4)
+
+        Reference
+        ---------
+        A. Cichocki, P.H.A.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor
+        factorizations,
+        IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
+
+        &#34;&#34;&#34;
+        super().__init__(
+            n_components=n_components,
+            tol=tol,
+            max_iter=max_iter,
+            leverage=leverage,
+            random_state=random_state,
+            verbose=verbose,
+        )
+        self.unimodal = unimodal
+        self.smooth = smooth
+        self.apply_left = apply_left
+        self.apply_right = apply_right
+        self.apply_block = apply_block
+        self.init_type = init_type
+        
+    def fit_transform(
+        self,
+        m,
+        w=None,
+        h=None,
+        update_w=True,
+        update_h=True,
+        regularization=None,
+        sparsity=0,
+        n_bootstrap=None,
+        n_blocks=None,
+        q=None,
+        update_q=True,
+    ) -&gt; Estimator:
+        &#34;&#34;&#34;Compute Non-negative Tensor Factorization (NTF)
+
+        Find three non-negative matrices (W, H, Q) such as x = W @@ H @@ Q + Error (@@ = tensor product).
+        This factorization can be used for example for
+        dimensionality reduction, source separation or topic extraction.
+
+        The objective function is minimized with an alternating minimization of W
+        and H.
+
+        Parameters
+        ----------
+        m: array-like, shape (n_samples, n_features x n_blocks)
+            Constant matrix.
+            X is a tensor with shape (n_samples, n_features, n_blocks), however unfolded along 2nd and 3rd
+            dimensions.
+        n_blocks: integer
+            Number of blocks defining the 3rd dimension of the tensor
+        n_bootstrap: integer
+            Number of bootstrap runs
+        regularization:  None | &#39;components&#39; | &#39;transformation&#39;
+            Select whether the regularization affects the components (H), the
+            transformation (W) or none of them.
+        sparsity: float, default: 0
+            Sparsity target with 0 &lt;= sparsity &lt; 1 representing either:
+            - the % rows in W or H set to 0 (when use_hals = False)
+            - the mean % rows per column in W or H set to 0 (when use_hals = True)
+            sparsity == 1: adaptive sparsity through hard thresholding and hhi
+        w: array-like, shape (n_samples, n_components)
+            Prior W
+        h: array-like, shape (n_features, n_components)
+            Prior H
+        q: array-like, shape (n_blocks, n_components)
+            Prior Q
+        update_w: boolean, default: True
+            Update or keep W fixed
+        update_h: boolean, default: True
+            Update or keep H fixed
+        update_q: boolean, default: True
+            Update or keep Q fixed
+
+        Returns
+        -------
+        `nmtf.estimator.Estimator`
+
+        Example
+        -------
+        &gt;&gt;&gt; from adnmtf import NTF
+        &gt;&gt;&gt; myNTFmodel = NTF(n_components=4)
+        &gt;&gt;&gt; t = ...  # tensor with 5 blocks to be factorized
+        &gt;&gt;&gt; est = myNTFmodel.fit_transform(t, 5)
+
+        Reference
+        ---------
+
+        A. Cichocki, P.H.A.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor
+        factorizations,
+        IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
+        &#34;&#34;&#34;
+        if n_blocks is None:
+            raise ValueError(&#34;Argument &#39;n_blocks&#39; can not be None&#34;)
+        m, n, p, mmis, nc = init_factorization(m, self.n_components)
+
+        n_blocks = n_blocks
+        p_block = int(p / n_blocks)
+        tolerance = self.tol
+        log_iter = self.verbose
+        if regularization is None:
+            nmf_sparse_level = 0
+        else:
+            if regularization == &#34;components&#34;:
+                nmf_sparse_level = sparsity
+            elif regularization == &#34;transformation&#34;:
+                nmf_sparse_level = -sparsity
+            else:
+                nmf_sparse_level = 0
+        ntf_unimodal = self.unimodal
+        ntf_smooth = self.smooth
+        ntf_left_components = self.apply_left
+        ntf_right_components = self.apply_right
+        ntf_block_components = self.apply_block
+        if self.random_state is not None:
+            random_seed = self.random_state
+            np.random.seed(random_seed)
+
+        my_status_box = get_status_box()(verbose=log_iter)
+
+        if (w is None) &amp; (h is None) &amp; (q is None):
+            mt0, mw0, mb0, add_message, err_message, cancel_pressed = ntf_init(
+                m=m,
+                mmis=mmis,
+                mt_nmf=np.array([]),
+                mw_nmf=np.array([]),
+                nc=nc,
+                tolerance=tolerance,
+                log_iter=log_iter,
+                ntf_unimodal=ntf_unimodal,
+                ntf_left_components=ntf_left_components,
+                ntf_right_components=ntf_right_components,
+                ntf_block_components=ntf_block_components,
+                n_blocks=n_blocks,
+                init_type=self.init_type,
+                my_status_box=my_status_box,
+            )
+        else:
+            if w is None:
+                mt0 = np.ones((n, nc))
+            else:
+                mt0 = np.copy(w)
+
+            if h is None:
+                mw0 = np.ones((p_block, nc))
+            else:
+                mw0 = np.copy(h)
+
+            if q is None:
+                mb0 = np.ones((n_blocks, nc))
+            else:
+                mb0 = np.copy(q)
+
+            mfit = np.zeros((n, p))
+            # TODO (pcotte): might be optimised, maybe ?
+            for k in range(0, nc):
+                for i_block in range(0, n_blocks):
+                    mfit[:, i_block * p_block: (i_block + 1) * p_block] += (
+                            mb0[i_block, k] * np.reshape(mt0[:, k], (n, 1)) @ np.reshape(mw0[:, k], (1, p_block))
+                    )
+
+            scale_ratio = (np.linalg.norm(mfit) / np.linalg.norm(m)) ** (1 / 3)
+            # TODO (pcotte): might be optimised, maybe ?
+            for k in range(0, nc):
+                mt0[:, k] /= scale_ratio
+                mw0[:, k] /= scale_ratio
+                mb0[:, k] /= scale_ratio
+
+            mfit = np.zeros((n, p))
+            # TODO (pcotte): might be optimised, maybe ?
+            for k in range(0, nc):
+                for i_block in range(0, n_blocks):
+                    mfit[:, i_block * p_block: (i_block + 1) * p_block] += (
+                            mb0[i_block, k] * np.reshape(mt0[:, k], (n, 1)) @ np.reshape(mw0[:, k], (1, p_block))
+                    )
+
+        max_iterations = self.max_iter
+
+        if n_bootstrap is None:
+            nmf_robust_n_runs = 0
+        else:
+            nmf_robust_n_runs = n_bootstrap
+
+        if nmf_robust_n_runs &lt;= 1:
+            nmf_algo = &#34;non-robust&#34;
+        else:
+            nmf_algo = &#34;robust&#34;
+
+        if self.leverage == &#34;standard&#34;:
+            nmf_calculate_leverage = 1
+            nmf_use_robust_leverage = 0
+        elif self.leverage == &#34;robust&#34;:
+            nmf_calculate_leverage = 1
+            nmf_use_robust_leverage = 1
+        else:
+            nmf_calculate_leverage = 0
+            nmf_use_robust_leverage = 0
+
+        if self.random_state is not None:
+            random_seed = self.random_state
+            np.random.seed(random_seed)
+
+        if update_w:
+            nmf_fix_user_lhe = 0
+        else:
+            nmf_fix_user_lhe = 1
+
+        if update_h:
+            nmf_fix_user_rhe = 0
+        else:
+            nmf_fix_user_rhe = 1
+
+        if update_q:
+            nmf_fix_user_bhe = 0
+        else:
+            nmf_fix_user_bhe = 1
+
+        mt_conv, mt, mw, mb, mt_pct, mw_pct, diff, add_message, err_message, cancel_pressed = r_ntf_solve(
+            m=m,
+            mmis=mmis,
+            mt0=mt0,
+            mw0=mw0,
+            mb0=mb0,
+            nc=nc,
+            tolerance=tolerance,
+            log_iter=log_iter,
+            max_iterations=max_iterations,
+            nmf_fix_user_lhe=nmf_fix_user_lhe,
+            nmf_fix_user_rhe=nmf_fix_user_rhe,
+            nmf_fix_user_bhe=nmf_fix_user_bhe,
+            nmf_algo=nmf_algo,
+            nmf_robust_n_runs=nmf_robust_n_runs,
+            nmf_calculate_leverage=nmf_calculate_leverage,
+            nmf_use_robust_leverage=nmf_use_robust_leverage,
+            nmf_sparse_level=nmf_sparse_level,
+            ntf_unimodal=ntf_unimodal,
+            ntf_smooth=ntf_smooth,
+            ntf_left_components=ntf_left_components,
+            ntf_right_components=ntf_right_components,
+            ntf_block_components=ntf_block_components,
+            n_blocks=n_blocks,
+            nmf_priors=np.array([]),
+            my_status_box=my_status_box,
+        )
+
+        volume = nmf_det(mt, mw, 1)
+
+        for message in add_message:
+            logger.info(message)
+
+        my_status_box.close()
+
+        if nmf_robust_n_runs &lt;= 1:
+            estimator = Estimator(
+                w=mt,
+                h=mw,
+                q=mb,
+                volume=volume,
+                diff=diff,
+                leverage=self.leverage,
+                verbose=self.verbose
+            )
+        else:
+            estimator = Estimator(
+                w=mt,
+                h=mw,
+                q=mb,
+                volume=volume,
+                wb=mt_pct,
+                hb=mw_pct,
+                diff=diff,
+                leverage=self.leverage,
+                verbose=self.verbose
+            )
+
+        return estimator</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="adnmtf.nmtf.NMTF" href="#adnmtf.nmtf.NMTF">NMTF</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="adnmtf.nmtf.NTF.fit_transform"><code class="name flex">
+<span>def <span class="ident">fit_transform</span></span>(<span>self, m, w=None, h=None, update_w=True, update_h=True, regularization=None, sparsity=0, n_bootstrap=None, n_blocks=None, q=None, update_q=True) ‑> <a title="adnmtf.estimator.Estimator" href="estimator.html#adnmtf.estimator.Estimator">Estimator</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Compute Non-negative Tensor Factorization (NTF)</p>
+<p>Find three non-negative matrices (W, H, Q) such as x = W @@ H @@ Q + Error (@@ = tensor product).
+This factorization can be used for example for
+dimensionality reduction, source separation or topic extraction.</p>
+<p>The objective function is minimized with an alternating minimization of W
+and H.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>m</code></strong> :&ensp;<code>array-like, shape (n_samples, n_features x n_blocks)</code></dt>
+<dd>Constant matrix.
+X is a tensor with shape (n_samples, n_features, n_blocks), however unfolded along 2nd and 3rd
+dimensions.</dd>
+<dt><strong><code>n_blocks</code></strong> :&ensp;<code>integer</code></dt>
+<dd>Number of blocks defining the 3rd dimension of the tensor</dd>
+<dt><strong><code>n_bootstrap</code></strong> :&ensp;<code>integer</code></dt>
+<dd>Number of bootstrap runs</dd>
+<dt><strong><code>regularization</code></strong> :&ensp;<code>None | 'components' | 'transformation'</code></dt>
+<dd>Select whether the regularization affects the components (H), the
+transformation (W) or none of them.</dd>
+<dt><strong><code>sparsity</code></strong> :&ensp;<code>float</code>, default<code>: 0</code></dt>
+<dd>Sparsity target with 0 &lt;= sparsity &lt; 1 representing either:
+- the % rows in W or H set to 0 (when use_hals = False)
+- the mean % rows per column in W or H set to 0 (when use_hals = True)
+sparsity == 1: adaptive sparsity through hard thresholding and hhi</dd>
+<dt><strong><code>w</code></strong> :&ensp;<code>array-like, shape (n_samples, n_components)</code></dt>
+<dd>Prior W</dd>
+<dt><strong><code>h</code></strong> :&ensp;<code>array-like, shape (n_features, n_components)</code></dt>
+<dd>Prior H</dd>
+<dt><strong><code>q</code></strong> :&ensp;<code>array-like, shape (n_blocks, n_components)</code></dt>
+<dd>Prior Q</dd>
+<dt><strong><code>update_w</code></strong> :&ensp;<code>boolean</code>, default<code>: True</code></dt>
+<dd>Update or keep W fixed</dd>
+<dt><strong><code>update_h</code></strong> :&ensp;<code>boolean</code>, default<code>: True</code></dt>
+<dd>Update or keep H fixed</dd>
+<dt><strong><code>update_q</code></strong> :&ensp;<code>boolean</code>, default<code>: True</code></dt>
+<dd>Update or keep Q fixed</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p><code>nmtf.estimator.Estimator</code></p>
+<h2 id="example">Example</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; from adnmtf import NTF
+&gt;&gt;&gt; myNTFmodel = NTF(n_components=4)
+&gt;&gt;&gt; t = ...  # tensor with 5 blocks to be factorized
+&gt;&gt;&gt; est = myNTFmodel.fit_transform(t, 5)
+</code></pre>
+<h2 id="reference">Reference</h2>
+<p>A. Cichocki, P.H.A.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor
+factorizations,
+IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def fit_transform(
+    self,
+    m,
+    w=None,
+    h=None,
+    update_w=True,
+    update_h=True,
+    regularization=None,
+    sparsity=0,
+    n_bootstrap=None,
+    n_blocks=None,
+    q=None,
+    update_q=True,
+) -&gt; Estimator:
+    &#34;&#34;&#34;Compute Non-negative Tensor Factorization (NTF)
+
+    Find three non-negative matrices (W, H, Q) such as x = W @@ H @@ Q + Error (@@ = tensor product).
+    This factorization can be used for example for
+    dimensionality reduction, source separation or topic extraction.
+
+    The objective function is minimized with an alternating minimization of W
+    and H.
+
+    Parameters
+    ----------
+    m: array-like, shape (n_samples, n_features x n_blocks)
+        Constant matrix.
+        X is a tensor with shape (n_samples, n_features, n_blocks), however unfolded along 2nd and 3rd
+        dimensions.
+    n_blocks: integer
+        Number of blocks defining the 3rd dimension of the tensor
+    n_bootstrap: integer
+        Number of bootstrap runs
+    regularization:  None | &#39;components&#39; | &#39;transformation&#39;
+        Select whether the regularization affects the components (H), the
+        transformation (W) or none of them.
+    sparsity: float, default: 0
+        Sparsity target with 0 &lt;= sparsity &lt; 1 representing either:
+        - the % rows in W or H set to 0 (when use_hals = False)
+        - the mean % rows per column in W or H set to 0 (when use_hals = True)
+        sparsity == 1: adaptive sparsity through hard thresholding and hhi
+    w: array-like, shape (n_samples, n_components)
+        Prior W
+    h: array-like, shape (n_features, n_components)
+        Prior H
+    q: array-like, shape (n_blocks, n_components)
+        Prior Q
+    update_w: boolean, default: True
+        Update or keep W fixed
+    update_h: boolean, default: True
+        Update or keep H fixed
+    update_q: boolean, default: True
+        Update or keep Q fixed
+
+    Returns
+    -------
+    `nmtf.estimator.Estimator`
+
+    Example
+    -------
+    &gt;&gt;&gt; from adnmtf import NTF
+    &gt;&gt;&gt; myNTFmodel = NTF(n_components=4)
+    &gt;&gt;&gt; t = ...  # tensor with 5 blocks to be factorized
+    &gt;&gt;&gt; est = myNTFmodel.fit_transform(t, 5)
+
+    Reference
+    ---------
+
+    A. Cichocki, P.H.A.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor
+    factorizations,
+    IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
+    &#34;&#34;&#34;
+    if n_blocks is None:
+        raise ValueError(&#34;Argument &#39;n_blocks&#39; can not be None&#34;)
+    m, n, p, mmis, nc = init_factorization(m, self.n_components)
+
+    n_blocks = n_blocks
+    p_block = int(p / n_blocks)
+    tolerance = self.tol
+    log_iter = self.verbose
+    if regularization is None:
+        nmf_sparse_level = 0
+    else:
+        if regularization == &#34;components&#34;:
+            nmf_sparse_level = sparsity
+        elif regularization == &#34;transformation&#34;:
+            nmf_sparse_level = -sparsity
+        else:
+            nmf_sparse_level = 0
+    ntf_unimodal = self.unimodal
+    ntf_smooth = self.smooth
+    ntf_left_components = self.apply_left
+    ntf_right_components = self.apply_right
+    ntf_block_components = self.apply_block
+    if self.random_state is not None:
+        random_seed = self.random_state
+        np.random.seed(random_seed)
+
+    my_status_box = get_status_box()(verbose=log_iter)
+
+    if (w is None) &amp; (h is None) &amp; (q is None):
+        mt0, mw0, mb0, add_message, err_message, cancel_pressed = ntf_init(
+            m=m,
+            mmis=mmis,
+            mt_nmf=np.array([]),
+            mw_nmf=np.array([]),
+            nc=nc,
+            tolerance=tolerance,
+            log_iter=log_iter,
+            ntf_unimodal=ntf_unimodal,
+            ntf_left_components=ntf_left_components,
+            ntf_right_components=ntf_right_components,
+            ntf_block_components=ntf_block_components,
+            n_blocks=n_blocks,
+            init_type=self.init_type,
+            my_status_box=my_status_box,
+        )
+    else:
+        if w is None:
+            mt0 = np.ones((n, nc))
+        else:
+            mt0 = np.copy(w)
+
+        if h is None:
+            mw0 = np.ones((p_block, nc))
+        else:
+            mw0 = np.copy(h)
+
+        if q is None:
+            mb0 = np.ones((n_blocks, nc))
+        else:
+            mb0 = np.copy(q)
+
+        mfit = np.zeros((n, p))
+        # TODO (pcotte): might be optimised, maybe ?
+        for k in range(0, nc):
+            for i_block in range(0, n_blocks):
+                mfit[:, i_block * p_block: (i_block + 1) * p_block] += (
+                        mb0[i_block, k] * np.reshape(mt0[:, k], (n, 1)) @ np.reshape(mw0[:, k], (1, p_block))
+                )
+
+        scale_ratio = (np.linalg.norm(mfit) / np.linalg.norm(m)) ** (1 / 3)
+        # TODO (pcotte): might be optimised, maybe ?
+        for k in range(0, nc):
+            mt0[:, k] /= scale_ratio
+            mw0[:, k] /= scale_ratio
+            mb0[:, k] /= scale_ratio
+
+        mfit = np.zeros((n, p))
+        # TODO (pcotte): might be optimised, maybe ?
+        for k in range(0, nc):
+            for i_block in range(0, n_blocks):
+                mfit[:, i_block * p_block: (i_block + 1) * p_block] += (
+                        mb0[i_block, k] * np.reshape(mt0[:, k], (n, 1)) @ np.reshape(mw0[:, k], (1, p_block))
+                )
+
+    max_iterations = self.max_iter
+
+    if n_bootstrap is None:
+        nmf_robust_n_runs = 0
+    else:
+        nmf_robust_n_runs = n_bootstrap
+
+    if nmf_robust_n_runs &lt;= 1:
+        nmf_algo = &#34;non-robust&#34;
+    else:
+        nmf_algo = &#34;robust&#34;
+
+    if self.leverage == &#34;standard&#34;:
+        nmf_calculate_leverage = 1
+        nmf_use_robust_leverage = 0
+    elif self.leverage == &#34;robust&#34;:
+        nmf_calculate_leverage = 1
+        nmf_use_robust_leverage = 1
+    else:
+        nmf_calculate_leverage = 0
+        nmf_use_robust_leverage = 0
+
+    if self.random_state is not None:
+        random_seed = self.random_state
+        np.random.seed(random_seed)
+
+    if update_w:
+        nmf_fix_user_lhe = 0
+    else:
+        nmf_fix_user_lhe = 1
+
+    if update_h:
+        nmf_fix_user_rhe = 0
+    else:
+        nmf_fix_user_rhe = 1
+
+    if update_q:
+        nmf_fix_user_bhe = 0
+    else:
+        nmf_fix_user_bhe = 1
+
+    mt_conv, mt, mw, mb, mt_pct, mw_pct, diff, add_message, err_message, cancel_pressed = r_ntf_solve(
+        m=m,
+        mmis=mmis,
+        mt0=mt0,
+        mw0=mw0,
+        mb0=mb0,
+        nc=nc,
+        tolerance=tolerance,
+        log_iter=log_iter,
+        max_iterations=max_iterations,
+        nmf_fix_user_lhe=nmf_fix_user_lhe,
+        nmf_fix_user_rhe=nmf_fix_user_rhe,
+        nmf_fix_user_bhe=nmf_fix_user_bhe,
+        nmf_algo=nmf_algo,
+        nmf_robust_n_runs=nmf_robust_n_runs,
+        nmf_calculate_leverage=nmf_calculate_leverage,
+        nmf_use_robust_leverage=nmf_use_robust_leverage,
+        nmf_sparse_level=nmf_sparse_level,
+        ntf_unimodal=ntf_unimodal,
+        ntf_smooth=ntf_smooth,
+        ntf_left_components=ntf_left_components,
+        ntf_right_components=ntf_right_components,
+        ntf_block_components=ntf_block_components,
+        n_blocks=n_blocks,
+        nmf_priors=np.array([]),
+        my_status_box=my_status_box,
+    )
+
+    volume = nmf_det(mt, mw, 1)
+
+    for message in add_message:
+        logger.info(message)
+
+    my_status_box.close()
+
+    if nmf_robust_n_runs &lt;= 1:
+        estimator = Estimator(
+            w=mt,
+            h=mw,
+            q=mb,
+            volume=volume,
+            diff=diff,
+            leverage=self.leverage,
+            verbose=self.verbose
+        )
+    else:
+        estimator = Estimator(
+            w=mt,
+            h=mw,
+            q=mb,
+            volume=volume,
+            wb=mt_pct,
+            hb=mw_pct,
+            diff=diff,
+            leverage=self.leverage,
+            verbose=self.verbose
+        )
+
+    return estimator</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="adnmtf.nmtf.NMTF" href="#adnmtf.nmtf.NMTF">NMTF</a></b></code>:
+<ul class="hlist">
+<li><code><a title="adnmtf.nmtf.NMTF.permutation_test_score" href="#adnmtf.nmtf.NMTF.permutation_test_score">permutation_test_score</a></code></li>
+<li><code><a title="adnmtf.nmtf.NMTF.predict" href="#adnmtf.nmtf.NMTF.predict">predict</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="adnmtf" href="index.html">adnmtf</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="adnmtf.nmtf.NMF" href="#adnmtf.nmtf.NMF">NMF</a></code></h4>
+<ul class="">
+<li><code><a title="adnmtf.nmtf.NMF.fit_transform" href="#adnmtf.nmtf.NMF.fit_transform">fit_transform</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="adnmtf.nmtf.NMTF" href="#adnmtf.nmtf.NMTF">NMTF</a></code></h4>
+<ul class="">
+<li><code><a title="adnmtf.nmtf.NMTF.fit_transform" href="#adnmtf.nmtf.NMTF.fit_transform">fit_transform</a></code></li>
+<li><code><a title="adnmtf.nmtf.NMTF.permutation_test_score" href="#adnmtf.nmtf.NMTF.permutation_test_score">permutation_test_score</a></code></li>
+<li><code><a title="adnmtf.nmtf.NMTF.predict" href="#adnmtf.nmtf.NMTF.predict">predict</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="adnmtf.nmtf.NTF" href="#adnmtf.nmtf.NTF">NTF</a></code></h4>
+<ul class="">
+<li><code><a title="adnmtf.nmtf.NTF.fit_transform" href="#adnmtf.nmtf.NTF.fit_transform">fit_transform</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

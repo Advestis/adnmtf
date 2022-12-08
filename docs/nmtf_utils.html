@@ -1,0 +1,1838 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>adnmtf.nmtf_utils API documentation</title>
+<meta name="description" content="Non-negative matrix and tensor factorization utility functions" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>adnmtf.nmtf_utils</code></h1>
+</header>
+<section id="section-intro">
+<p>Non-negative matrix and tensor factorization utility functions</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Non-negative matrix and tensor factorization utility functions
+
+&#34;&#34;&#34;
+
+# Author: Paul Fogel
+
+# License: MIT
+# Jan 4, &#39;20
+
+from tqdm import tqdm
+import math
+from scipy.stats import hypergeom
+import logging
+import numpy as np
+
+EPSILON = np.finfo(np.float32).eps
+logger = logging.getLogger(__name__)
+
+# TODO (pcotte) typing
+
+
+class StatusBox:
+    def __init__(self, verbose=0):
+        self.log_iter = verbose
+        if self.log_iter == 0:
+            self.pbar = tqdm(total=100)
+
+        self.cancel_pressed = False
+
+    def update_bar(self, step=1):
+        if self.log_iter == 0:
+            self.pbar.update(n=step)
+
+    def init_bar(self):
+        if self.log_iter == 0:
+            self.pbar.n = 0
+
+    def update_status(self, status=&#34;&#34;):
+        if self.log_iter == 0:
+            self.pbar.set_description(status, refresh=False)
+            self.pbar.refresh()
+
+    def close(self):
+        if self.log_iter == 0:
+            self.pbar.clear()
+            self.pbar.close()
+
+    def my_print(self, status=&#34;&#34;):
+        if self.log_iter == 1:
+            logger.info(status)
+
+
+status_box = StatusBox
+
+
+def set_status_box(use_tkinter):
+    global status_box
+
+    if use_tkinter:
+        try:
+            from tkinter import Tk, Frame, StringVar, Label, ttk, Button, NONE, HORIZONTAL
+            tkinter_ok = True
+        except ImportError:
+            tkinter_ok = False
+    else:
+        tkinter_ok = False
+
+    if tkinter_ok:
+        class StatusBoxTKinter:
+            def __init__(self, verbose=0):
+                self.log_iter = verbose
+                self.root = Tk()
+                self.root.title(&#39;irMF status - Python kernel&#39;)
+                self.root.minsize(width=230, height=60)
+                self.frame = Frame(self.root, borderwidth=6)
+                self.frame.pack()
+                self.var = StringVar()
+                self.status = Label(self.frame, textvariable=self.var, width=60, height=1)
+                self.status.pack(fill=NONE, padx=6, pady=6)
+                self.pbar = ttk.Progressbar(self.frame, orient=HORIZONTAL, max=100, mode=&#39;determinate&#39;)
+                self.pbar.pack(fill=NONE, padx=6, pady=6)
+                Button(self.frame, text=&#39;Cancel&#39;, command=self.close_dialog).pack(fill=NONE, padx=6, pady=6)
+                self.cancel_pressed = False
+                self.n_steps = 0
+
+            def close_dialog(self):
+                self.cancel_pressed = True
+
+            def update_bar(self, delay=1, step=1):
+                self.n_steps += step
+                self.pbar.step(step)
+                self.pbar.after(delay, lambda: self.root.quit())
+                self.root.mainloop()
+
+            def init_bar(self, delay=1):
+                self.update_bar(delay=1, step=100 - self.n_steps)
+                self.n_steps = 0
+
+            def update_status(self, delay=1, status=&#39;&#39;):
+                self.var.set(status)
+                self.status.after(delay, lambda: self.root.quit())
+                self.root.mainloop()
+
+            def close(self):
+                self.root.destroy()
+
+            def myPrint(self, status=&#39;&#39;):
+                print(status)
+
+        status_box = StatusBoxTKinter
+
+
+def get_status_box():
+    return status_box
+
+
+def nmf_det(mt, mw, nmf_exact_det):
+    &#34;&#34;&#34;Volume occupied by Left and Right factoring vectors
+
+    Parameters
+    ----------
+    mt:
+       Left hand matrix
+    mw:
+       Right hand matrix
+    nmf_exact_det:
+       if = 0 compute an approximate determinant in reduced space n x n or p x p through random sampling in the largest
+       dimension
+
+
+    Returns
+    -------
+    determinant
+
+    Reference
+    ---------
+    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to
+    Environmental Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509
+    doi:10.3390/ijerph13050509
+
+    &#34;&#34;&#34;
+
+    n, nc = mt.shape
+    p, nc = mw.shape
+    nxp = n * p
+    if (nmf_exact_det &gt; 0) | (n == p):
+        xcells = np.zeros((nxp, nc))
+        for k in range(0, nc):
+            xcells[:, k] = np.reshape(np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p)), nxp)
+            norm_k = np.linalg.norm(xcells[:, k])
+            if norm_k &gt; 0:
+                xcells[:, k] = xcells[:, k] / norm_k
+            else:
+                xcells[:, k] = 0
+    else:
+        if n &gt; p:
+            xcells = np.zeros((p ** 2, nc))
+            theid = np.arange(n)
+            np.random.shuffle(theid)
+            theid = theid[0:p]
+            for k in range(0, nc):
+                xcells[:, k] = np.reshape(np.reshape(mt[theid, k], (p, 1)) @ np.reshape(mw[:, k], (1, p)), p ** 2)
+                norm_k = np.linalg.norm(xcells[:, k])
+                if norm_k &gt; 0:
+                    xcells[:, k] = xcells[:, k] / norm_k
+                else:
+                    xcells[:, k] = 0
+        else:
+            xcells = np.zeros((n ** 2, nc))
+            theid = np.arange(p)
+            np.random.shuffle(theid)
+            theid = theid[0:n]
+            for k in range(0, nc):
+                xcells[:, k] = np.reshape(np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[theid, k], (1, n)), n ** 2)
+                norm_k = np.linalg.norm(xcells[:, k])
+                if norm_k &gt; 0:
+                    xcells[:, k] = xcells[:, k] / norm_k
+                else:
+                    xcells[:, k] = 0
+
+    det_xcells = np.linalg.det(xcells.T @ xcells)
+    return det_xcells
+
+
+def robust_max(v0, add_message, my_status_box):
+    &#34;&#34;&#34;Robust max of column vectors
+
+    For each column:
+         = weighted mean of column elements larger than 95% percentile
+        for each row, weight = specificity of the column value wrt other columns
+
+    Parameters
+    ----------
+    v0: column vectors
+    add_message: List[str]
+    my_status_box
+
+    Returns
+    -------
+    Robust max by column
+
+    Reference
+    ---------
+    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to
+    Environmental Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509 doi:10.3390/ijerph13050509
+
+    &#34;&#34;&#34;
+    err_message = &#34;&#34;
+    cancel_pressed = 0
+
+    v = v0.copy()
+    n, nc = v.shape
+    if nc &gt; 1:
+        nc_i = 1 / nc
+        lnnc_i = 1 / math.log(nc)
+
+    ind = max(math.ceil(n * 0.05) - 1, min(n - 1, 2))
+    scale = np.max(v, axis=0)
+    for k in range(0, nc):
+        v[:, k] = v[:, k] / scale[k]
+
+    rob_max = np.max(v, axis=0)
+    rob_max0 = 1e99 * np.ones(nc)
+    i_iter = 0
+    max_iterations = 100
+    pbar_step = 100 / max_iterations
+    my_status_box.init_bar()
+
+    while ((np.linalg.norm(rob_max - rob_max0) / np.linalg.norm(rob_max)) ** 2 &gt; 1e-6) &amp; (i_iter &lt; max_iterations):
+        for k in range(0, nc):
+            v = v[np.argsort(-v[:, k]), :]
+            if nc &gt; 1:
+                den = np.repeat(np.sum(v, axis=1), nc).reshape((n, nc))
+                den[den == 0] = 1.0e-10
+                prob = v / den
+                prob[prob == 0] = 1.0e-10
+                # TODO (pcotte) lnnc_i and nc_i could have not been assigned yet. Fix that.
+                specificity = np.ones(n) + np.sum(prob * np.log(prob), axis=1) * lnnc_i
+                specificity[prob[:, k] &lt; nc_i] = 0
+            else:
+                specificity = np.ones(n)
+
+            specificity[ind:n] = 0
+            rob_max0[k] = rob_max[k]
+            rob_max[k] = np.sum(v[:, k] * specificity) / np.sum(specificity)
+            v[v[:, k] &gt; rob_max[k], k] = rob_max[k]
+
+        my_status_box.update_bar(step=pbar_step)
+        if my_status_box.cancel_pressed:
+            cancel_pressed = 1
+            return rob_max * scale, add_message, err_message, cancel_pressed
+
+        i_iter += 1
+
+    if i_iter == max_iterations:
+        add_message.insert(len(add_message), f&#34;Warning: Max iterations reached while calculating robust max (N = {n})&#34;)
+
+    return rob_max * scale, add_message, err_message, cancel_pressed
+
+
+def calc_leverage(v, nmf_use_robust_leverage, add_message, my_status_box):
+    &#34;&#34;&#34;Calculate leverages
+
+    Parameter
+    ---------
+    v: Input column vectors
+    nmf_use_robust_leverage: Estimate robust through columns of V
+    add_message
+    my_status_box
+
+    Returns
+    -------
+    vn: Leveraged column vectors
+
+    Reference
+    ---------
+    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to
+    Environmental Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509 doi:10.3390/ijerph13050509
+
+    &#34;&#34;&#34;
+
+    err_message = &#34;&#34;
+    cancel_pressed = 0
+
+    n, nc = v.shape
+    vn = np.zeros((n, nc))
+    vr = np.zeros((n, nc))
+    if nmf_use_robust_leverage &gt; 0:
+        max_v, add_message, err_message, cancel_pressed = robust_max(v, add_message, my_status_box)
+        if cancel_pressed == 1:
+            return vn, add_message, err_message, cancel_pressed
+    else:
+        max_v = np.max(v, axis=0)
+
+    pbar_step = 100 / nc
+    my_status_box.init_bar()
+    for k in range(0, nc):
+        vr[v[:, k] &gt; 0, k] = 1
+        vn[:, k] = max_v[k] - v[:, k]
+        vn[vn[:, k] &lt; 0, k] = 0
+        vn[:, k] = vn[:, k] ** 2
+        for k2 in range(0, nc):
+            if k2 != k:
+                vn[:, k] = vn[:, k] + v[:, k2] ** 2
+
+        status = f&#34;Leverage: Comp {k + 1}&#34;
+        my_status_box.update_status(status=status)
+        my_status_box.update_bar(step=pbar_step)
+        if my_status_box.cancel_pressed:
+            cancel_pressed = 1
+            return vn, add_message, err_message, cancel_pressed
+
+    vn = 10 ** (-vn / (2 * np.mean(vn))) * vr
+    return vn, add_message, err_message, cancel_pressed
+
+
+def build_clusters(
+    mt,
+    mw,
+    mb,
+    mt_pct,
+    mw_pct,
+    n_blocks,
+    blk_size,
+    nmf_calculate_leverage,
+    nmf_use_robust_leverage,
+    nmf_algo,
+    nmf_robust_cluster_by_stability,
+    cell_plot_ordered_clusters,
+    add_message,
+    my_status_box,
+):
+    &#34;&#34;&#34;Builder clusters from leverages&#34;&#34;&#34;
+    n_blocks = int(n_blocks)
+    my_status_box.update_status(status=&#34;Build clusters...&#34;)
+    err_message = &#34;&#34;
+    cancel_pressed = 0
+    n, nc = np.shape(mt)
+    p = np.shape(mw)[0]
+    if nmf_algo == &#34;ntf&#34;:
+        block_clust = np.zeros(n_blocks)
+    elif nmf_algo == &#34;nmf&#34;:
+        block_clust = np.array([])
+    else:
+        raise ValueError(f&#34;Unknown algo &#39;{nmf_algo}&#39;&#34;)
+
+    r_ct = np.zeros(n)
+    r_cw = np.zeros(p)
+    n_ct = np.zeros(nc)
+    n_cw = np.zeros(n_blocks * nc)
+    row_clust = np.zeros(n)
+    col_clust = np.zeros(p)
+    ilast = 0
+    jlast = 0
+
+    if nmf_calculate_leverage == 1:
+        my_status_box.update_status(status=&#34;Leverages - Left components...&#34;)
+        mtn, add_message, err_message, cancel_pressed = calc_leverage(
+            mt, nmf_use_robust_leverage, add_message, my_status_box
+        )
+        my_status_box.update_status(status=&#34;Leverages - Right components...&#34;)
+        mwn, add_message, err_message, cancel_pressed = calc_leverage(
+            mw, nmf_use_robust_leverage, add_message, my_status_box
+        )
+        if nmf_algo == &#34;ntf&#34;:
+            my_status_box.update_status(status=&#34;Leverages - Block components...&#34;)
+            mbn, add_message, err_message, cancel_pressed = calc_leverage(
+                mb, nmf_use_robust_leverage, add_message, my_status_box
+            )
+        else:
+            mbn = None
+    else:
+        mtn = mt
+        mwn = mw
+        if nmf_algo == &#34;ntf&#34;:
+            mbn = mb
+        else:
+            mbn = None
+
+    if nmf_algo == &#34;ntf&#34;:
+        for i_block in range(0, n_blocks):
+            if nc &gt; 1:
+                block_clust[i_block] = np.argmax(mbn[i_block, :]) + 1
+            else:
+                block_clust[i_block] = 1
+
+    for i in range(0, n):
+        if nc &gt; 1:
+            if (isinstance(mt_pct, np.ndarray)) &amp; (nmf_robust_cluster_by_stability &gt; 0):
+                row_clust[i] = np.argmax(mt_pct[i, :]) + 1
+            else:
+                row_clust[i] = np.argmax(mtn[i, :]) + 1
+        else:
+            row_clust[i] = 1
+
+    for j in range(0, p):
+        if nc &gt; 1:
+            if (isinstance(mw_pct, np.ndarray)) &amp; (nmf_robust_cluster_by_stability &gt; 0):
+                col_clust[j] = np.argmax(mw_pct[j, :]) + 1
+            else:
+                col_clust[j] = np.argmax(mwn[j, :]) + 1
+        else:
+            col_clust[j] = 1
+
+    if (cell_plot_ordered_clusters == 1) &amp; (nc &gt;= 3):
+        mt_s = np.zeros(n)
+        mw_s = np.zeros(p)
+        for i in range(0, n):
+            if row_clust[i] == 1:
+                mt_s[i] = sum(k * mtn[i, k] for k in range(0, 2)) / max(sum(mtn[i, k] for k in range(0, 2)), 1.0e-10)
+            elif row_clust[i] == nc:
+                mt_s[i] = sum(k * mtn[i, k] for k in range(nc - 2, nc)) / max(
+                    sum(mtn[i, k] for k in range(nc - 2, nc)), 1.0e-10
+                )
+            else:
+                mt_s[i] = sum(k * mtn[i, k] for k in range(int(row_clust[i] - 2), int(row_clust[i] + 1))) / max(
+                    sum(mtn[i, k] for k in range(int(row_clust[i] - 2), int(row_clust[i] + 1))), 1.0e-10
+                )
+
+        for j in range(0, p):
+            if col_clust[j] == 1:
+                mw_s[j] = sum(k * mwn[j, k] for k in range(0, 2)) / max(sum(mwn[j, k] for k in range(0, 2)), 1.0e-10)
+            elif col_clust[j] == nc:
+                mw_s[j] = sum(k * mwn[j, k] for k in range(nc - 2, nc)) / max(
+                    sum(mwn[j, k] for k in range(nc - 2, nc)), 1.0e-10
+                )
+            else:
+                mw_s[j] = sum(k * mwn[j, k] for k in range(int(col_clust[j] - 2), int(col_clust[j] + 1))) / max(
+                    sum(mwn[j, k] for k in range(int(col_clust[j] - 2), int(col_clust[j] + 1))), 1.0e-10
+                )
+
+    for k in range(0, nc):
+        mindex1 = np.where(row_clust == k + 1)[0]
+        if len(mindex1) &gt; 0:
+            if len(mindex1) == 1:
+                mindex = (mindex1,)
+            elif (nc == 2) &amp; (k == 1):
+                mindex = mindex1[np.argsort(mtn[mindex1, k])]
+            elif (cell_plot_ordered_clusters == 1) &amp; (nc &gt;= 3):
+                # TODO (pcotte): mt_s could have not been assigned yet. Fix that.
+                mindex = mindex1[np.argsort(mt_s[mindex1])]
+            else:
+                mindex = mindex1[np.argsort(-mtn[mindex1, k])]
+
+            r_ct[ilast: len(mindex) + ilast] = mindex
+            ilast += len(mindex)
+
+        n_ct[k] = ilast
+
+    for i_block in range(0, n_blocks):
+        if i_block == 0:
+            j1 = 0
+            j2 = int(abs(blk_size[i_block]))
+        else:
+            # TODO (pcotte): j2 could have not been assigned yet. Fix that.
+            j1 = j2
+            j2 += int(abs(blk_size[i_block]))
+
+        for k in range(0, nc):
+            mindex2 = np.where(col_clust[j1:j2] == k + 1)[0]
+            if len(mindex2) &gt; 0:
+                mindex2 = mindex2 + j1
+                if len(mindex2) == 1:
+                    mindex = mindex2
+                elif (nc == 2) &amp; (k == 1):
+                    mindex = mindex2[np.argsort(mwn[mindex2, k])]
+                elif (cell_plot_ordered_clusters == 1) &amp; (nc &gt;= 3):
+                    # TODO (pcotte): mw_s could have not been assigned yet. Fix that.
+                    mindex = mindex2[np.argsort(mw_s[mindex2])]
+                else:
+                    mindex = mindex2[np.argsort(-mwn[mindex2, k])]
+
+                r_cw[jlast: len(mindex) + jlast] = mindex
+                jlast += len(mindex)
+
+            n_cw[i_block * nc + k] = jlast
+
+    return (
+        mtn,
+        mwn,
+        mbn,
+        r_ct,
+        r_cw,
+        n_ct,
+        n_cw,
+        row_clust,
+        col_clust,
+        block_clust,
+        add_message,
+        err_message,
+        cancel_pressed,
+    )
+
+
+def cluster_pvalues(cluster_size, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup):
+    &#34;&#34;&#34;Calculate Pvalue of each group versus cluster&#34;&#34;&#34;
+    n, nc = mt.shape
+    cluster_size = cluster_size.astype(np.int)
+    nb_groups = int(nb_groups)
+    r_ct = r_ct.astype(np.int)
+    n_ct = n_ct.astype(np.int)
+    cluster_size = np.reshape(cluster_size, nc)
+    r_ct = np.reshape(r_ct, (n,))
+    n_ct = np.reshape(n_ct, (nc,))
+    row_groups = np.reshape(row_groups, (n,))
+
+    cluster_group = np.zeros(nc)
+    cluster_prob = np.zeros(nc)
+    cluster_ngroup = np.zeros((nc, nb_groups))
+    cluster_n_wgroup = np.zeros((nc, nb_groups))
+    prun = 0
+
+    for k in range(0, nc):
+        if cluster_size[k] &gt; 0:
+            # Find main group (only if clustersize&gt;2)
+            kfound0 = 0
+            for i_group in range(0, nb_groups):
+                if k == 0:
+                    mx = np.where(row_groups[r_ct[0: n_ct[0]]] == list_groups[i_group])[0]
+                    if len(mx) &gt;= 1:
+                        cluster_n_wgroup[k, i_group] = np.sum(mt[r_ct[0: n_ct[0]][mx], k])
+                        cluster_ngroup[k, i_group] = len(mx)
+                else:
+                    mx = np.where(row_groups[r_ct[n_ct[k - 1]: n_ct[k]]] == list_groups[i_group])[0]
+                    if len(mx) &gt;= 1:
+                        cluster_n_wgroup[k, i_group] = np.sum(mt[r_ct[n_ct[k - 1]: n_ct[k]][mx], k])
+                        cluster_ngroup[k, i_group] = len(mx)
+
+                if cluster_ngroup[k, i_group] &gt; kfound0:
+                    kfound0 = cluster_ngroup[k, i_group]
+                    cluster_group[k] = i_group
+
+            sum_cluster_n_wgroup = sum(cluster_n_wgroup[k, :])
+            for i_group in range(0, nb_groups):
+                cluster_n_wgroup[k, i_group] = cluster_size[k] * cluster_n_wgroup[k, i_group] / sum_cluster_n_wgroup
+
+        else:
+            for i_group in range(0, nb_groups):
+                cluster_ngroup[k, i_group] = 0
+                cluster_n_wgroup[k, i_group] = 0
+
+            cluster_group[k] = 1
+
+    for k in range(0, nc):
+        if cluster_size[k] &gt; 2:
+            cluster_prob[k] = hypergeom.sf(
+                cluster_ngroup[k, int(cluster_group[k])], n, ngroup[int(cluster_group[k])], cluster_size[k], loc=0
+            ) + hypergeom.pmf(
+                cluster_ngroup[k, int(cluster_group[k])], n, ngroup[int(cluster_group[k])], cluster_size[k], loc=0
+            )
+        else:
+            cluster_prob[k] = 1
+
+    for k in range(0, nc):
+        for i_group in range(0, nb_groups):
+            if cluster_n_wgroup[k, i_group]:
+                prun += cluster_n_wgroup[k, i_group] * math.log(
+                    cluster_n_wgroup[k, i_group] / (cluster_size[k] * ngroup[i_group] / n)
+                )
+
+    return prun, cluster_group, cluster_prob, cluster_ngroup, cluster_n_wgroup
+
+
+def global_sign(nrun, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup, my_status_box):
+    &#34;&#34;&#34;Calculate global significance of association with a covariate
+    following multiple factorization trials
+    &#34;&#34;&#34;
+
+    n, nc = mt.shape
+    nrun = int(nrun)
+    nb_groups = int(nb_groups)
+    r_ct = r_ct.astype(np.int)
+    n_ct = n_ct.astype(np.int)
+    cluster_size = np.zeros(nc)
+    r_ct = np.reshape(r_ct, n)
+    n_ct = np.reshape(n_ct, nc)
+    cancel_pressed = 0
+    for k in range(0, nc):
+        if k == 0:
+            cluster_size[k] = n_ct[0]
+        else:
+            cluster_size[k] = n_ct[k] - n_ct[k - 1]
+
+    if nb_groups &gt; 1:
+        row_groups = np.reshape(row_groups, (n,))
+        step_iter = np.round(nrun / 10)
+        pbar_step = 10
+        pglob = 1
+        for irun in range(0, nrun):
+            if irun % step_iter == 0:
+                my_status_box.update_status(status=f&#34;Calculating global significance: {irun}/{nrun}&#34;)
+                my_status_box.update_bar(step=pbar_step)
+                if my_status_box.cancel_pressed:
+                    cancel_pressed = 1
+                    # TODO (pcotte): prun, cluster_prob, cluster_group, cluster_ngroup could have
+                    #  not been assigned yet. Fix that.
+                    return cluster_size, pglob, prun, cluster_prob, cluster_group, cluster_ngroup, cancel_pressed
+
+            prun, cluster_group, cluster_prob, cluster_ngroup, ClusterNWgroup = cluster_pvalues(
+                cluster_size, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup
+            )
+            if irun == 0:
+                cluster_prob0 = np.copy(cluster_prob)
+                cluster_group0 = np.copy(cluster_group)
+                cluster_ngroup0 = np.copy(cluster_ngroup)
+                row_groups0 = np.copy(row_groups)
+                prun0 = prun
+            else:
+                # TODO (pcotte): prun0 could have not been assigned yet. Fix that.
+                if prun &gt;= prun0:
+                    pglob += 1
+
+            if irun &lt; nrun - 1:
+                # permute row groups
+                # TODO (pcotte): row_groups0 could have not been assigned yet. Fix that.
+                row_groups = row_groups0[np.random.permutation(n)]
+            else:
+                # Restore
+                # TODO (pcotte): cluster_prob0, cluster_group0, cluster_ngroup0 could have not been assigned yet.
+                # Fix that.
+                cluster_prob = cluster_prob0
+                cluster_group = cluster_group0
+                cluster_ngroup = cluster_ngroup0
+                row_groups = row_groups0
+                prun = prun0
+                pglob /= nrun
+    else:
+        pglob = np.NaN
+        prun = np.NaN
+        cluster_prob = np.array([])
+        cluster_group = np.array([])
+        cluster_ngroup = np.array([])
+
+    # TODO (pcotte): prun, cluster_prob, cluster_group, cluster_ngroup could have
+    #  not been assigned yet. Fix that.
+    return cluster_size, pglob, prun, cluster_prob, cluster_group, cluster_ngroup, cancel_pressed
+
+
+def sparse_opt(b, alpha, two_sided):
+    &#34;&#34;&#34;Return the L2-closest vector with sparsity alpha
+
+    Parameters
+    ----------
+    b: original vector
+    alpha
+    two_sided
+
+    Returns
+    -------
+    x: sparse vector
+
+    Reference
+    ---------
+    V. K. Potluru &amp; all (2013) Block Coordinate Descent for Sparse NMF arXiv:1301.3527v2 [cs.LG]
+
+    Examples
+    --------
+    &gt;&gt;&gt; from adnmtf.nmtf_utils import sparse_opt
+    &gt;&gt;&gt; b_ = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    &gt;&gt;&gt; alpha_ = 1
+    &gt;&gt;&gt; two_sided_ = True
+    &gt;&gt;&gt; sparse_opt(b_, alpha_, two_sided_)
+    array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0., nan])
+    &gt;&gt;&gt; two_sided_ = False
+    &gt;&gt;&gt; sparse_opt(b_, alpha_, two_sided_)
+    array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0., nan])
+    &#34;&#34;&#34;
+    m = b.size
+    if two_sided is False:
+        m_alpha = (np.sqrt(m) - np.linalg.norm(b, ord=1) / np.linalg.norm(b, ord=2)) / (np.sqrt(m) - 1)
+        if (alpha == 0) or (alpha &lt;= m_alpha):
+            return b
+
+    b_rank = np.argsort(-b)
+    ranks = np.empty_like(b_rank)
+    ranks[b_rank] = np.arange(m)
+    b_norm = np.linalg.norm(b)
+    a = b[b_rank] / b_norm
+    k = math.sqrt(m) - alpha * (math.sqrt(m) - 1)
+    p0 = m
+    mylambda0 = np.nan
+    mu0 = np.nan
+    mylambda = mylambda0
+    mu = mu0
+
+    for p in range(int(np.ceil(k ** 2)), m + 1):
+        mylambda0 = mylambda
+        mu0 = mu
+        mylambda = -np.sqrt((p * np.linalg.norm(a[0:p]) ** 2 - np.linalg.norm(a[0:p], ord=1) ** 2) / (p - k ** 2))
+        mu = -(np.linalg.norm(a[0:p], ord=1) + k * mylambda) / p
+        if a[p - 1] &lt; -mu:
+            p0 = p - 1
+            mylambda = mylambda0
+            mu = mu0
+            break
+
+    x = np.zeros(m)
+    x[0:p0] = -b_norm * (a[0:p0] + mu) / mylambda
+    return x[ranks]</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="adnmtf.nmtf_utils.build_clusters"><code class="name flex">
+<span>def <span class="ident">build_clusters</span></span>(<span>mt, mw, mb, mt_pct, mw_pct, n_blocks, blk_size, nmf_calculate_leverage, nmf_use_robust_leverage, nmf_algo, nmf_robust_cluster_by_stability, cell_plot_ordered_clusters, add_message, my_status_box)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Builder clusters from leverages</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def build_clusters(
+    mt,
+    mw,
+    mb,
+    mt_pct,
+    mw_pct,
+    n_blocks,
+    blk_size,
+    nmf_calculate_leverage,
+    nmf_use_robust_leverage,
+    nmf_algo,
+    nmf_robust_cluster_by_stability,
+    cell_plot_ordered_clusters,
+    add_message,
+    my_status_box,
+):
+    &#34;&#34;&#34;Builder clusters from leverages&#34;&#34;&#34;
+    n_blocks = int(n_blocks)
+    my_status_box.update_status(status=&#34;Build clusters...&#34;)
+    err_message = &#34;&#34;
+    cancel_pressed = 0
+    n, nc = np.shape(mt)
+    p = np.shape(mw)[0]
+    if nmf_algo == &#34;ntf&#34;:
+        block_clust = np.zeros(n_blocks)
+    elif nmf_algo == &#34;nmf&#34;:
+        block_clust = np.array([])
+    else:
+        raise ValueError(f&#34;Unknown algo &#39;{nmf_algo}&#39;&#34;)
+
+    r_ct = np.zeros(n)
+    r_cw = np.zeros(p)
+    n_ct = np.zeros(nc)
+    n_cw = np.zeros(n_blocks * nc)
+    row_clust = np.zeros(n)
+    col_clust = np.zeros(p)
+    ilast = 0
+    jlast = 0
+
+    if nmf_calculate_leverage == 1:
+        my_status_box.update_status(status=&#34;Leverages - Left components...&#34;)
+        mtn, add_message, err_message, cancel_pressed = calc_leverage(
+            mt, nmf_use_robust_leverage, add_message, my_status_box
+        )
+        my_status_box.update_status(status=&#34;Leverages - Right components...&#34;)
+        mwn, add_message, err_message, cancel_pressed = calc_leverage(
+            mw, nmf_use_robust_leverage, add_message, my_status_box
+        )
+        if nmf_algo == &#34;ntf&#34;:
+            my_status_box.update_status(status=&#34;Leverages - Block components...&#34;)
+            mbn, add_message, err_message, cancel_pressed = calc_leverage(
+                mb, nmf_use_robust_leverage, add_message, my_status_box
+            )
+        else:
+            mbn = None
+    else:
+        mtn = mt
+        mwn = mw
+        if nmf_algo == &#34;ntf&#34;:
+            mbn = mb
+        else:
+            mbn = None
+
+    if nmf_algo == &#34;ntf&#34;:
+        for i_block in range(0, n_blocks):
+            if nc &gt; 1:
+                block_clust[i_block] = np.argmax(mbn[i_block, :]) + 1
+            else:
+                block_clust[i_block] = 1
+
+    for i in range(0, n):
+        if nc &gt; 1:
+            if (isinstance(mt_pct, np.ndarray)) &amp; (nmf_robust_cluster_by_stability &gt; 0):
+                row_clust[i] = np.argmax(mt_pct[i, :]) + 1
+            else:
+                row_clust[i] = np.argmax(mtn[i, :]) + 1
+        else:
+            row_clust[i] = 1
+
+    for j in range(0, p):
+        if nc &gt; 1:
+            if (isinstance(mw_pct, np.ndarray)) &amp; (nmf_robust_cluster_by_stability &gt; 0):
+                col_clust[j] = np.argmax(mw_pct[j, :]) + 1
+            else:
+                col_clust[j] = np.argmax(mwn[j, :]) + 1
+        else:
+            col_clust[j] = 1
+
+    if (cell_plot_ordered_clusters == 1) &amp; (nc &gt;= 3):
+        mt_s = np.zeros(n)
+        mw_s = np.zeros(p)
+        for i in range(0, n):
+            if row_clust[i] == 1:
+                mt_s[i] = sum(k * mtn[i, k] for k in range(0, 2)) / max(sum(mtn[i, k] for k in range(0, 2)), 1.0e-10)
+            elif row_clust[i] == nc:
+                mt_s[i] = sum(k * mtn[i, k] for k in range(nc - 2, nc)) / max(
+                    sum(mtn[i, k] for k in range(nc - 2, nc)), 1.0e-10
+                )
+            else:
+                mt_s[i] = sum(k * mtn[i, k] for k in range(int(row_clust[i] - 2), int(row_clust[i] + 1))) / max(
+                    sum(mtn[i, k] for k in range(int(row_clust[i] - 2), int(row_clust[i] + 1))), 1.0e-10
+                )
+
+        for j in range(0, p):
+            if col_clust[j] == 1:
+                mw_s[j] = sum(k * mwn[j, k] for k in range(0, 2)) / max(sum(mwn[j, k] for k in range(0, 2)), 1.0e-10)
+            elif col_clust[j] == nc:
+                mw_s[j] = sum(k * mwn[j, k] for k in range(nc - 2, nc)) / max(
+                    sum(mwn[j, k] for k in range(nc - 2, nc)), 1.0e-10
+                )
+            else:
+                mw_s[j] = sum(k * mwn[j, k] for k in range(int(col_clust[j] - 2), int(col_clust[j] + 1))) / max(
+                    sum(mwn[j, k] for k in range(int(col_clust[j] - 2), int(col_clust[j] + 1))), 1.0e-10
+                )
+
+    for k in range(0, nc):
+        mindex1 = np.where(row_clust == k + 1)[0]
+        if len(mindex1) &gt; 0:
+            if len(mindex1) == 1:
+                mindex = (mindex1,)
+            elif (nc == 2) &amp; (k == 1):
+                mindex = mindex1[np.argsort(mtn[mindex1, k])]
+            elif (cell_plot_ordered_clusters == 1) &amp; (nc &gt;= 3):
+                # TODO (pcotte): mt_s could have not been assigned yet. Fix that.
+                mindex = mindex1[np.argsort(mt_s[mindex1])]
+            else:
+                mindex = mindex1[np.argsort(-mtn[mindex1, k])]
+
+            r_ct[ilast: len(mindex) + ilast] = mindex
+            ilast += len(mindex)
+
+        n_ct[k] = ilast
+
+    for i_block in range(0, n_blocks):
+        if i_block == 0:
+            j1 = 0
+            j2 = int(abs(blk_size[i_block]))
+        else:
+            # TODO (pcotte): j2 could have not been assigned yet. Fix that.
+            j1 = j2
+            j2 += int(abs(blk_size[i_block]))
+
+        for k in range(0, nc):
+            mindex2 = np.where(col_clust[j1:j2] == k + 1)[0]
+            if len(mindex2) &gt; 0:
+                mindex2 = mindex2 + j1
+                if len(mindex2) == 1:
+                    mindex = mindex2
+                elif (nc == 2) &amp; (k == 1):
+                    mindex = mindex2[np.argsort(mwn[mindex2, k])]
+                elif (cell_plot_ordered_clusters == 1) &amp; (nc &gt;= 3):
+                    # TODO (pcotte): mw_s could have not been assigned yet. Fix that.
+                    mindex = mindex2[np.argsort(mw_s[mindex2])]
+                else:
+                    mindex = mindex2[np.argsort(-mwn[mindex2, k])]
+
+                r_cw[jlast: len(mindex) + jlast] = mindex
+                jlast += len(mindex)
+
+            n_cw[i_block * nc + k] = jlast
+
+    return (
+        mtn,
+        mwn,
+        mbn,
+        r_ct,
+        r_cw,
+        n_ct,
+        n_cw,
+        row_clust,
+        col_clust,
+        block_clust,
+        add_message,
+        err_message,
+        cancel_pressed,
+    )</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.calc_leverage"><code class="name flex">
+<span>def <span class="ident">calc_leverage</span></span>(<span>v, nmf_use_robust_leverage, add_message, my_status_box)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculate leverages</p>
+<h2 id="parameter">Parameter</h2>
+<p>v: Input column vectors
+nmf_use_robust_leverage: Estimate robust through columns of V
+add_message
+my_status_box</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>vn</code></strong> :&ensp;<code>Leveraged column vectors</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="reference">Reference</h2>
+<p>P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to
+Environmental Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509 doi:10.3390/ijerph13050509</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def calc_leverage(v, nmf_use_robust_leverage, add_message, my_status_box):
+    &#34;&#34;&#34;Calculate leverages
+
+    Parameter
+    ---------
+    v: Input column vectors
+    nmf_use_robust_leverage: Estimate robust through columns of V
+    add_message
+    my_status_box
+
+    Returns
+    -------
+    vn: Leveraged column vectors
+
+    Reference
+    ---------
+    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to
+    Environmental Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509 doi:10.3390/ijerph13050509
+
+    &#34;&#34;&#34;
+
+    err_message = &#34;&#34;
+    cancel_pressed = 0
+
+    n, nc = v.shape
+    vn = np.zeros((n, nc))
+    vr = np.zeros((n, nc))
+    if nmf_use_robust_leverage &gt; 0:
+        max_v, add_message, err_message, cancel_pressed = robust_max(v, add_message, my_status_box)
+        if cancel_pressed == 1:
+            return vn, add_message, err_message, cancel_pressed
+    else:
+        max_v = np.max(v, axis=0)
+
+    pbar_step = 100 / nc
+    my_status_box.init_bar()
+    for k in range(0, nc):
+        vr[v[:, k] &gt; 0, k] = 1
+        vn[:, k] = max_v[k] - v[:, k]
+        vn[vn[:, k] &lt; 0, k] = 0
+        vn[:, k] = vn[:, k] ** 2
+        for k2 in range(0, nc):
+            if k2 != k:
+                vn[:, k] = vn[:, k] + v[:, k2] ** 2
+
+        status = f&#34;Leverage: Comp {k + 1}&#34;
+        my_status_box.update_status(status=status)
+        my_status_box.update_bar(step=pbar_step)
+        if my_status_box.cancel_pressed:
+            cancel_pressed = 1
+            return vn, add_message, err_message, cancel_pressed
+
+    vn = 10 ** (-vn / (2 * np.mean(vn))) * vr
+    return vn, add_message, err_message, cancel_pressed</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.cluster_pvalues"><code class="name flex">
+<span>def <span class="ident">cluster_pvalues</span></span>(<span>cluster_size, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculate Pvalue of each group versus cluster</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cluster_pvalues(cluster_size, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup):
+    &#34;&#34;&#34;Calculate Pvalue of each group versus cluster&#34;&#34;&#34;
+    n, nc = mt.shape
+    cluster_size = cluster_size.astype(np.int)
+    nb_groups = int(nb_groups)
+    r_ct = r_ct.astype(np.int)
+    n_ct = n_ct.astype(np.int)
+    cluster_size = np.reshape(cluster_size, nc)
+    r_ct = np.reshape(r_ct, (n,))
+    n_ct = np.reshape(n_ct, (nc,))
+    row_groups = np.reshape(row_groups, (n,))
+
+    cluster_group = np.zeros(nc)
+    cluster_prob = np.zeros(nc)
+    cluster_ngroup = np.zeros((nc, nb_groups))
+    cluster_n_wgroup = np.zeros((nc, nb_groups))
+    prun = 0
+
+    for k in range(0, nc):
+        if cluster_size[k] &gt; 0:
+            # Find main group (only if clustersize&gt;2)
+            kfound0 = 0
+            for i_group in range(0, nb_groups):
+                if k == 0:
+                    mx = np.where(row_groups[r_ct[0: n_ct[0]]] == list_groups[i_group])[0]
+                    if len(mx) &gt;= 1:
+                        cluster_n_wgroup[k, i_group] = np.sum(mt[r_ct[0: n_ct[0]][mx], k])
+                        cluster_ngroup[k, i_group] = len(mx)
+                else:
+                    mx = np.where(row_groups[r_ct[n_ct[k - 1]: n_ct[k]]] == list_groups[i_group])[0]
+                    if len(mx) &gt;= 1:
+                        cluster_n_wgroup[k, i_group] = np.sum(mt[r_ct[n_ct[k - 1]: n_ct[k]][mx], k])
+                        cluster_ngroup[k, i_group] = len(mx)
+
+                if cluster_ngroup[k, i_group] &gt; kfound0:
+                    kfound0 = cluster_ngroup[k, i_group]
+                    cluster_group[k] = i_group
+
+            sum_cluster_n_wgroup = sum(cluster_n_wgroup[k, :])
+            for i_group in range(0, nb_groups):
+                cluster_n_wgroup[k, i_group] = cluster_size[k] * cluster_n_wgroup[k, i_group] / sum_cluster_n_wgroup
+
+        else:
+            for i_group in range(0, nb_groups):
+                cluster_ngroup[k, i_group] = 0
+                cluster_n_wgroup[k, i_group] = 0
+
+            cluster_group[k] = 1
+
+    for k in range(0, nc):
+        if cluster_size[k] &gt; 2:
+            cluster_prob[k] = hypergeom.sf(
+                cluster_ngroup[k, int(cluster_group[k])], n, ngroup[int(cluster_group[k])], cluster_size[k], loc=0
+            ) + hypergeom.pmf(
+                cluster_ngroup[k, int(cluster_group[k])], n, ngroup[int(cluster_group[k])], cluster_size[k], loc=0
+            )
+        else:
+            cluster_prob[k] = 1
+
+    for k in range(0, nc):
+        for i_group in range(0, nb_groups):
+            if cluster_n_wgroup[k, i_group]:
+                prun += cluster_n_wgroup[k, i_group] * math.log(
+                    cluster_n_wgroup[k, i_group] / (cluster_size[k] * ngroup[i_group] / n)
+                )
+
+    return prun, cluster_group, cluster_prob, cluster_ngroup, cluster_n_wgroup</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.get_status_box"><code class="name flex">
+<span>def <span class="ident">get_status_box</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_status_box():
+    return status_box</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.global_sign"><code class="name flex">
+<span>def <span class="ident">global_sign</span></span>(<span>nrun, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup, my_status_box)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculate global significance of association with a covariate
+following multiple factorization trials</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def global_sign(nrun, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup, my_status_box):
+    &#34;&#34;&#34;Calculate global significance of association with a covariate
+    following multiple factorization trials
+    &#34;&#34;&#34;
+
+    n, nc = mt.shape
+    nrun = int(nrun)
+    nb_groups = int(nb_groups)
+    r_ct = r_ct.astype(np.int)
+    n_ct = n_ct.astype(np.int)
+    cluster_size = np.zeros(nc)
+    r_ct = np.reshape(r_ct, n)
+    n_ct = np.reshape(n_ct, nc)
+    cancel_pressed = 0
+    for k in range(0, nc):
+        if k == 0:
+            cluster_size[k] = n_ct[0]
+        else:
+            cluster_size[k] = n_ct[k] - n_ct[k - 1]
+
+    if nb_groups &gt; 1:
+        row_groups = np.reshape(row_groups, (n,))
+        step_iter = np.round(nrun / 10)
+        pbar_step = 10
+        pglob = 1
+        for irun in range(0, nrun):
+            if irun % step_iter == 0:
+                my_status_box.update_status(status=f&#34;Calculating global significance: {irun}/{nrun}&#34;)
+                my_status_box.update_bar(step=pbar_step)
+                if my_status_box.cancel_pressed:
+                    cancel_pressed = 1
+                    # TODO (pcotte): prun, cluster_prob, cluster_group, cluster_ngroup could have
+                    #  not been assigned yet. Fix that.
+                    return cluster_size, pglob, prun, cluster_prob, cluster_group, cluster_ngroup, cancel_pressed
+
+            prun, cluster_group, cluster_prob, cluster_ngroup, ClusterNWgroup = cluster_pvalues(
+                cluster_size, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup
+            )
+            if irun == 0:
+                cluster_prob0 = np.copy(cluster_prob)
+                cluster_group0 = np.copy(cluster_group)
+                cluster_ngroup0 = np.copy(cluster_ngroup)
+                row_groups0 = np.copy(row_groups)
+                prun0 = prun
+            else:
+                # TODO (pcotte): prun0 could have not been assigned yet. Fix that.
+                if prun &gt;= prun0:
+                    pglob += 1
+
+            if irun &lt; nrun - 1:
+                # permute row groups
+                # TODO (pcotte): row_groups0 could have not been assigned yet. Fix that.
+                row_groups = row_groups0[np.random.permutation(n)]
+            else:
+                # Restore
+                # TODO (pcotte): cluster_prob0, cluster_group0, cluster_ngroup0 could have not been assigned yet.
+                # Fix that.
+                cluster_prob = cluster_prob0
+                cluster_group = cluster_group0
+                cluster_ngroup = cluster_ngroup0
+                row_groups = row_groups0
+                prun = prun0
+                pglob /= nrun
+    else:
+        pglob = np.NaN
+        prun = np.NaN
+        cluster_prob = np.array([])
+        cluster_group = np.array([])
+        cluster_ngroup = np.array([])
+
+    # TODO (pcotte): prun, cluster_prob, cluster_group, cluster_ngroup could have
+    #  not been assigned yet. Fix that.
+    return cluster_size, pglob, prun, cluster_prob, cluster_group, cluster_ngroup, cancel_pressed</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.nmf_det"><code class="name flex">
+<span>def <span class="ident">nmf_det</span></span>(<span>mt, mw, nmf_exact_det)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Volume occupied by Left and Right factoring vectors</p>
+<h2 id="parameters">Parameters</h2>
+<p>mt:
+Left hand matrix
+mw:
+Right hand matrix
+nmf_exact_det:
+if = 0 compute an approximate determinant in reduced space n x n or p x p through random sampling in the largest
+dimension</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>determinant</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="reference">Reference</h2>
+<p>P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to
+Environmental Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509
+doi:10.3390/ijerph13050509</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def nmf_det(mt, mw, nmf_exact_det):
+    &#34;&#34;&#34;Volume occupied by Left and Right factoring vectors
+
+    Parameters
+    ----------
+    mt:
+       Left hand matrix
+    mw:
+       Right hand matrix
+    nmf_exact_det:
+       if = 0 compute an approximate determinant in reduced space n x n or p x p through random sampling in the largest
+       dimension
+
+
+    Returns
+    -------
+    determinant
+
+    Reference
+    ---------
+    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to
+    Environmental Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509
+    doi:10.3390/ijerph13050509
+
+    &#34;&#34;&#34;
+
+    n, nc = mt.shape
+    p, nc = mw.shape
+    nxp = n * p
+    if (nmf_exact_det &gt; 0) | (n == p):
+        xcells = np.zeros((nxp, nc))
+        for k in range(0, nc):
+            xcells[:, k] = np.reshape(np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p)), nxp)
+            norm_k = np.linalg.norm(xcells[:, k])
+            if norm_k &gt; 0:
+                xcells[:, k] = xcells[:, k] / norm_k
+            else:
+                xcells[:, k] = 0
+    else:
+        if n &gt; p:
+            xcells = np.zeros((p ** 2, nc))
+            theid = np.arange(n)
+            np.random.shuffle(theid)
+            theid = theid[0:p]
+            for k in range(0, nc):
+                xcells[:, k] = np.reshape(np.reshape(mt[theid, k], (p, 1)) @ np.reshape(mw[:, k], (1, p)), p ** 2)
+                norm_k = np.linalg.norm(xcells[:, k])
+                if norm_k &gt; 0:
+                    xcells[:, k] = xcells[:, k] / norm_k
+                else:
+                    xcells[:, k] = 0
+        else:
+            xcells = np.zeros((n ** 2, nc))
+            theid = np.arange(p)
+            np.random.shuffle(theid)
+            theid = theid[0:n]
+            for k in range(0, nc):
+                xcells[:, k] = np.reshape(np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[theid, k], (1, n)), n ** 2)
+                norm_k = np.linalg.norm(xcells[:, k])
+                if norm_k &gt; 0:
+                    xcells[:, k] = xcells[:, k] / norm_k
+                else:
+                    xcells[:, k] = 0
+
+    det_xcells = np.linalg.det(xcells.T @ xcells)
+    return det_xcells</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.robust_max"><code class="name flex">
+<span>def <span class="ident">robust_max</span></span>(<span>v0, add_message, my_status_box)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Robust max of column vectors</p>
+<p>For each column:
+= weighted mean of column elements larger than 95% percentile
+for each row, weight = specificity of the column value wrt other columns</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>v0</code></strong> :&ensp;<code>column vectors</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>add_message</code></strong> :&ensp;<code>List[str]</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>my_status_box</code></strong></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Robust max by column</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="reference">Reference</h2>
+<p>P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to
+Environmental Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509 doi:10.3390/ijerph13050509</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def robust_max(v0, add_message, my_status_box):
+    &#34;&#34;&#34;Robust max of column vectors
+
+    For each column:
+         = weighted mean of column elements larger than 95% percentile
+        for each row, weight = specificity of the column value wrt other columns
+
+    Parameters
+    ----------
+    v0: column vectors
+    add_message: List[str]
+    my_status_box
+
+    Returns
+    -------
+    Robust max by column
+
+    Reference
+    ---------
+    P. Fogel et al (2016) Applications of a Novel Clustering Approach Using Non-Negative Matrix Factorization to
+    Environmental Research in Public Health Int. J. Environ. Res. Public Health 2016, 13, 509 doi:10.3390/ijerph13050509
+
+    &#34;&#34;&#34;
+    err_message = &#34;&#34;
+    cancel_pressed = 0
+
+    v = v0.copy()
+    n, nc = v.shape
+    if nc &gt; 1:
+        nc_i = 1 / nc
+        lnnc_i = 1 / math.log(nc)
+
+    ind = max(math.ceil(n * 0.05) - 1, min(n - 1, 2))
+    scale = np.max(v, axis=0)
+    for k in range(0, nc):
+        v[:, k] = v[:, k] / scale[k]
+
+    rob_max = np.max(v, axis=0)
+    rob_max0 = 1e99 * np.ones(nc)
+    i_iter = 0
+    max_iterations = 100
+    pbar_step = 100 / max_iterations
+    my_status_box.init_bar()
+
+    while ((np.linalg.norm(rob_max - rob_max0) / np.linalg.norm(rob_max)) ** 2 &gt; 1e-6) &amp; (i_iter &lt; max_iterations):
+        for k in range(0, nc):
+            v = v[np.argsort(-v[:, k]), :]
+            if nc &gt; 1:
+                den = np.repeat(np.sum(v, axis=1), nc).reshape((n, nc))
+                den[den == 0] = 1.0e-10
+                prob = v / den
+                prob[prob == 0] = 1.0e-10
+                # TODO (pcotte) lnnc_i and nc_i could have not been assigned yet. Fix that.
+                specificity = np.ones(n) + np.sum(prob * np.log(prob), axis=1) * lnnc_i
+                specificity[prob[:, k] &lt; nc_i] = 0
+            else:
+                specificity = np.ones(n)
+
+            specificity[ind:n] = 0
+            rob_max0[k] = rob_max[k]
+            rob_max[k] = np.sum(v[:, k] * specificity) / np.sum(specificity)
+            v[v[:, k] &gt; rob_max[k], k] = rob_max[k]
+
+        my_status_box.update_bar(step=pbar_step)
+        if my_status_box.cancel_pressed:
+            cancel_pressed = 1
+            return rob_max * scale, add_message, err_message, cancel_pressed
+
+        i_iter += 1
+
+    if i_iter == max_iterations:
+        add_message.insert(len(add_message), f&#34;Warning: Max iterations reached while calculating robust max (N = {n})&#34;)
+
+    return rob_max * scale, add_message, err_message, cancel_pressed</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.set_status_box"><code class="name flex">
+<span>def <span class="ident">set_status_box</span></span>(<span>use_tkinter)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_status_box(use_tkinter):
+    global status_box
+
+    if use_tkinter:
+        try:
+            from tkinter import Tk, Frame, StringVar, Label, ttk, Button, NONE, HORIZONTAL
+            tkinter_ok = True
+        except ImportError:
+            tkinter_ok = False
+    else:
+        tkinter_ok = False
+
+    if tkinter_ok:
+        class StatusBoxTKinter:
+            def __init__(self, verbose=0):
+                self.log_iter = verbose
+                self.root = Tk()
+                self.root.title(&#39;irMF status - Python kernel&#39;)
+                self.root.minsize(width=230, height=60)
+                self.frame = Frame(self.root, borderwidth=6)
+                self.frame.pack()
+                self.var = StringVar()
+                self.status = Label(self.frame, textvariable=self.var, width=60, height=1)
+                self.status.pack(fill=NONE, padx=6, pady=6)
+                self.pbar = ttk.Progressbar(self.frame, orient=HORIZONTAL, max=100, mode=&#39;determinate&#39;)
+                self.pbar.pack(fill=NONE, padx=6, pady=6)
+                Button(self.frame, text=&#39;Cancel&#39;, command=self.close_dialog).pack(fill=NONE, padx=6, pady=6)
+                self.cancel_pressed = False
+                self.n_steps = 0
+
+            def close_dialog(self):
+                self.cancel_pressed = True
+
+            def update_bar(self, delay=1, step=1):
+                self.n_steps += step
+                self.pbar.step(step)
+                self.pbar.after(delay, lambda: self.root.quit())
+                self.root.mainloop()
+
+            def init_bar(self, delay=1):
+                self.update_bar(delay=1, step=100 - self.n_steps)
+                self.n_steps = 0
+
+            def update_status(self, delay=1, status=&#39;&#39;):
+                self.var.set(status)
+                self.status.after(delay, lambda: self.root.quit())
+                self.root.mainloop()
+
+            def close(self):
+                self.root.destroy()
+
+            def myPrint(self, status=&#39;&#39;):
+                print(status)
+
+        status_box = StatusBoxTKinter</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.sparse_opt"><code class="name flex">
+<span>def <span class="ident">sparse_opt</span></span>(<span>b, alpha, two_sided)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return the L2-closest vector with sparsity alpha</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>b</code></strong> :&ensp;<code>original vector</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>alpha</code></strong></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>two_sided</code></strong></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>x</code></strong> :&ensp;<code>sparse vector</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="reference">Reference</h2>
+<p>V. K. Potluru &amp; all (2013) Block Coordinate Descent for Sparse NMF arXiv:1301.3527v2 [cs.LG]</p>
+<h2 id="examples">Examples</h2>
+<pre><code class="language-python-repl">&gt;&gt;&gt; from adnmtf.nmtf_utils import sparse_opt
+&gt;&gt;&gt; b_ = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+&gt;&gt;&gt; alpha_ = 1
+&gt;&gt;&gt; two_sided_ = True
+&gt;&gt;&gt; sparse_opt(b_, alpha_, two_sided_)
+array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0., nan])
+&gt;&gt;&gt; two_sided_ = False
+&gt;&gt;&gt; sparse_opt(b_, alpha_, two_sided_)
+array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0., nan])
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sparse_opt(b, alpha, two_sided):
+    &#34;&#34;&#34;Return the L2-closest vector with sparsity alpha
+
+    Parameters
+    ----------
+    b: original vector
+    alpha
+    two_sided
+
+    Returns
+    -------
+    x: sparse vector
+
+    Reference
+    ---------
+    V. K. Potluru &amp; all (2013) Block Coordinate Descent for Sparse NMF arXiv:1301.3527v2 [cs.LG]
+
+    Examples
+    --------
+    &gt;&gt;&gt; from adnmtf.nmtf_utils import sparse_opt
+    &gt;&gt;&gt; b_ = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    &gt;&gt;&gt; alpha_ = 1
+    &gt;&gt;&gt; two_sided_ = True
+    &gt;&gt;&gt; sparse_opt(b_, alpha_, two_sided_)
+    array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0., nan])
+    &gt;&gt;&gt; two_sided_ = False
+    &gt;&gt;&gt; sparse_opt(b_, alpha_, two_sided_)
+    array([ 0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0., nan])
+    &#34;&#34;&#34;
+    m = b.size
+    if two_sided is False:
+        m_alpha = (np.sqrt(m) - np.linalg.norm(b, ord=1) / np.linalg.norm(b, ord=2)) / (np.sqrt(m) - 1)
+        if (alpha == 0) or (alpha &lt;= m_alpha):
+            return b
+
+    b_rank = np.argsort(-b)
+    ranks = np.empty_like(b_rank)
+    ranks[b_rank] = np.arange(m)
+    b_norm = np.linalg.norm(b)
+    a = b[b_rank] / b_norm
+    k = math.sqrt(m) - alpha * (math.sqrt(m) - 1)
+    p0 = m
+    mylambda0 = np.nan
+    mu0 = np.nan
+    mylambda = mylambda0
+    mu = mu0
+
+    for p in range(int(np.ceil(k ** 2)), m + 1):
+        mylambda0 = mylambda
+        mu0 = mu
+        mylambda = -np.sqrt((p * np.linalg.norm(a[0:p]) ** 2 - np.linalg.norm(a[0:p], ord=1) ** 2) / (p - k ** 2))
+        mu = -(np.linalg.norm(a[0:p], ord=1) + k * mylambda) / p
+        if a[p - 1] &lt; -mu:
+            p0 = p - 1
+            mylambda = mylambda0
+            mu = mu0
+            break
+
+    x = np.zeros(m)
+    x[0:p0] = -b_norm * (a[0:p0] + mu) / mylambda
+    return x[ranks]</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="adnmtf.nmtf_utils.StatusBox"><code class="flex name class">
+<span>class <span class="ident">StatusBox</span></span>
+<span>(</span><span>verbose=0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class StatusBox:
+    def __init__(self, verbose=0):
+        self.log_iter = verbose
+        if self.log_iter == 0:
+            self.pbar = tqdm(total=100)
+
+        self.cancel_pressed = False
+
+    def update_bar(self, step=1):
+        if self.log_iter == 0:
+            self.pbar.update(n=step)
+
+    def init_bar(self):
+        if self.log_iter == 0:
+            self.pbar.n = 0
+
+    def update_status(self, status=&#34;&#34;):
+        if self.log_iter == 0:
+            self.pbar.set_description(status, refresh=False)
+            self.pbar.refresh()
+
+    def close(self):
+        if self.log_iter == 0:
+            self.pbar.clear()
+            self.pbar.close()
+
+    def my_print(self, status=&#34;&#34;):
+        if self.log_iter == 1:
+            logger.info(status)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="adnmtf.nmtf_utils.StatusBox.close"><code class="name flex">
+<span>def <span class="ident">close</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def close(self):
+    if self.log_iter == 0:
+        self.pbar.clear()
+        self.pbar.close()</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.StatusBox.init_bar"><code class="name flex">
+<span>def <span class="ident">init_bar</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def init_bar(self):
+    if self.log_iter == 0:
+        self.pbar.n = 0</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.StatusBox.my_print"><code class="name flex">
+<span>def <span class="ident">my_print</span></span>(<span>self, status='')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def my_print(self, status=&#34;&#34;):
+    if self.log_iter == 1:
+        logger.info(status)</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.StatusBox.update_bar"><code class="name flex">
+<span>def <span class="ident">update_bar</span></span>(<span>self, step=1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def update_bar(self, step=1):
+    if self.log_iter == 0:
+        self.pbar.update(n=step)</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.StatusBox.update_status"><code class="name flex">
+<span>def <span class="ident">update_status</span></span>(<span>self, status='')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def update_status(self, status=&#34;&#34;):
+    if self.log_iter == 0:
+        self.pbar.set_description(status, refresh=False)
+        self.pbar.refresh()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="adnmtf.nmtf_utils.StatusBox"><code class="flex name class">
+<span>class <span class="ident">status_box</span></span>
+<span>(</span><span>verbose=0)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class StatusBox:
+    def __init__(self, verbose=0):
+        self.log_iter = verbose
+        if self.log_iter == 0:
+            self.pbar = tqdm(total=100)
+
+        self.cancel_pressed = False
+
+    def update_bar(self, step=1):
+        if self.log_iter == 0:
+            self.pbar.update(n=step)
+
+    def init_bar(self):
+        if self.log_iter == 0:
+            self.pbar.n = 0
+
+    def update_status(self, status=&#34;&#34;):
+        if self.log_iter == 0:
+            self.pbar.set_description(status, refresh=False)
+            self.pbar.refresh()
+
+    def close(self):
+        if self.log_iter == 0:
+            self.pbar.clear()
+            self.pbar.close()
+
+    def my_print(self, status=&#34;&#34;):
+        if self.log_iter == 1:
+            logger.info(status)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="adnmtf.nmtf_utils.StatusBox.close"><code class="name flex">
+<span>def <span class="ident">close</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def close(self):
+    if self.log_iter == 0:
+        self.pbar.clear()
+        self.pbar.close()</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.StatusBox.init_bar"><code class="name flex">
+<span>def <span class="ident">init_bar</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def init_bar(self):
+    if self.log_iter == 0:
+        self.pbar.n = 0</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.StatusBox.my_print"><code class="name flex">
+<span>def <span class="ident">my_print</span></span>(<span>self, status='')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def my_print(self, status=&#34;&#34;):
+    if self.log_iter == 1:
+        logger.info(status)</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.StatusBox.update_bar"><code class="name flex">
+<span>def <span class="ident">update_bar</span></span>(<span>self, step=1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def update_bar(self, step=1):
+    if self.log_iter == 0:
+        self.pbar.update(n=step)</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_utils.StatusBox.update_status"><code class="name flex">
+<span>def <span class="ident">update_status</span></span>(<span>self, status='')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def update_status(self, status=&#34;&#34;):
+    if self.log_iter == 0:
+        self.pbar.set_description(status, refresh=False)
+        self.pbar.refresh()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="adnmtf" href="index.html">adnmtf</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="adnmtf.nmtf_utils.build_clusters" href="#adnmtf.nmtf_utils.build_clusters">build_clusters</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.calc_leverage" href="#adnmtf.nmtf_utils.calc_leverage">calc_leverage</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.cluster_pvalues" href="#adnmtf.nmtf_utils.cluster_pvalues">cluster_pvalues</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.get_status_box" href="#adnmtf.nmtf_utils.get_status_box">get_status_box</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.global_sign" href="#adnmtf.nmtf_utils.global_sign">global_sign</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.nmf_det" href="#adnmtf.nmtf_utils.nmf_det">nmf_det</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.robust_max" href="#adnmtf.nmtf_utils.robust_max">robust_max</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.set_status_box" href="#adnmtf.nmtf_utils.set_status_box">set_status_box</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.sparse_opt" href="#adnmtf.nmtf_utils.sparse_opt">sparse_opt</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="adnmtf.nmtf_utils.StatusBox" href="#adnmtf.nmtf_utils.StatusBox">StatusBox</a></code></h4>
+<ul class="">
+<li><code><a title="adnmtf.nmtf_utils.StatusBox.close" href="#adnmtf.nmtf_utils.StatusBox.close">close</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.StatusBox.init_bar" href="#adnmtf.nmtf_utils.StatusBox.init_bar">init_bar</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.StatusBox.my_print" href="#adnmtf.nmtf_utils.StatusBox.my_print">my_print</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.StatusBox.update_bar" href="#adnmtf.nmtf_utils.StatusBox.update_bar">update_bar</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.StatusBox.update_status" href="#adnmtf.nmtf_utils.StatusBox.update_status">update_status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="adnmtf.nmtf_utils.StatusBox" href="#adnmtf.nmtf_utils.StatusBox">StatusBox</a></code></h4>
+<ul class="">
+<li><code><a title="adnmtf.nmtf_utils.StatusBox.close" href="#adnmtf.nmtf_utils.StatusBox.close">close</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.StatusBox.init_bar" href="#adnmtf.nmtf_utils.StatusBox.init_bar">init_bar</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.StatusBox.my_print" href="#adnmtf.nmtf_utils.StatusBox.my_print">my_print</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.StatusBox.update_bar" href="#adnmtf.nmtf_utils.StatusBox.update_bar">update_bar</a></code></li>
+<li><code><a title="adnmtf.nmtf_utils.StatusBox.update_status" href="#adnmtf.nmtf_utils.StatusBox.update_status">update_status</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

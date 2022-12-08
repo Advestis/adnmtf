@@ -1,0 +1,1658 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>adnmtf.nmtf_core API documentation</title>
+<meta name="description" content="Non-negative matrix and tensor factorization core functions" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>adnmtf.nmtf_core</code></h1>
+</header>
+<section id="section-intro">
+<p>Non-negative matrix and tensor factorization core functions</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Non-negative matrix and tensor factorization core functions
+
+&#34;&#34;&#34;
+
+# Author: Paul Fogel
+
+# License: MIT
+# Jan 4, &#39;20
+from typing import Tuple
+
+import numpy as np
+from .nmtf_utils import EPSILON, sparse_opt
+import logging
+
+logger = logging.getLogger(__name__)
+
+# TODO (pcotte): typing
+# TODO (pcotte): docstrings (with parameters and returns)
+
+
+def ntf_stack(m, mmis, n_blocks):
+    &#34;&#34;&#34;Unfold tensor M
+    for future use with NMF
+    &#34;&#34;&#34;
+    n, p = m.shape
+    mmis = mmis.astype(np.int)
+    n_mmis = mmis.shape[0]
+    n_blocks = int(n_blocks)
+
+    mstacked = np.zeros((int(n * p / n_blocks), n_blocks))
+    if n_mmis &gt; 0:
+        mmis_stacked = np.zeros((int(n * p / n_blocks), n_blocks))
+    else:
+        mmis_stacked = np.array([])
+
+    for i_block in range(0, n_blocks):
+        for j in range(0, int(p / n_blocks)):
+            i1 = j * n
+            i2 = i1 + n
+            mstacked[i1:i2, i_block] = m[:, int(i_block * p / n_blocks + j)]
+            if n_mmis &gt; 0:
+                mmis_stacked[i1:i2, i_block] = mmis[:, int(i_block * p / n_blocks + j)]
+
+    return mstacked, mmis_stacked
+
+
+def ntf_solve(
+    m,
+    mmis,
+    mt0,
+    mw0,
+    mb0,
+    nc,
+    tolerance,
+    log_iter,
+    status0,
+    max_iterations,
+    nmf_fix_user_lhe,
+    nmf_fix_user_rhe,
+    nmf_fix_user_bhe,
+    nmf_sparse_level,
+    ntf_unimodal,
+    ntf_smooth,
+    ntf_left_components,
+    ntf_right_components,
+    ntf_block_components,
+    n_blocks,
+    nmf_priors,
+    my_status_box,
+):
+    &#34;&#34;&#34;Interface to:
+    - NTFSolve_simple
+    &#34;&#34;&#34;
+
+    if len(nmf_priors) &gt; 0:
+        n_nmf_priors, nc = nmf_priors.shape
+    else:
+        n_nmf_priors = 0
+
+    if n_nmf_priors &gt; 0:
+        nmf_priors[nmf_priors &gt; 0] = 1
+
+    return ntf_solve_simple(
+        m=m,
+        mmis=mmis,
+        mt0=mt0,
+        mw0=mw0,
+        mb0=mb0,
+        nc=nc,
+        tolerance=tolerance,
+        log_iter=log_iter,
+        status0=status0,
+        max_iterations=max_iterations,
+        nmf_fix_user_lhe=nmf_fix_user_lhe,
+        nmf_fix_user_rhe=nmf_fix_user_rhe,
+        nmf_fix_user_bhe=nmf_fix_user_bhe,
+        nmf_sparse_level=nmf_sparse_level,
+        ntf_unimodal=ntf_unimodal,
+        ntf_smooth=ntf_smooth,
+        ntf_left_components=ntf_left_components,
+        ntf_right_components=ntf_right_components,
+        ntf_block_components=ntf_block_components,
+        n_blocks=n_blocks,
+        nmf_priors=nmf_priors,
+        my_status_box=my_status_box,
+    )
+
+
+def ntf_solve_simple(
+    m,
+    mmis,
+    mt0,
+    mw0,
+    mb0,
+    nc,
+    tolerance,
+    log_iter,
+    status0,
+    max_iterations,
+    nmf_fix_user_lhe,
+    nmf_fix_user_rhe,
+    nmf_fix_user_bhe,
+    nmf_sparse_level,
+    ntf_unimodal,
+    ntf_smooth,
+    ntf_left_components,
+    ntf_right_components,
+    ntf_block_components,
+    n_blocks,
+    nmf_priors,
+    my_status_box,
+) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, float, int]:
+    &#34;&#34;&#34;
+    Estimate NTF matrices (HALS)
+
+    Parameters
+    ----------
+     m: Input matrix
+     mmis: Define missing values (0 = missing cell, 1 = real cell)
+     mt0: Initial left hand matrix
+     mw0: Initial right hand matrix
+     mb0: Initial block hand matrix
+     nc: NTF rank
+     tolerance: Convergence threshold
+     log_iter: Log results through iterations
+     status0: Initial displayed status to be updated during iterations
+     max_iterations: Max iterations
+     nmf_fix_user_lhe: = 1 =&gt; fixed left hand matrix columns
+     nmf_fix_user_rhe: = 1 =&gt; fixed  right hand matrix columns
+     nmf_fix_user_bhe: = 1 =&gt; fixed  block hand matrix columns
+     nmf_sparse_level: sparsity level (as defined by Hoyer); +/- = make RHE/LHe sparse
+     ntf_unimodal: Apply Unimodal constraint on factoring vectors
+     ntf_smooth: Apply Smooth constraint on factoring vectors
+     ntf_left_components: Apply Unimodal/Smooth constraint on left hand matrix
+     ntf_right_components: Apply Unimodal/Smooth constraint on right hand matrix
+     ntf_block_components: Apply Unimodal/Smooth constraint on block hand matrix
+     n_blocks: Number of NTF blocks
+     nmf_priors: Elements in mw that should be updated (others remain 0)
+     my_status_box
+
+    Returns
+    -------
+    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, float, int]\n
+       * mt: Left hand matrix\n
+       * mw: Right hand matrix\n
+       * mb: Block hand matrix\n
+       * diff: objective cost\n
+       * cancel_pressed\n
+
+    Reference
+    ---------
+    a. Cichocki, P.H.a.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor factorizations,
+    IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
+    &#34;&#34;&#34;
+
+    cancel_pressed = 0
+
+    n, p0 = m.shape
+    n_mmis = mmis.shape[0]
+    nc = int(nc)
+    n_blocks = int(n_blocks)
+    p = int(p0 / n_blocks)
+    nxp = int(n * p)
+    nxp0 = int(n * p0)
+    mt = np.copy(mt0)
+    mw = np.copy(mw0)
+    mb = np.copy(mb0)
+    #     step_iter = math.ceil(MaxIterations/10)
+    step_iter = 1
+    pbar_step = 100 * step_iter / max_iterations
+
+    id_blockp = np.arange(0, (n_blocks - 1) * p + 1, p)
+    a = np.zeros(n)
+    b = np.zeros(p)
+    c = np.zeros(n_blocks)
+    alpha = np.zeros(nc)
+
+    # Compute Residual tensor
+    mfit = np.zeros((n, p0))
+    for k in range(0, nc):
+        if n_blocks &gt; 1:
+            for i_block in range(0, n_blocks):
+                mfit[:, id_blockp[i_block]: id_blockp[i_block] + p] += (
+                    mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+                )
+        else:
+            mfit[:, id_blockp[0]: id_blockp[0] + p] += np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+
+    denomt = np.zeros(n)
+    denomw = np.zeros(p)
+    denom_block = np.zeros((n_blocks, nc))
+    mt2 = np.zeros(n)
+    mw2 = np.zeros(p)
+    mt_mw = np.zeros(nxp)
+    denom_cutoff = 0.1
+
+    if n_mmis &gt; 0:
+        mres = (m - mfit) * mmis
+    else:
+        mres = m - mfit
+
+    my_status_box.init_bar()
+
+    # Loop
+    cont = 1
+    i_iter = 0
+    diff0 = 1.0e99
+    mpart = np.zeros((n, p0))
+    if abs(nmf_sparse_level) &lt; 1:
+        alpha[0] = nmf_sparse_level * 0.8
+    else:
+        alpha[0] = nmf_sparse_level
+
+    percent_zeros = 0
+    iter_sparse = 0
+
+    while (cont &gt; 0) &amp; (i_iter &lt; max_iterations):
+        for k in range(0, nc):
+            (
+                n_blocks,
+                mpart,
+                id_blockp,
+                p,
+                mb,
+                k,
+                mt,
+                n,
+                mw,
+                n_mmis,
+                mmis,
+                mres,
+                nmf_fix_user_lhe,
+                denomt,
+                mw2,
+                denom_cutoff,
+                alpha,
+                ntf_unimodal,
+                ntf_left_components,
+                ntf_smooth,
+                a,
+                nmf_fix_user_rhe,
+                denomw,
+                mt2,
+                ntf_right_components,
+                b,
+                nmf_fix_user_bhe,
+                mt_mw,
+                nxp,
+                denom_block,
+                ntf_block_components,
+                c,
+                mfit,
+                nmf_priors,
+            ) = ntf_update(
+                n_blocks=n_blocks,
+                mpart=mpart,
+                id_blockp=id_blockp,
+                p=p,
+                mb=mb,
+                k=k,
+                mt=mt,
+                n=n,
+                mw=mw,
+                n_mmis=n_mmis,
+                mmis=mmis,
+                mres=mres,
+                nmf_fix_user_lhe=nmf_fix_user_lhe,
+                denomt=denomt,
+                mw2=mw2,
+                denom_cutoff=denom_cutoff,
+                alpha=alpha,
+                ntf_unimodal=ntf_unimodal,
+                ntf_left_components=ntf_left_components,
+                ntf_smooth=ntf_smooth,
+                a=a,
+                nmf_fix_user_rhe=nmf_fix_user_rhe,
+                denomw=denomw,
+                mt2=mt2,
+                ntf_right_components=ntf_right_components,
+                b=b,
+                nmf_fix_user_bhe=nmf_fix_user_bhe,
+                mt_mw=mt_mw,
+                nxp=nxp,
+                denom_block=denom_block,
+                ntf_block_components=ntf_block_components,
+                c=c,
+                mfit=mfit,
+                nmf_priors=nmf_priors,
+            )
+
+        if i_iter % step_iter == 0:
+            # Check convergence
+            diff = np.linalg.norm(mres) ** 2 / nxp0
+            if (diff0 - diff) / diff0 &lt; tolerance:
+                cont = 0
+            else:
+                if diff &gt; diff0:
+                    my_status_box.my_print(f&#34;{status0} Iter: {i_iter} MSR does not improve&#34;)
+
+                diff0 = diff
+
+            Status = f&#34;{status0} Iteration: {i_iter}&#34;
+
+            if nmf_sparse_level != 0:
+                Status = f&#34;{Status} ; Achieved sparsity: {round(percent_zeros, 2)}; alpha: {round(alpha[0], 2)}&#34;
+                if log_iter == 1:
+                    my_status_box.my_print(Status)
+
+            my_status_box.update_status(status=Status)
+            my_status_box.update_bar(step=pbar_step)
+            if my_status_box.cancel_pressed:
+                cancel_pressed = 1
+                return np.array([]), mt, mw, mb, mres, cancel_pressed
+
+            if log_iter == 1:
+                my_status_box.my_print(status0 + &#34; Iter: &#34; + str(i_iter) + &#34; MSR: &#34; + str(diff))
+
+        i_iter += 1
+
+        if cont == 0 or i_iter == max_iterations or (cont == 0 and abs(nmf_sparse_level) == 1):
+            if 0 &lt; nmf_sparse_level &lt; 1:
+                sparse_test = np.zeros((nc, 1))
+                percent_zeros0 = percent_zeros
+                for k in range(0, nc):
+                    sparse_test[k] = np.where(mw[:, k] == 0)[0].size
+
+                percent_zeros = np.mean(sparse_test) / p
+                if percent_zeros &lt; percent_zeros0:
+                    iter_sparse += 1
+                else:
+                    iter_sparse = 0
+
+                if (percent_zeros &lt; 0.99 * nmf_sparse_level) &amp; (iter_sparse &lt; 50):
+                    alpha[0] *= min(1.05 * nmf_sparse_level / percent_zeros, 1.1)
+                    if alpha[0] &lt; 1:
+                        i_iter = 0
+                        cont = 1
+
+            elif 0 &gt; nmf_sparse_level &gt; -1:
+                sparse_test = np.zeros((nc, 1))
+                percent_zeros0 = percent_zeros
+                for k in range(0, nc):
+                    sparse_test[k] = np.where(mt[:, k] == 0)[0].size
+
+                percent_zeros = np.mean(sparse_test) / n
+                if percent_zeros &lt; percent_zeros0:
+                    iter_sparse += 1
+                else:
+                    iter_sparse = 0
+
+                if (percent_zeros &lt; 0.99 * abs(nmf_sparse_level)) &amp; (iter_sparse &lt; 50):
+                    alpha[0] *= min(1.05 * abs(nmf_sparse_level) / percent_zeros, 1.1)
+                    if abs(alpha[0]) &lt; 1:
+                        i_iter = 0
+                        cont = 1
+
+            elif abs(alpha[0]) == 1:
+                if alpha[0] == -1:
+                    for k in range(0, nc):
+                        if np.max(mt[:, k]) &gt; 0:
+                            hhi = int(
+                                np.round(
+                                    (np.linalg.norm(mt[:, k], ord=1) / (np.linalg.norm(mt[:, k], ord=2) + EPSILON))
+                                    ** 2,
+                                    decimals=0,
+                                )
+                            )
+                            alpha[k] = -1 - (n - hhi) / (n - 1)
+                        else:
+                            alpha[k] = 0
+                else:
+                    for k in range(0, nc):
+                        if np.max(mw[:, k]) &gt; 0:
+                            hhi = int(
+                                np.round(
+                                    (np.linalg.norm(mw[:, k], ord=1) / (np.linalg.norm(mw[:, k], ord=2) + EPSILON))
+                                    ** 2,
+                                    decimals=0,
+                                )
+                            )
+                            alpha[k] = 1 + (p - hhi) / (p - 1)
+                        else:
+                            alpha[k] = 0
+
+                if alpha[0] &lt;= -1:
+                    alpha_real = -(alpha + 1)
+                    # noinspection PyTypeChecker
+                    alpha_min = min(alpha_real)
+                    for k in range(0, nc):
+                        # noinspection PyUnresolvedReferences
+                        alpha[k] = min(alpha_real[k], 2 * alpha_min)
+                        alpha[k] = -alpha[k] - 1
+                else:
+                    alpha_real = alpha - 1
+                    alpha_min = min(alpha_real)
+                    for k in range(0, nc):
+                        alpha[k] = min(alpha_real[k], 2 * alpha_min)
+                        alpha[k] = alpha[k] + 1
+
+                i_iter = 0
+                cont = 1
+                diff0 = 1.0e99
+
+    for k in range(0, nc):
+        if np.max(mt[:, k]) &gt; 0:
+            hhi = np.round((np.linalg.norm(mt[:, k], ord=1) / np.linalg.norm(mt[:, k], ord=2)) ** 2, decimals=0)
+            logger.info(f&#34;component: {k}, left hhi: {hhi}&#34;)
+
+        if np.max(mw[:, k]) &gt; 0:
+            hhi = np.round((np.linalg.norm(mw[:, k], ord=1) / np.linalg.norm(mw[:, k], ord=2)) ** 2, decimals=0)
+            logger.info(f&#34;component: {k} right hhi: {hhi}&#34;)
+
+    if (n_mmis &gt; 0) &amp; (nmf_fix_user_bhe == 0):
+        mb *= denom_block
+
+    # TODO (pcotte): mt and mw can be not yet referenced: fix that
+    return np.array([]), mt, mw, mb, diff, cancel_pressed
+
+
+def ntf_update(
+    n_blocks,
+    mpart,
+    id_blockp,
+    p,
+    mb,
+    k,
+    mt,
+    n,
+    mw,
+    n_mmis,
+    mmis,
+    mres,
+    nmf_fix_user_lhe,
+    denomt,
+    mw2,
+    denom_cutoff,
+    alpha,
+    ntf_unimodal,
+    ntf_left_components,
+    ntf_smooth,
+    a,
+    nmf_fix_user_rhe,
+    denomw,
+    mt2,
+    ntf_right_components,
+    b,
+    nmf_fix_user_bhe,
+    mt_mw,
+    nxp,
+    denom_block,
+    ntf_block_components,
+    c,
+    mfit,
+    nmf_priors,
+):
+    &#34;&#34;&#34;Core updating code called by NTFSolve_simple &amp; NTF Solve_conv
+    Input:
+        All variables in the calling function used in the function
+    Output:
+        Same as Input
+    &#34;&#34;&#34;
+
+    if len(nmf_priors) &gt; 0:
+        n_nmf_priors, nc = nmf_priors.shape
+    else:
+        n_nmf_priors = 0
+
+    # Compute kth-part
+    if n_blocks &gt; 1:
+        for i_block in range(0, n_blocks):
+            mpart[:, id_blockp[i_block]: id_blockp[i_block] + p] = (
+                mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+            )
+    else:
+        mpart[:, id_blockp[0]: id_blockp[0] + p] = np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+
+    if n_mmis &gt; 0:
+        mpart *= mmis
+
+    mpart += mres
+
+    if nmf_fix_user_bhe &gt; 0:
+        norm_bhe = True
+        if nmf_fix_user_rhe == 0:
+            norm_lhe = True
+            norm_rhe = False
+        else:
+            norm_lhe = False
+            norm_rhe = True
+    else:
+        norm_bhe = False
+        norm_lhe = True
+        norm_rhe = True
+
+    if (nmf_fix_user_lhe &gt; 0) &amp; norm_lhe:
+        norm = np.linalg.norm(mt[:, k])
+        if norm &gt; 0:
+            mt[:, k] /= norm
+
+    if (nmf_fix_user_rhe &gt; 0) &amp; norm_rhe:
+        norm = np.linalg.norm(mw[:, k])
+        if norm &gt; 0:
+            mw[:, k] /= norm
+
+    if (nmf_fix_user_bhe &gt; 0) &amp; norm_bhe &amp; (n_blocks &gt; 1):
+        norm = np.linalg.norm(mb[:, k])
+        if norm &gt; 0:
+            mb[:, k] /= norm
+
+    if nmf_fix_user_lhe == 0:
+        # Update Mt
+        mt[:, k] = 0
+        if n_blocks &gt; 1:
+            for i_block in range(0, n_blocks):
+                mt[:, k] += mb[i_block, k] * mpart[:, id_blockp[i_block]: id_blockp[i_block] + p] @ mw[:, k]
+        else:
+            mt[:, k] += mpart[:, id_blockp[0]: id_blockp[0] + p] @ mw[:, k]
+
+        if n_mmis &gt; 0:
+            denomt[:] = 0
+            mw2[:] = mw[:, k] ** 2
+            if n_blocks &gt; 1:
+                for i_block in range(0, n_blocks):
+                    # Broadcast missing cells into Mw to calculate Mw.T * Mw
+                    denomt += mb[i_block, k] ** 2 * mmis[:, id_blockp[i_block]: id_blockp[i_block] + p] @ mw2
+            else:
+                denomt += mmis[:, id_blockp[0]: id_blockp[0] + p] @ mw2
+
+            denomt /= np.max(denomt)
+            denomt[denomt &lt; denom_cutoff] = denom_cutoff
+            mt[:, k] /= denomt
+
+        mt[mt[:, k] &lt; 0, k] = 0
+        if alpha[0] &lt; 0:
+            if alpha[0] &lt;= -1:
+                if (alpha[0] == -1) &amp; (np.max(mt[:, k]) &gt; 0):
+                    t_threshold = mt[:, k]
+                    hhi = int(
+                        np.round(
+                            (np.linalg.norm(t_threshold, ord=1) / (np.linalg.norm(t_threshold, ord=2) + EPSILON)) ** 2,
+                            decimals=0,
+                        )
+                    )
+                    t_rank = np.argsort(t_threshold)
+                    t_threshold[t_rank[0: n - hhi]] = 0
+                else:
+                    mt[:, k] = sparse_opt(mt[:, k], -alpha[k] - 1, False)
+            else:
+                mt[:, k] = sparse_opt(mt[:, k], -alpha[0], False)
+
+        if (ntf_unimodal &gt; 0) &amp; (ntf_left_components &gt; 0):
+            #             Enforce unimodal distribution
+            tmax = np.argmax(mt[:, k])
+            for i in range(tmax + 1, n):
+                mt[i, k] = min(mt[i - 1, k], mt[i, k])
+
+            for i in range(tmax - 1, -1, -1):
+                mt[i, k] = min(mt[i + 1, k], mt[i, k])
+
+        if (ntf_smooth &gt; 0) &amp; (ntf_left_components &gt; 0):
+            #             Smooth distribution
+            a[0] = 0.75 * mt[0, k] + 0.25 * mt[1, k]
+            a[n - 1] = 0.25 * mt[n - 2, k] + 0.75 * mt[n - 1, k]
+            for i in range(1, n - 1):
+                a[i] = 0.25 * mt[i - 1, k] + 0.5 * mt[i, k] + 0.25 * mt[i + 1, k]
+
+            mt[:, k] = a
+
+        if norm_lhe:
+            norm = np.linalg.norm(mt[:, k])
+            if norm &gt; 0:
+                mt[:, k] /= norm
+
+    if nmf_fix_user_rhe == 0:
+        # Update Mw
+        mw[:, k] = 0
+        if n_blocks &gt; 1:
+            for i_block in range(0, n_blocks):
+                mw[:, k] += mpart[:, id_blockp[i_block]: id_blockp[i_block] + p].T @ mt[:, k] * mb[i_block, k]
+        else:
+            mw[:, k] += mpart[:, id_blockp[0]: id_blockp[0] + p].T @ mt[:, k]
+
+        if n_mmis &gt; 0:
+            denomw[:] = 0
+            mt2[:] = mt[:, k] ** 2
+            if n_blocks &gt; 1:
+                for i_block in range(0, n_blocks):
+                    # Broadcast missing cells into Mw to calculate Mt.T * Mt
+                    denomw += mb[i_block, k] ** 2 * mmis[:, id_blockp[i_block]: id_blockp[i_block] + p].T @ mt2
+            else:
+                denomw += mmis[:, id_blockp[0]: id_blockp[0] + p].T @ mt2
+
+            denomw /= np.max(denomw)
+            denomw[denomw &lt; denom_cutoff] = denom_cutoff
+            mw[:, k] /= denomw
+
+        mw[mw[:, k] &lt; 0, k] = 0
+
+        if alpha[0] &gt; 0:
+            if alpha[0] &gt;= 1:
+                if (alpha[0] == 1) &amp; (np.max(mw[:, k]) &gt; 0):
+                    w_threshold = mw[:, k]
+                    hhi = int(
+                        np.round(
+                            (np.linalg.norm(w_threshold, ord=1) / (np.linalg.norm(w_threshold, ord=2) + EPSILON)) ** 2,
+                            decimals=0,
+                        )
+                    )
+                    w_rank = np.argsort(w_threshold)
+                    w_threshold[w_rank[0: p - hhi]] = 0
+                else:
+                    mw[:, k] = sparse_opt(mw[:, k], alpha[k] - 1, False)
+            else:
+                mw[:, k] = sparse_opt(mw[:, k], alpha[0], False)
+
+        if (ntf_unimodal &gt; 0) &amp; (ntf_right_components &gt; 0):
+            # Enforce unimodal distribution
+            wmax = np.argmax(mw[:, k])
+            for j in range(wmax + 1, p):
+                mw[j, k] = min(mw[j - 1, k], mw[j, k])
+
+            for j in range(wmax - 1, -1, -1):
+                mw[j, k] = min(mw[j + 1, k], mw[j, k])
+
+        if (ntf_smooth &gt; 0) &amp; (ntf_right_components &gt; 0):
+            #             Smooth distribution
+            b[0] = 0.75 * mw[0, k] + 0.25 * mw[1, k]
+            b[p - 1] = 0.25 * mw[p - 2, k] + 0.75 * mw[p - 1, k]
+            for j in range(1, p - 1):
+                b[j] = 0.25 * mw[j - 1, k] + 0.5 * mw[j, k] + 0.25 * mw[j + 1, k]
+
+            mw[:, k] = b
+
+        if n_nmf_priors &gt; 0:
+            mw[:, k] = mw[:, k] * nmf_priors[:, k]
+
+        if norm_rhe:
+            norm = np.linalg.norm(mw[:, k])
+            if norm &gt; 0:
+                mw[:, k] /= norm
+
+    if nmf_fix_user_bhe == 0:
+        # Update Mb
+        mb[:, k] = 0
+        mt_mw[:] = np.reshape((np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))), nxp)
+
+        for i_block in range(0, n_blocks):
+            mb[i_block, k] = np.reshape(mpart[:, id_blockp[i_block]: id_blockp[i_block] + p], nxp).T @ mt_mw
+
+        if n_mmis &gt; 0:
+            mt_mw[:] = mt_mw[:] ** 2
+            for i_block in range(0, n_blocks):
+                # Broadcast missing cells into Mb to calculate Mb.T * Mb
+                denom_block[i_block, k] = (
+                    np.reshape(mmis[:, id_blockp[i_block]: id_blockp[i_block] + p], (1, nxp)) @ mt_mw
+                )
+
+            maxdenom_block = np.max(denom_block[:, k])
+            denom_block[denom_block[:, k] &lt; denom_cutoff * maxdenom_block] = denom_cutoff * maxdenom_block
+            mb[:, k] /= denom_block[:, k]
+
+        mb[mb[:, k] &lt; 0, k] = 0
+
+        if (ntf_unimodal &gt; 0) &amp; (ntf_block_components &gt; 0):
+            #                 Enforce unimodal distribution
+            bmax = np.argmax(mb[:, k])
+            for i_block in range(bmax + 1, n_blocks):
+                mb[i_block, k] = min(mb[i_block - 1, k], mb[i_block, k])
+
+            for i_block in range(bmax - 1, -1, -1):
+                mb[i_block, k] = min(mb[i_block + 1, k], mb[i_block, k])
+
+        if (ntf_smooth &gt; 0) &amp; (ntf_block_components &gt; 0):
+            #             Smooth distribution
+            c[0] = 0.75 * mb[0, k] + 0.25 * mb[1, k]
+            c[n_blocks - 1] = 0.25 * mb[n_blocks - 2, k] + 0.75 * mb[n_blocks - 1, k]
+            for i_block in range(1, n_blocks - 1):
+                c[i_block] = 0.25 * mb[i_block - 1, k] + 0.5 * mb[i_block, k] + 0.25 * mb[i_block + 1, k]
+
+            mb[:, k] = c
+
+        if norm_bhe:
+            norm = np.linalg.norm(mb[:, k])
+            if norm &gt; 0:
+                mb[:, k] /= norm
+
+    # Update residual tensor
+    mfit[:, :] = 0
+    if n_blocks &gt; 1:
+        for i_block in range(0, n_blocks):
+            mfit[:, id_blockp[i_block]: id_blockp[i_block] + p] += (
+                mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+            )
+    else:
+        mfit[:, id_blockp[0]: id_blockp[0] + p] += np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+
+    if n_mmis &gt; 0:
+        mres[:, :] = (mpart - mfit) * mmis
+    else:
+        mres[:, :] = mpart - mfit
+
+    return (
+        n_blocks,
+        mpart,
+        id_blockp,
+        p,
+        mb,
+        k,
+        mt,
+        n,
+        mw,
+        n_mmis,
+        mmis,
+        mres,
+        nmf_fix_user_lhe,
+        denomt,
+        mw2,
+        denom_cutoff,
+        alpha,
+        ntf_unimodal,
+        ntf_left_components,
+        ntf_smooth,
+        a,
+        nmf_fix_user_rhe,
+        denomw,
+        mt2,
+        ntf_right_components,
+        b,
+        nmf_fix_user_bhe,
+        mt_mw,
+        nxp,
+        denom_block,
+        ntf_block_components,
+        c,
+        mfit,
+        nmf_priors,
+    )</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="adnmtf.nmtf_core.ntf_solve"><code class="name flex">
+<span>def <span class="ident">ntf_solve</span></span>(<span>m, mmis, mt0, mw0, mb0, nc, tolerance, log_iter, status0, max_iterations, nmf_fix_user_lhe, nmf_fix_user_rhe, nmf_fix_user_bhe, nmf_sparse_level, ntf_unimodal, ntf_smooth, ntf_left_components, ntf_right_components, ntf_block_components, n_blocks, nmf_priors, my_status_box)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Interface to:
+- NTFSolve_simple</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ntf_solve(
+    m,
+    mmis,
+    mt0,
+    mw0,
+    mb0,
+    nc,
+    tolerance,
+    log_iter,
+    status0,
+    max_iterations,
+    nmf_fix_user_lhe,
+    nmf_fix_user_rhe,
+    nmf_fix_user_bhe,
+    nmf_sparse_level,
+    ntf_unimodal,
+    ntf_smooth,
+    ntf_left_components,
+    ntf_right_components,
+    ntf_block_components,
+    n_blocks,
+    nmf_priors,
+    my_status_box,
+):
+    &#34;&#34;&#34;Interface to:
+    - NTFSolve_simple
+    &#34;&#34;&#34;
+
+    if len(nmf_priors) &gt; 0:
+        n_nmf_priors, nc = nmf_priors.shape
+    else:
+        n_nmf_priors = 0
+
+    if n_nmf_priors &gt; 0:
+        nmf_priors[nmf_priors &gt; 0] = 1
+
+    return ntf_solve_simple(
+        m=m,
+        mmis=mmis,
+        mt0=mt0,
+        mw0=mw0,
+        mb0=mb0,
+        nc=nc,
+        tolerance=tolerance,
+        log_iter=log_iter,
+        status0=status0,
+        max_iterations=max_iterations,
+        nmf_fix_user_lhe=nmf_fix_user_lhe,
+        nmf_fix_user_rhe=nmf_fix_user_rhe,
+        nmf_fix_user_bhe=nmf_fix_user_bhe,
+        nmf_sparse_level=nmf_sparse_level,
+        ntf_unimodal=ntf_unimodal,
+        ntf_smooth=ntf_smooth,
+        ntf_left_components=ntf_left_components,
+        ntf_right_components=ntf_right_components,
+        ntf_block_components=ntf_block_components,
+        n_blocks=n_blocks,
+        nmf_priors=nmf_priors,
+        my_status_box=my_status_box,
+    )</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_core.ntf_solve_simple"><code class="name flex">
+<span>def <span class="ident">ntf_solve_simple</span></span>(<span>m, mmis, mt0, mw0, mb0, nc, tolerance, log_iter, status0, max_iterations, nmf_fix_user_lhe, nmf_fix_user_rhe, nmf_fix_user_bhe, nmf_sparse_level, ntf_unimodal, ntf_smooth, ntf_left_components, ntf_right_components, ntf_block_components, n_blocks, nmf_priors, my_status_box) ‑> Tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray, numpy.ndarray, float, int]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Estimate NTF matrices (HALS)</p>
+<h2 id="parameters">Parameters</h2>
+<p>m: Input matrix
+mmis: Define missing values (0 = missing cell, 1 = real cell)
+mt0: Initial left hand matrix
+mw0: Initial right hand matrix
+mb0: Initial block hand matrix
+nc: NTF rank
+tolerance: Convergence threshold
+log_iter: Log results through iterations
+status0: Initial displayed status to be updated during iterations
+max_iterations: Max iterations
+nmf_fix_user_lhe: = 1 =&gt; fixed left hand matrix columns
+nmf_fix_user_rhe: = 1 =&gt; fixed
+right hand matrix columns
+nmf_fix_user_bhe: = 1 =&gt; fixed
+block hand matrix columns
+nmf_sparse_level: sparsity level (as defined by Hoyer); +/- = make RHE/LHe sparse
+ntf_unimodal: Apply Unimodal constraint on factoring vectors
+ntf_smooth: Apply Smooth constraint on factoring vectors
+ntf_left_components: Apply Unimodal/Smooth constraint on left hand matrix
+ntf_right_components: Apply Unimodal/Smooth constraint on right hand matrix
+ntf_block_components: Apply Unimodal/Smooth constraint on block hand matrix
+n_blocks: Number of NTF blocks
+nmf_priors: Elements in mw that should be updated (others remain 0)
+my_status_box</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, float, int]</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<ul>
+<li>
+<p>mt: Left hand matrix</p>
+</li>
+<li>
+<p>mw: Right hand matrix</p>
+</li>
+<li>
+<p>mb: Block hand matrix</p>
+</li>
+<li>
+<p>diff: objective cost</p>
+</li>
+<li>
+<p>cancel_pressed</p>
+</li>
+</ul>
+<h2 id="reference">Reference</h2>
+<p>a. Cichocki, P.H.a.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor factorizations,
+IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ntf_solve_simple(
+    m,
+    mmis,
+    mt0,
+    mw0,
+    mb0,
+    nc,
+    tolerance,
+    log_iter,
+    status0,
+    max_iterations,
+    nmf_fix_user_lhe,
+    nmf_fix_user_rhe,
+    nmf_fix_user_bhe,
+    nmf_sparse_level,
+    ntf_unimodal,
+    ntf_smooth,
+    ntf_left_components,
+    ntf_right_components,
+    ntf_block_components,
+    n_blocks,
+    nmf_priors,
+    my_status_box,
+) -&gt; Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, float, int]:
+    &#34;&#34;&#34;
+    Estimate NTF matrices (HALS)
+
+    Parameters
+    ----------
+     m: Input matrix
+     mmis: Define missing values (0 = missing cell, 1 = real cell)
+     mt0: Initial left hand matrix
+     mw0: Initial right hand matrix
+     mb0: Initial block hand matrix
+     nc: NTF rank
+     tolerance: Convergence threshold
+     log_iter: Log results through iterations
+     status0: Initial displayed status to be updated during iterations
+     max_iterations: Max iterations
+     nmf_fix_user_lhe: = 1 =&gt; fixed left hand matrix columns
+     nmf_fix_user_rhe: = 1 =&gt; fixed  right hand matrix columns
+     nmf_fix_user_bhe: = 1 =&gt; fixed  block hand matrix columns
+     nmf_sparse_level: sparsity level (as defined by Hoyer); +/- = make RHE/LHe sparse
+     ntf_unimodal: Apply Unimodal constraint on factoring vectors
+     ntf_smooth: Apply Smooth constraint on factoring vectors
+     ntf_left_components: Apply Unimodal/Smooth constraint on left hand matrix
+     ntf_right_components: Apply Unimodal/Smooth constraint on right hand matrix
+     ntf_block_components: Apply Unimodal/Smooth constraint on block hand matrix
+     n_blocks: Number of NTF blocks
+     nmf_priors: Elements in mw that should be updated (others remain 0)
+     my_status_box
+
+    Returns
+    -------
+    Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, float, int]\n
+       * mt: Left hand matrix\n
+       * mw: Right hand matrix\n
+       * mb: Block hand matrix\n
+       * diff: objective cost\n
+       * cancel_pressed\n
+
+    Reference
+    ---------
+    a. Cichocki, P.H.a.N. Anh-Huym, Fast local algorithms for large scale nonnegative matrix and tensor factorizations,
+    IEICE Trans. Fundam. Electron. Commun. Comput. Sci. 92 (3) (2009) 708–721.
+    &#34;&#34;&#34;
+
+    cancel_pressed = 0
+
+    n, p0 = m.shape
+    n_mmis = mmis.shape[0]
+    nc = int(nc)
+    n_blocks = int(n_blocks)
+    p = int(p0 / n_blocks)
+    nxp = int(n * p)
+    nxp0 = int(n * p0)
+    mt = np.copy(mt0)
+    mw = np.copy(mw0)
+    mb = np.copy(mb0)
+    #     step_iter = math.ceil(MaxIterations/10)
+    step_iter = 1
+    pbar_step = 100 * step_iter / max_iterations
+
+    id_blockp = np.arange(0, (n_blocks - 1) * p + 1, p)
+    a = np.zeros(n)
+    b = np.zeros(p)
+    c = np.zeros(n_blocks)
+    alpha = np.zeros(nc)
+
+    # Compute Residual tensor
+    mfit = np.zeros((n, p0))
+    for k in range(0, nc):
+        if n_blocks &gt; 1:
+            for i_block in range(0, n_blocks):
+                mfit[:, id_blockp[i_block]: id_blockp[i_block] + p] += (
+                    mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+                )
+        else:
+            mfit[:, id_blockp[0]: id_blockp[0] + p] += np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+
+    denomt = np.zeros(n)
+    denomw = np.zeros(p)
+    denom_block = np.zeros((n_blocks, nc))
+    mt2 = np.zeros(n)
+    mw2 = np.zeros(p)
+    mt_mw = np.zeros(nxp)
+    denom_cutoff = 0.1
+
+    if n_mmis &gt; 0:
+        mres = (m - mfit) * mmis
+    else:
+        mres = m - mfit
+
+    my_status_box.init_bar()
+
+    # Loop
+    cont = 1
+    i_iter = 0
+    diff0 = 1.0e99
+    mpart = np.zeros((n, p0))
+    if abs(nmf_sparse_level) &lt; 1:
+        alpha[0] = nmf_sparse_level * 0.8
+    else:
+        alpha[0] = nmf_sparse_level
+
+    percent_zeros = 0
+    iter_sparse = 0
+
+    while (cont &gt; 0) &amp; (i_iter &lt; max_iterations):
+        for k in range(0, nc):
+            (
+                n_blocks,
+                mpart,
+                id_blockp,
+                p,
+                mb,
+                k,
+                mt,
+                n,
+                mw,
+                n_mmis,
+                mmis,
+                mres,
+                nmf_fix_user_lhe,
+                denomt,
+                mw2,
+                denom_cutoff,
+                alpha,
+                ntf_unimodal,
+                ntf_left_components,
+                ntf_smooth,
+                a,
+                nmf_fix_user_rhe,
+                denomw,
+                mt2,
+                ntf_right_components,
+                b,
+                nmf_fix_user_bhe,
+                mt_mw,
+                nxp,
+                denom_block,
+                ntf_block_components,
+                c,
+                mfit,
+                nmf_priors,
+            ) = ntf_update(
+                n_blocks=n_blocks,
+                mpart=mpart,
+                id_blockp=id_blockp,
+                p=p,
+                mb=mb,
+                k=k,
+                mt=mt,
+                n=n,
+                mw=mw,
+                n_mmis=n_mmis,
+                mmis=mmis,
+                mres=mres,
+                nmf_fix_user_lhe=nmf_fix_user_lhe,
+                denomt=denomt,
+                mw2=mw2,
+                denom_cutoff=denom_cutoff,
+                alpha=alpha,
+                ntf_unimodal=ntf_unimodal,
+                ntf_left_components=ntf_left_components,
+                ntf_smooth=ntf_smooth,
+                a=a,
+                nmf_fix_user_rhe=nmf_fix_user_rhe,
+                denomw=denomw,
+                mt2=mt2,
+                ntf_right_components=ntf_right_components,
+                b=b,
+                nmf_fix_user_bhe=nmf_fix_user_bhe,
+                mt_mw=mt_mw,
+                nxp=nxp,
+                denom_block=denom_block,
+                ntf_block_components=ntf_block_components,
+                c=c,
+                mfit=mfit,
+                nmf_priors=nmf_priors,
+            )
+
+        if i_iter % step_iter == 0:
+            # Check convergence
+            diff = np.linalg.norm(mres) ** 2 / nxp0
+            if (diff0 - diff) / diff0 &lt; tolerance:
+                cont = 0
+            else:
+                if diff &gt; diff0:
+                    my_status_box.my_print(f&#34;{status0} Iter: {i_iter} MSR does not improve&#34;)
+
+                diff0 = diff
+
+            Status = f&#34;{status0} Iteration: {i_iter}&#34;
+
+            if nmf_sparse_level != 0:
+                Status = f&#34;{Status} ; Achieved sparsity: {round(percent_zeros, 2)}; alpha: {round(alpha[0], 2)}&#34;
+                if log_iter == 1:
+                    my_status_box.my_print(Status)
+
+            my_status_box.update_status(status=Status)
+            my_status_box.update_bar(step=pbar_step)
+            if my_status_box.cancel_pressed:
+                cancel_pressed = 1
+                return np.array([]), mt, mw, mb, mres, cancel_pressed
+
+            if log_iter == 1:
+                my_status_box.my_print(status0 + &#34; Iter: &#34; + str(i_iter) + &#34; MSR: &#34; + str(diff))
+
+        i_iter += 1
+
+        if cont == 0 or i_iter == max_iterations or (cont == 0 and abs(nmf_sparse_level) == 1):
+            if 0 &lt; nmf_sparse_level &lt; 1:
+                sparse_test = np.zeros((nc, 1))
+                percent_zeros0 = percent_zeros
+                for k in range(0, nc):
+                    sparse_test[k] = np.where(mw[:, k] == 0)[0].size
+
+                percent_zeros = np.mean(sparse_test) / p
+                if percent_zeros &lt; percent_zeros0:
+                    iter_sparse += 1
+                else:
+                    iter_sparse = 0
+
+                if (percent_zeros &lt; 0.99 * nmf_sparse_level) &amp; (iter_sparse &lt; 50):
+                    alpha[0] *= min(1.05 * nmf_sparse_level / percent_zeros, 1.1)
+                    if alpha[0] &lt; 1:
+                        i_iter = 0
+                        cont = 1
+
+            elif 0 &gt; nmf_sparse_level &gt; -1:
+                sparse_test = np.zeros((nc, 1))
+                percent_zeros0 = percent_zeros
+                for k in range(0, nc):
+                    sparse_test[k] = np.where(mt[:, k] == 0)[0].size
+
+                percent_zeros = np.mean(sparse_test) / n
+                if percent_zeros &lt; percent_zeros0:
+                    iter_sparse += 1
+                else:
+                    iter_sparse = 0
+
+                if (percent_zeros &lt; 0.99 * abs(nmf_sparse_level)) &amp; (iter_sparse &lt; 50):
+                    alpha[0] *= min(1.05 * abs(nmf_sparse_level) / percent_zeros, 1.1)
+                    if abs(alpha[0]) &lt; 1:
+                        i_iter = 0
+                        cont = 1
+
+            elif abs(alpha[0]) == 1:
+                if alpha[0] == -1:
+                    for k in range(0, nc):
+                        if np.max(mt[:, k]) &gt; 0:
+                            hhi = int(
+                                np.round(
+                                    (np.linalg.norm(mt[:, k], ord=1) / (np.linalg.norm(mt[:, k], ord=2) + EPSILON))
+                                    ** 2,
+                                    decimals=0,
+                                )
+                            )
+                            alpha[k] = -1 - (n - hhi) / (n - 1)
+                        else:
+                            alpha[k] = 0
+                else:
+                    for k in range(0, nc):
+                        if np.max(mw[:, k]) &gt; 0:
+                            hhi = int(
+                                np.round(
+                                    (np.linalg.norm(mw[:, k], ord=1) / (np.linalg.norm(mw[:, k], ord=2) + EPSILON))
+                                    ** 2,
+                                    decimals=0,
+                                )
+                            )
+                            alpha[k] = 1 + (p - hhi) / (p - 1)
+                        else:
+                            alpha[k] = 0
+
+                if alpha[0] &lt;= -1:
+                    alpha_real = -(alpha + 1)
+                    # noinspection PyTypeChecker
+                    alpha_min = min(alpha_real)
+                    for k in range(0, nc):
+                        # noinspection PyUnresolvedReferences
+                        alpha[k] = min(alpha_real[k], 2 * alpha_min)
+                        alpha[k] = -alpha[k] - 1
+                else:
+                    alpha_real = alpha - 1
+                    alpha_min = min(alpha_real)
+                    for k in range(0, nc):
+                        alpha[k] = min(alpha_real[k], 2 * alpha_min)
+                        alpha[k] = alpha[k] + 1
+
+                i_iter = 0
+                cont = 1
+                diff0 = 1.0e99
+
+    for k in range(0, nc):
+        if np.max(mt[:, k]) &gt; 0:
+            hhi = np.round((np.linalg.norm(mt[:, k], ord=1) / np.linalg.norm(mt[:, k], ord=2)) ** 2, decimals=0)
+            logger.info(f&#34;component: {k}, left hhi: {hhi}&#34;)
+
+        if np.max(mw[:, k]) &gt; 0:
+            hhi = np.round((np.linalg.norm(mw[:, k], ord=1) / np.linalg.norm(mw[:, k], ord=2)) ** 2, decimals=0)
+            logger.info(f&#34;component: {k} right hhi: {hhi}&#34;)
+
+    if (n_mmis &gt; 0) &amp; (nmf_fix_user_bhe == 0):
+        mb *= denom_block
+
+    # TODO (pcotte): mt and mw can be not yet referenced: fix that
+    return np.array([]), mt, mw, mb, diff, cancel_pressed</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_core.ntf_stack"><code class="name flex">
+<span>def <span class="ident">ntf_stack</span></span>(<span>m, mmis, n_blocks)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Unfold tensor M
+for future use with NMF</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ntf_stack(m, mmis, n_blocks):
+    &#34;&#34;&#34;Unfold tensor M
+    for future use with NMF
+    &#34;&#34;&#34;
+    n, p = m.shape
+    mmis = mmis.astype(np.int)
+    n_mmis = mmis.shape[0]
+    n_blocks = int(n_blocks)
+
+    mstacked = np.zeros((int(n * p / n_blocks), n_blocks))
+    if n_mmis &gt; 0:
+        mmis_stacked = np.zeros((int(n * p / n_blocks), n_blocks))
+    else:
+        mmis_stacked = np.array([])
+
+    for i_block in range(0, n_blocks):
+        for j in range(0, int(p / n_blocks)):
+            i1 = j * n
+            i2 = i1 + n
+            mstacked[i1:i2, i_block] = m[:, int(i_block * p / n_blocks + j)]
+            if n_mmis &gt; 0:
+                mmis_stacked[i1:i2, i_block] = mmis[:, int(i_block * p / n_blocks + j)]
+
+    return mstacked, mmis_stacked</code></pre>
+</details>
+</dd>
+<dt id="adnmtf.nmtf_core.ntf_update"><code class="name flex">
+<span>def <span class="ident">ntf_update</span></span>(<span>n_blocks, mpart, id_blockp, p, mb, k, mt, n, mw, n_mmis, mmis, mres, nmf_fix_user_lhe, denomt, mw2, denom_cutoff, alpha, ntf_unimodal, ntf_left_components, ntf_smooth, a, nmf_fix_user_rhe, denomw, mt2, ntf_right_components, b, nmf_fix_user_bhe, mt_mw, nxp, denom_block, ntf_block_components, c, mfit, nmf_priors)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Core updating code called by NTFSolve_simple &amp; NTF Solve_conv</p>
+<h2 id="input">Input</h2>
+<p>All variables in the calling function used in the function</p>
+<h2 id="output">Output</h2>
+<p>Same as Input</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def ntf_update(
+    n_blocks,
+    mpart,
+    id_blockp,
+    p,
+    mb,
+    k,
+    mt,
+    n,
+    mw,
+    n_mmis,
+    mmis,
+    mres,
+    nmf_fix_user_lhe,
+    denomt,
+    mw2,
+    denom_cutoff,
+    alpha,
+    ntf_unimodal,
+    ntf_left_components,
+    ntf_smooth,
+    a,
+    nmf_fix_user_rhe,
+    denomw,
+    mt2,
+    ntf_right_components,
+    b,
+    nmf_fix_user_bhe,
+    mt_mw,
+    nxp,
+    denom_block,
+    ntf_block_components,
+    c,
+    mfit,
+    nmf_priors,
+):
+    &#34;&#34;&#34;Core updating code called by NTFSolve_simple &amp; NTF Solve_conv
+    Input:
+        All variables in the calling function used in the function
+    Output:
+        Same as Input
+    &#34;&#34;&#34;
+
+    if len(nmf_priors) &gt; 0:
+        n_nmf_priors, nc = nmf_priors.shape
+    else:
+        n_nmf_priors = 0
+
+    # Compute kth-part
+    if n_blocks &gt; 1:
+        for i_block in range(0, n_blocks):
+            mpart[:, id_blockp[i_block]: id_blockp[i_block] + p] = (
+                mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+            )
+    else:
+        mpart[:, id_blockp[0]: id_blockp[0] + p] = np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+
+    if n_mmis &gt; 0:
+        mpart *= mmis
+
+    mpart += mres
+
+    if nmf_fix_user_bhe &gt; 0:
+        norm_bhe = True
+        if nmf_fix_user_rhe == 0:
+            norm_lhe = True
+            norm_rhe = False
+        else:
+            norm_lhe = False
+            norm_rhe = True
+    else:
+        norm_bhe = False
+        norm_lhe = True
+        norm_rhe = True
+
+    if (nmf_fix_user_lhe &gt; 0) &amp; norm_lhe:
+        norm = np.linalg.norm(mt[:, k])
+        if norm &gt; 0:
+            mt[:, k] /= norm
+
+    if (nmf_fix_user_rhe &gt; 0) &amp; norm_rhe:
+        norm = np.linalg.norm(mw[:, k])
+        if norm &gt; 0:
+            mw[:, k] /= norm
+
+    if (nmf_fix_user_bhe &gt; 0) &amp; norm_bhe &amp; (n_blocks &gt; 1):
+        norm = np.linalg.norm(mb[:, k])
+        if norm &gt; 0:
+            mb[:, k] /= norm
+
+    if nmf_fix_user_lhe == 0:
+        # Update Mt
+        mt[:, k] = 0
+        if n_blocks &gt; 1:
+            for i_block in range(0, n_blocks):
+                mt[:, k] += mb[i_block, k] * mpart[:, id_blockp[i_block]: id_blockp[i_block] + p] @ mw[:, k]
+        else:
+            mt[:, k] += mpart[:, id_blockp[0]: id_blockp[0] + p] @ mw[:, k]
+
+        if n_mmis &gt; 0:
+            denomt[:] = 0
+            mw2[:] = mw[:, k] ** 2
+            if n_blocks &gt; 1:
+                for i_block in range(0, n_blocks):
+                    # Broadcast missing cells into Mw to calculate Mw.T * Mw
+                    denomt += mb[i_block, k] ** 2 * mmis[:, id_blockp[i_block]: id_blockp[i_block] + p] @ mw2
+            else:
+                denomt += mmis[:, id_blockp[0]: id_blockp[0] + p] @ mw2
+
+            denomt /= np.max(denomt)
+            denomt[denomt &lt; denom_cutoff] = denom_cutoff
+            mt[:, k] /= denomt
+
+        mt[mt[:, k] &lt; 0, k] = 0
+        if alpha[0] &lt; 0:
+            if alpha[0] &lt;= -1:
+                if (alpha[0] == -1) &amp; (np.max(mt[:, k]) &gt; 0):
+                    t_threshold = mt[:, k]
+                    hhi = int(
+                        np.round(
+                            (np.linalg.norm(t_threshold, ord=1) / (np.linalg.norm(t_threshold, ord=2) + EPSILON)) ** 2,
+                            decimals=0,
+                        )
+                    )
+                    t_rank = np.argsort(t_threshold)
+                    t_threshold[t_rank[0: n - hhi]] = 0
+                else:
+                    mt[:, k] = sparse_opt(mt[:, k], -alpha[k] - 1, False)
+            else:
+                mt[:, k] = sparse_opt(mt[:, k], -alpha[0], False)
+
+        if (ntf_unimodal &gt; 0) &amp; (ntf_left_components &gt; 0):
+            #             Enforce unimodal distribution
+            tmax = np.argmax(mt[:, k])
+            for i in range(tmax + 1, n):
+                mt[i, k] = min(mt[i - 1, k], mt[i, k])
+
+            for i in range(tmax - 1, -1, -1):
+                mt[i, k] = min(mt[i + 1, k], mt[i, k])
+
+        if (ntf_smooth &gt; 0) &amp; (ntf_left_components &gt; 0):
+            #             Smooth distribution
+            a[0] = 0.75 * mt[0, k] + 0.25 * mt[1, k]
+            a[n - 1] = 0.25 * mt[n - 2, k] + 0.75 * mt[n - 1, k]
+            for i in range(1, n - 1):
+                a[i] = 0.25 * mt[i - 1, k] + 0.5 * mt[i, k] + 0.25 * mt[i + 1, k]
+
+            mt[:, k] = a
+
+        if norm_lhe:
+            norm = np.linalg.norm(mt[:, k])
+            if norm &gt; 0:
+                mt[:, k] /= norm
+
+    if nmf_fix_user_rhe == 0:
+        # Update Mw
+        mw[:, k] = 0
+        if n_blocks &gt; 1:
+            for i_block in range(0, n_blocks):
+                mw[:, k] += mpart[:, id_blockp[i_block]: id_blockp[i_block] + p].T @ mt[:, k] * mb[i_block, k]
+        else:
+            mw[:, k] += mpart[:, id_blockp[0]: id_blockp[0] + p].T @ mt[:, k]
+
+        if n_mmis &gt; 0:
+            denomw[:] = 0
+            mt2[:] = mt[:, k] ** 2
+            if n_blocks &gt; 1:
+                for i_block in range(0, n_blocks):
+                    # Broadcast missing cells into Mw to calculate Mt.T * Mt
+                    denomw += mb[i_block, k] ** 2 * mmis[:, id_blockp[i_block]: id_blockp[i_block] + p].T @ mt2
+            else:
+                denomw += mmis[:, id_blockp[0]: id_blockp[0] + p].T @ mt2
+
+            denomw /= np.max(denomw)
+            denomw[denomw &lt; denom_cutoff] = denom_cutoff
+            mw[:, k] /= denomw
+
+        mw[mw[:, k] &lt; 0, k] = 0
+
+        if alpha[0] &gt; 0:
+            if alpha[0] &gt;= 1:
+                if (alpha[0] == 1) &amp; (np.max(mw[:, k]) &gt; 0):
+                    w_threshold = mw[:, k]
+                    hhi = int(
+                        np.round(
+                            (np.linalg.norm(w_threshold, ord=1) / (np.linalg.norm(w_threshold, ord=2) + EPSILON)) ** 2,
+                            decimals=0,
+                        )
+                    )
+                    w_rank = np.argsort(w_threshold)
+                    w_threshold[w_rank[0: p - hhi]] = 0
+                else:
+                    mw[:, k] = sparse_opt(mw[:, k], alpha[k] - 1, False)
+            else:
+                mw[:, k] = sparse_opt(mw[:, k], alpha[0], False)
+
+        if (ntf_unimodal &gt; 0) &amp; (ntf_right_components &gt; 0):
+            # Enforce unimodal distribution
+            wmax = np.argmax(mw[:, k])
+            for j in range(wmax + 1, p):
+                mw[j, k] = min(mw[j - 1, k], mw[j, k])
+
+            for j in range(wmax - 1, -1, -1):
+                mw[j, k] = min(mw[j + 1, k], mw[j, k])
+
+        if (ntf_smooth &gt; 0) &amp; (ntf_right_components &gt; 0):
+            #             Smooth distribution
+            b[0] = 0.75 * mw[0, k] + 0.25 * mw[1, k]
+            b[p - 1] = 0.25 * mw[p - 2, k] + 0.75 * mw[p - 1, k]
+            for j in range(1, p - 1):
+                b[j] = 0.25 * mw[j - 1, k] + 0.5 * mw[j, k] + 0.25 * mw[j + 1, k]
+
+            mw[:, k] = b
+
+        if n_nmf_priors &gt; 0:
+            mw[:, k] = mw[:, k] * nmf_priors[:, k]
+
+        if norm_rhe:
+            norm = np.linalg.norm(mw[:, k])
+            if norm &gt; 0:
+                mw[:, k] /= norm
+
+    if nmf_fix_user_bhe == 0:
+        # Update Mb
+        mb[:, k] = 0
+        mt_mw[:] = np.reshape((np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))), nxp)
+
+        for i_block in range(0, n_blocks):
+            mb[i_block, k] = np.reshape(mpart[:, id_blockp[i_block]: id_blockp[i_block] + p], nxp).T @ mt_mw
+
+        if n_mmis &gt; 0:
+            mt_mw[:] = mt_mw[:] ** 2
+            for i_block in range(0, n_blocks):
+                # Broadcast missing cells into Mb to calculate Mb.T * Mb
+                denom_block[i_block, k] = (
+                    np.reshape(mmis[:, id_blockp[i_block]: id_blockp[i_block] + p], (1, nxp)) @ mt_mw
+                )
+
+            maxdenom_block = np.max(denom_block[:, k])
+            denom_block[denom_block[:, k] &lt; denom_cutoff * maxdenom_block] = denom_cutoff * maxdenom_block
+            mb[:, k] /= denom_block[:, k]
+
+        mb[mb[:, k] &lt; 0, k] = 0
+
+        if (ntf_unimodal &gt; 0) &amp; (ntf_block_components &gt; 0):
+            #                 Enforce unimodal distribution
+            bmax = np.argmax(mb[:, k])
+            for i_block in range(bmax + 1, n_blocks):
+                mb[i_block, k] = min(mb[i_block - 1, k], mb[i_block, k])
+
+            for i_block in range(bmax - 1, -1, -1):
+                mb[i_block, k] = min(mb[i_block + 1, k], mb[i_block, k])
+
+        if (ntf_smooth &gt; 0) &amp; (ntf_block_components &gt; 0):
+            #             Smooth distribution
+            c[0] = 0.75 * mb[0, k] + 0.25 * mb[1, k]
+            c[n_blocks - 1] = 0.25 * mb[n_blocks - 2, k] + 0.75 * mb[n_blocks - 1, k]
+            for i_block in range(1, n_blocks - 1):
+                c[i_block] = 0.25 * mb[i_block - 1, k] + 0.5 * mb[i_block, k] + 0.25 * mb[i_block + 1, k]
+
+            mb[:, k] = c
+
+        if norm_bhe:
+            norm = np.linalg.norm(mb[:, k])
+            if norm &gt; 0:
+                mb[:, k] /= norm
+
+    # Update residual tensor
+    mfit[:, :] = 0
+    if n_blocks &gt; 1:
+        for i_block in range(0, n_blocks):
+            mfit[:, id_blockp[i_block]: id_blockp[i_block] + p] += (
+                mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+            )
+    else:
+        mfit[:, id_blockp[0]: id_blockp[0] + p] += np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+
+    if n_mmis &gt; 0:
+        mres[:, :] = (mpart - mfit) * mmis
+    else:
+        mres[:, :] = mpart - mfit
+
+    return (
+        n_blocks,
+        mpart,
+        id_blockp,
+        p,
+        mb,
+        k,
+        mt,
+        n,
+        mw,
+        n_mmis,
+        mmis,
+        mres,
+        nmf_fix_user_lhe,
+        denomt,
+        mw2,
+        denom_cutoff,
+        alpha,
+        ntf_unimodal,
+        ntf_left_components,
+        ntf_smooth,
+        a,
+        nmf_fix_user_rhe,
+        denomw,
+        mt2,
+        ntf_right_components,
+        b,
+        nmf_fix_user_bhe,
+        mt_mw,
+        nxp,
+        denom_block,
+        ntf_block_components,
+        c,
+        mfit,
+        nmf_priors,
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="adnmtf" href="index.html">adnmtf</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="adnmtf.nmtf_core.ntf_solve" href="#adnmtf.nmtf_core.ntf_solve">ntf_solve</a></code></li>
+<li><code><a title="adnmtf.nmtf_core.ntf_solve_simple" href="#adnmtf.nmtf_core.ntf_solve_simple">ntf_solve_simple</a></code></li>
+<li><code><a title="adnmtf.nmtf_core.ntf_stack" href="#adnmtf.nmtf_core.ntf_stack">ntf_stack</a></code></li>
+<li><code><a title="adnmtf.nmtf_core.ntf_update" href="#adnmtf.nmtf_core.ntf_update">ntf_update</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
