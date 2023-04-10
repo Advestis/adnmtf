@@ -489,10 +489,12 @@ def ntf_update(
     if n_blocks > 1:
         for i_block in range(0, n_blocks):
             mpart[:, id_blockp[i_block]: id_blockp[i_block] + p] = (
-                mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+#                mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+                mb[i_block, k] * mt[:, k, np.newaxis] @ mw[np.newaxis, :, k]
             )
     else:
-        mpart[:, id_blockp[0]: id_blockp[0] + p] = np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+#        mpart[:, id_blockp[0]: id_blockp[0] + p] = np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+        mpart[:, id_blockp[0]: id_blockp[0] + p] = mt[:, k, np.newaxis] @ mw[np.newaxis, :, k]
 
     if n_mmis > 0:
         mpart *= mmis
@@ -662,7 +664,8 @@ def ntf_update(
     if nmf_fix_user_bhe == 0:
         # Update Mb
         mb[:, k] = 0
-        mt_mw[:] = np.reshape((np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))), nxp)
+#        mt_mw[:] = np.reshape((np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))), nxp)
+        mt_mw[:] = np.reshape((mt[:, k, np.newaxis] @ mw[np.newaxis, :, k]), nxp)
 
         for i_block in range(0, n_blocks):
             mb[i_block, k] = np.reshape(mpart[:, id_blockp[i_block]: id_blockp[i_block] + p], nxp).T @ mt_mw
@@ -709,10 +712,13 @@ def ntf_update(
     if n_blocks > 1:
         for i_block in range(0, n_blocks):
             mfit[:, id_blockp[i_block]: id_blockp[i_block] + p] += (
-                mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+#                mb[i_block, k] * np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+                mb[i_block, k] * mt[:, k, np.newaxis] @ mw[np.newaxis, :, k]
+
             )
     else:
-        mfit[:, id_blockp[0]: id_blockp[0] + p] += np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+#        mfit[:, id_blockp[0]: id_blockp[0] + p] += np.reshape(mt[:, k], (n, 1)) @ np.reshape(mw[:, k], (1, p))
+        mfit[:, id_blockp[0]: id_blockp[0] + p] += mt[:, k, np.newaxis] @ mw[np.newaxis, :, k]
 
     if n_mmis > 0:
         mres[:, :] = (mpart - mfit) * mmis

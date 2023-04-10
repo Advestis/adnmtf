@@ -424,17 +424,17 @@ class NTF(NMTF):
         
     def fit_transform(
         self,
-        m,
-        w=None,
-        h=None,
-        update_w=True,
-        update_h=True,
-        regularization=None,
-        sparsity=0,
-        n_bootstrap=None,
-        n_blocks=None,
-        q=None,
-        update_q=True,
+            m: object,
+            w: object = None,
+            h: object = None,
+            update_w: object = True,
+            update_h: object = True,
+            regularization: object = None,
+            sparsity: object = 0,
+            n_bootstrap: object = None,
+            n_blocks: object = None,
+            q: object = None,
+            update_q: object = True,
     ) -> Estimator:
         """Compute Non-negative Tensor Factorization (NTF)
 
@@ -485,7 +485,7 @@ class NTF(NMTF):
         >>> from adnmtf import NTF
         >>> myNTFmodel = NTF(n_components=4)
         >>> t = ...  # tensor with 5 blocks to be factorized
-        >>> est = myNTFmodel.fit_transform(t, 5)
+        >>> est = myNTFmodel.fit_transform(t, n_blocks=5)
 
         Reference
         ---------
