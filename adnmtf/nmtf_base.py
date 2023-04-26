@@ -139,31 +139,31 @@ def init_ntf_type_1(m, mmis, n_blocks, nc, mt_nmf, mw_nmf, tolerance, log_iter, 
     else:
         mt_nmf, mw_nmf = nmf_init(m=mstacked, mmis=mmis_stacked, mt0=mt_nmf, mw0=mw_nmf, nc=nc2)
 
-    # Quick NMF
-    _, mt_nmf, mw_nmf, mb, diff, cancel_pressed = ntf_solve(
-        m=mstacked,
-        mmis=mmis_stacked,
-        mt0=mt_nmf,
-        mw0=mw_nmf,
-        mb0=np.array([]),
-        nc=nc2,
-        tolerance=tolerance,
-        log_iter=log_iter,
-        status0=status0,
-        max_iterations=10,
-        nmf_fix_user_lhe=0,
-        nmf_fix_user_rhe=0,
-        nmf_fix_user_bhe=1,
-        nmf_sparse_level=0,
-        ntf_unimodal=0,
-        ntf_smooth=0,
-        ntf_left_components=0,
-        ntf_right_components=0,
-        ntf_block_components=0,
-        n_blocks=1,
-        nmf_priors=np.array([]),
-        my_status_box=my_status_box,
-    )
+    # Quick NMF  (canceled since multiplicative warm-up added in nmf_init)
+    # _, mt_nmf, mw_nmf, mb, diff, cancel_pressed = ntf_solve(
+    #     m=mstacked,
+    #     mmis=mmis_stacked,
+    #     mt0=mt_nmf,
+    #     mw0=mw_nmf,
+    #     mb0=np.array([]),
+    #     nc=nc2,
+    #     tolerance=tolerance,
+    #     log_iter=log_iter,
+    #     status0=status0,
+    #     max_iterations=10,
+    #     nmf_fix_user_lhe=0,
+    #     nmf_fix_user_rhe=0,
+    #     nmf_fix_user_bhe=1,
+    #     nmf_sparse_level=0,
+    #     ntf_unimodal=0,
+    #     ntf_smooth=0,
+    #     ntf_left_components=0,
+    #     ntf_right_components=0,
+    #     ntf_block_components=0,
+    #     n_blocks=1,
+    #     nmf_priors=np.array([]),
+    #     my_status_box=my_status_box,
+    # )
 
     # Factorize Left vectors and distribute multiple factors if nc2 < nc
     mt = np.zeros((n, nc))
@@ -203,7 +203,7 @@ def init_ntf_type_1(m, mmis, n_blocks, nc, mt_nmf, mw_nmf, tolerance, log_iter, 
                     mw[:, ind] = d[i_fact] * np.reshape(v2, int(p / n_blocks))
 
                 mb[:, ind] = mw_nmf[:, k]
-    return mt, mw, mb, nc2 - 1, cancel_pressed
+    return mt, mw, mb, nc2 - 1, False
 
 
 def init_ntf_type_2(
@@ -228,33 +228,33 @@ def init_ntf_type_2(
     else:
         mt_nmf, mw_nmf = nmf_init(m=m, mmis=mmis, mt0=mt_nmf, mw0=mw_nmf, nc=nc)
 
-    # Quick NMF
-    _, mt_nmf, mw_nmf, mb, diff, cancel_pressed = ntf_solve(
-        m=m,
-        mmis=mmis,
-        mt0=mt_nmf,
-        mw0=mw_nmf,
-        mb0=np.array([]),
-        nc=nc,
-        tolerance=tolerance,
-        log_iter=log_iter,
-        status0=status0,
-        max_iterations=10,
-        nmf_fix_user_lhe=0,
-        nmf_fix_user_rhe=0,
-        nmf_fix_user_bhe=1,
-        nmf_sparse_level=0,
-        ntf_unimodal=0,
-        ntf_smooth=0,
-        ntf_left_components=0,
-        ntf_right_components=0,
-        ntf_block_components=0,
-        n_blocks=1,
-        nmf_priors=np.array([]),
-        my_status_box=my_status_box,
-    )
+    # Quick NMF (canceled since multiplicative warm-up added in nmf_init)
+    # _, mt_nmf, mw_nmf, mb, diff, cancel_pressed = ntf_solve(
+    #     m=m,
+    #     mmis=mmis,
+    #     mt0=mt_nmf,
+    #     mw0=mw_nmf,
+    #     mb0=np.array([]),
+    #     nc=nc,
+    #     tolerance=tolerance,
+    #     log_iter=log_iter,
+    #     status0=status0,
+    #     max_iterations=10,
+    #     nmf_fix_user_lhe=0,
+    #     nmf_fix_user_rhe=0,
+    #     nmf_fix_user_bhe=1,
+    #     nmf_sparse_level=0,
+    #     ntf_unimodal=0,
+    #     ntf_smooth=0,
+    #     ntf_left_components=0,
+    #     ntf_right_components=0,
+    #     ntf_block_components=0,
+    #     n_blocks=1,
+    #     nmf_priors=np.array([]),
+    #     my_status_box=my_status_box,
+    # )
 
-    # Factorize Left vectors
+    # Factorize Right vectors
     mt = np.zeros((n, nc))
     mw = np.zeros((int(p / n_blocks), nc))
     mb = np.zeros((n_blocks, nc))
@@ -281,7 +281,7 @@ def init_ntf_type_2(
             for i in range(tmax - 1, -1, -1):
                 mt[i, k] = min(mt[i + 1, k], mt[i, k])
 
-    return mt, mw, mb, nc - 1, cancel_pressed
+    return mt, mw, mb, nc - 1, False
 
 
 def ntf_init(
