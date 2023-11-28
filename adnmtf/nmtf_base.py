@@ -68,7 +68,6 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> Tuple[np.ndarray, np.ndarray]:
     mw = np.copy(mw0)
     if (mt.shape[0] == 0) or (mw.shape[0] == 0):
         # Note that if there are missing values, SVD is performed on matrix imputed with 0's
-        np.random.seed(3)
         if nc >= min(n, p):
             # arpack does not accept to factorize at full rank -> need to duplicate in both dimensions to force it work
             # noinspection PyTypeChecker
@@ -76,15 +75,11 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> Tuple[np.ndarray, np.ndarray]:
                 np.concatenate((np.concatenate((m, m), axis=1), np.concatenate((m, m), axis=1)), axis=0),
                 k=nc,
                 v0=np.random.uniform(size=2 * min(n, p)),
+                random_state=0
             )
             d /= 2
-            # svd causes mem allocation problem with large matrices
-            # t, d, w = np.linalg.svd(m)
-            # mt = t
-            # mw = w.T
         else:
-            t, d, w = svds(m, k=nc, v0=np.random.uniform(size=min(n, p)))
-            # t, d, w = np.linalg.svd(m)
+            t, d, w = svds(m, k=nc, v0=np.random.uniform(size=min(n, p)), random_state=0)
 
         mt = t[:n, :nc]
         mw = w[:nc, :p].T
@@ -124,9 +119,6 @@ def nmf_init(m, mmis, mt0, mw0, nc) -> Tuple[np.ndarray, np.ndarray]:
             mw = mw * ((mt.T @ m) / ((mt.T @ mt) @ mw.T + precision)).T
             mt = mt * (m @ mw / (mt @ (mw.T @ mw) + precision))
 
-    # np.savetxt("C:/Users/paul_/PycharmProjects/nmtf_private/tests/data/datatest_W.csv", mt)
-    # np.savetxt("C:/Users/paul_/PycharmProjects/nmtf_private/tests/data/datatest_H.csv", mw)
-
     return mt, mw
 
 
@@ -139,32 +131,6 @@ def init_ntf_type_1(m, mmis, n_blocks, nc, mt_nmf, mw_nmf, tolerance, log_iter, 
     else:
         mt_nmf, mw_nmf = nmf_init(m=mstacked, mmis=mmis_stacked, mt0=mt_nmf, mw0=mw_nmf, nc=nc2)
 
-    # Quick NMF  (canceled since multiplicative warm-up added in nmf_init)
-    # _, mt_nmf, mw_nmf, mb, diff, cancel_pressed = ntf_solve(
-    #     m=mstacked,
-    #     mmis=mmis_stacked,
-    #     mt0=mt_nmf,
-    #     mw0=mw_nmf,
-    #     mb0=np.array([]),
-    #     nc=nc2,
-    #     tolerance=tolerance,
-    #     log_iter=log_iter,
-    #     status0=status0,
-    #     max_iterations=10,
-    #     nmf_fix_user_lhe=0,
-    #     nmf_fix_user_rhe=0,
-    #     nmf_fix_user_bhe=1,
-    #     nmf_sparse_level=0,
-    #     ntf_unimodal=0,
-    #     ntf_smooth=0,
-    #     ntf_left_components=0,
-    #     ntf_right_components=0,
-    #     ntf_block_components=0,
-    #     n_blocks=1,
-    #     nmf_priors=np.array([]),
-    #     my_status_box=my_status_box,
-    # )
-
     # Factorize Left vectors and distribute multiple factors if nc2 < nc
     mt = np.zeros((n, nc))
     mw = np.zeros((int(p / n_blocks), nc))
@@ -172,7 +138,7 @@ def init_ntf_type_1(m, mmis, n_blocks, nc, mt_nmf, mw_nmf, tolerance, log_iter, 
     n_fact = int(np.ceil(nc / n_blocks))
     for k in range(0, nc2):
         my_status_box.update_status(status="Start SVD...")
-        u, d, v = svds(np.reshape(mt_nmf[:, k], (int(p / n_blocks), n)).T, k=n_fact)
+        u, d, v = svds(np.reshape(mt_nmf[:, k], (int(p / n_blocks), n)).T, k=n_fact, random_state=0)
         v = v.T
         # svds returns singular vectors in reverse order
         u = u[:, ::-1]
@@ -228,32 +194,6 @@ def init_ntf_type_2(
     else:
         mt_nmf, mw_nmf = nmf_init(m=m, mmis=mmis, mt0=mt_nmf, mw0=mw_nmf, nc=nc)
 
-    # Quick NMF (canceled since multiplicative warm-up added in nmf_init)
-    # _, mt_nmf, mw_nmf, mb, diff, cancel_pressed = ntf_solve(
-    #     m=m,
-    #     mmis=mmis,
-    #     mt0=mt_nmf,
-    #     mw0=mw_nmf,
-    #     mb0=np.array([]),
-    #     nc=nc,
-    #     tolerance=tolerance,
-    #     log_iter=log_iter,
-    #     status0=status0,
-    #     max_iterations=10,
-    #     nmf_fix_user_lhe=0,
-    #     nmf_fix_user_rhe=0,
-    #     nmf_fix_user_bhe=1,
-    #     nmf_sparse_level=0,
-    #     ntf_unimodal=0,
-    #     ntf_smooth=0,
-    #     ntf_left_components=0,
-    #     ntf_right_components=0,
-    #     ntf_block_components=0,
-    #     n_blocks=1,
-    #     nmf_priors=np.array([]),
-    #     my_status_box=my_status_box,
-    # )
-
     # Factorize Right vectors
     mt = np.zeros((n, nc))
     mw = np.zeros((int(p / n_blocks), nc))
@@ -262,7 +202,7 @@ def init_ntf_type_2(
     for k in range(0, nc):
         my_status_box.update_status(status="Start SVD...")
         # noinspection PyTypeChecker
-        u, d, v = svds(np.reshape(mw_nmf[:, k], (int(p / n_blocks), n_blocks)), k=1)
+        u, d, v = svds(np.reshape(mw_nmf[:, k], (int(p / n_blocks), n_blocks)), k=1, random_state=0)
         v = v.T
         u = np.abs(u)
         v = np.abs(v)

@@ -66,6 +66,7 @@ class NMTF:
         self.leverage = leverage
         self.random_state = random_state
         self.verbose = verbose
+        np.random.seed(random_state)
 
     def fit_transform(
         self,
@@ -260,9 +261,9 @@ class NMF(NMTF):
             nmf_calculate_leverage = 0
             nmf_use_robust_leverage = 0
 
-        if self.random_state is not None:
-            random_seed = self.random_state
-            np.random.seed(random_seed)
+        # if self.random_state is not None:
+        #     random_seed = self.random_state
+        #     np.random.seed(random_seed)
 
         _, mt, mw, mb, mt_pct, mw_pct, diff, add_message, err_message, cancel_pressed = r_ntf_solve(
             m=m,
@@ -516,9 +517,9 @@ class NTF(NMTF):
         ntf_left_components = self.apply_left
         ntf_right_components = self.apply_right
         ntf_block_components = self.apply_block
-        if self.random_state is not None:
-            random_seed = self.random_state
-            np.random.seed(random_seed)
+        # if self.random_state is not None:
+        #     random_seed = self.random_state
+        #     np.random.seed(random_seed)
 
         my_status_box = get_status_box()(verbose=log_iter)
 
@@ -600,9 +601,9 @@ class NTF(NMTF):
             nmf_calculate_leverage = 0
             nmf_use_robust_leverage = 0
 
-        if self.random_state is not None:
-            random_seed = self.random_state
-            np.random.seed(random_seed)
+        # if self.random_state is not None:
+        #     random_seed = self.random_state
+        #     np.random.seed(random_seed)
 
         if update_w:
             nmf_fix_user_lhe = 0
