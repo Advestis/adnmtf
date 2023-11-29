@@ -25,14 +25,14 @@ EPSILON = np.finfo(np.float32).eps
 
 def init(m, mmis, nc):
     n, p = m.shape
-    mmis = mmis.astype(np.int)
+    mmis = mmis.astype(np.int_)
     n_mmis = mmis.shape[0]
     if n_mmis == 0:
         missing_values_indexes = np.where(np.isnan(m) == 1)
         n_mmis = missing_values_indexes[0].size
         if n_mmis > 0:
             mmis = np.isnan(m) == 0
-            mmis = mmis.astype(np.int)
+            mmis = mmis.astype(np.int_)
             m[mmis == 0] = 0
     else:
         m[mmis == 0] = 0
@@ -443,14 +443,14 @@ def r_ntf_solve(
             cancel_pressed,
         )
 
-    mmis = mmis.astype(np.int)
+    mmis = mmis.astype(np.int_)
     n_mmis = mmis.shape[0]
     if n_mmis == 0:
         missing_values_indexes = np.where(np.isnan(m) == 1)
         n_mmis = missing_values_indexes[0].size
         if n_mmis > 0:
             mmis = np.isnan(m) == 0
-            mmis = mmis.astype(np.int)
+            mmis = mmis.astype(np.int_)
             m[mmis == 0] = 0
     else:
         m[mmis == 0] = 0
@@ -646,12 +646,12 @@ def init_factorization(m, n_components):
     n, p = m.shape
     # Identify missing values
     mmis = np.array([])
-    mmis = mmis.astype(np.int)
+    mmis = mmis.astype(np.int_)
     missing_values_indexes = np.where(np.isnan(m) == 1)
     n_mmis = missing_values_indexes[0].size
     if n_mmis > 0:
         mmis = np.isnan(m) == 0
-        mmis = mmis.astype(np.int)
+        mmis = mmis.astype(np.int_)
         m[mmis == 0] = 0
     else:
         m[mmis == 0] = 0

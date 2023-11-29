@@ -495,10 +495,10 @@ def build_clusters(
 def cluster_pvalues(cluster_size, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup):
     """Calculate Pvalue of each group versus cluster"""
     n, nc = mt.shape
-    cluster_size = cluster_size.astype(np.int)
+    cluster_size = cluster_size.astype(np.int_)
     nb_groups = int(nb_groups)
-    r_ct = r_ct.astype(np.int)
-    n_ct = n_ct.astype(np.int)
+    r_ct = r_ct.astype(np.int_)
+    n_ct = n_ct.astype(np.int_)
     cluster_size = np.reshape(cluster_size, nc)
     r_ct = np.reshape(r_ct, (n,))
     n_ct = np.reshape(n_ct, (nc,))
@@ -569,8 +569,8 @@ def global_sign(nrun, nb_groups, mt, r_ct, n_ct, row_groups, list_groups, ngroup
     n, nc = mt.shape
     nrun = int(nrun)
     nb_groups = int(nb_groups)
-    r_ct = r_ct.astype(np.int)
-    n_ct = n_ct.astype(np.int)
+    r_ct = r_ct.astype(np.int_)
+    n_ct = n_ct.astype(np.int_)
     cluster_size = np.zeros(nc)
     r_ct = np.reshape(r_ct, n)
     n_ct = np.reshape(n_ct, nc)
