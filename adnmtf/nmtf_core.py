@@ -23,7 +23,7 @@ def ntf_stack(m, mmis, n_blocks):
     for future use with NMF
     """
     n, p = m.shape
-    mmis = mmis.astype(np.int)
+    mmis = mmis.astype(np.int_)
     n_mmis = mmis.shape[0]
     n_blocks = int(n_blocks)
 
