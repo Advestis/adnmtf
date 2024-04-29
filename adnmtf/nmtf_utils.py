@@ -433,7 +433,7 @@ def build_clusters(
         mindex1 = np.where(row_clust == k + 1)[0]
         if len(mindex1) > 0:
             if len(mindex1) == 1:
-                mindex = (mindex1,)
+                mindex = (mindex1[0],)
             elif (nc == 2) & (k == 1):
                 mindex = mindex1[np.argsort(mtn[mindex1, k])]
             elif (cell_plot_ordered_clusters == 1) & (nc >= 3):
